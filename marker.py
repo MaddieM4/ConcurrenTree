@@ -1,10 +1,10 @@
 Default = {
 	"style":{
-		"emphasis":"False",
-		"italic":"False"
+		"emphasis":False,
+		"italic":False
 	}, "link":{
-		"resource":"False",
-		"wave":"False"
+		"resource":False,
+		"wave":False
 	}, "meta":{
 		"author":""
 	}
