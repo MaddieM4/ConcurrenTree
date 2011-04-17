@@ -1,6 +1,7 @@
 import hasher
+from tree import Tree as TreeBase
 
-class CTree:
+class CTree(TreeBase):
 	def __init__(self, value):
 		self._value = value
 		self._length = len(value)
@@ -10,7 +11,7 @@ class CTree:
 			self._children.append(CTreeChild())
 		self.hash = hasher.make(self._value)
 
-	def insert(self, value, pos):
+	def insert(self, pos, value):
 		result = CTree(value)
 		self._children[pos].insertTree(result)
 		return result
@@ -23,6 +24,16 @@ class CTree:
 
 	def mark(self, pos, marker):
 		self._children[pos].insertMarker(marker)
+
+	def markers(self):
+		results = {}
+		for i in range(self._length+1):
+			markers = self._children[i].markers
+			if markers:
+				#for x in markers:
+				#	markers[x] = markers[x].value
+				results[i] = markers
+		return results
 
 	def children(self):
 		results = {}
@@ -49,8 +60,7 @@ class CTree:
 	def __len__(self):
 		return self._length
 
-	@property
-	def flattened(self):
+	def flatten(self):
 		''' Returns a single-level tree that summarizes all descendants. Not backwards-compatible for applying ops. '''
 		# This function does not yet support markers.
 		rstring = ""
@@ -113,4 +123,4 @@ class CTreeChild:
 
 	def flat_children(self):
 		''' Return a sorted list of flattened children '''
-		return [x.flattened for x in self.children()]
+		return [x.flatten() for x in self.children()]
