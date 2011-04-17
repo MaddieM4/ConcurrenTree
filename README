@@ -1,0 +1,35 @@
+ConcurrenTree is a concurrency solution that does the heavy lifting for you.
+It was originally called OT+, but has diverged so much from OT that the name
+was beginning to be deceptive.
+
+Designed for distributed networks where there is no guarantee that Machine A
+and Machine B have even vaguely similar pictures of a document, CTree is a new
+and revolutionary concurrency model that can resolve just about anything. It
+includes formatting standards, a protocol for network sync/introduction, and
+some example code showing you how to write clients in Javascript.
+
+Why start from scratch, when there's already OT? Well, nothing's stopping you
+from using OT if you have stiff memory constraints, as in theory memory usage
+is not CTree's strong suite. However, OT has a lot of conceptual problems: it
+forces you to track the state of a server in order to submit customized ops,
+it uses complex and arcane algorithms that require advanced theorem proving
+programs to test, and there is no standard set of those algorithms (meaning
+my OT doesn't speak the same language as your OT unless we spend days of work
+minimum making sure our algorithms are functionally equivalent, and when I say
+days, I'm assuming each of us have half a dozen well-paid competent workers).
+
+CTrees solve all these problems and more. There is no state-tracking, because
+any operation can be safely submitted to any peer. And because of that, there's
+no need for obtuse and ill-defined algorithms. And because of that, we've
+been able to make a simple system with clearly defined correct ways to process
+data, no ambiguity or fuzziness here, making it easy to port the model to other
+programming languages without wondering constantly whether you're doing it
+right. The right way makes sense, you can trust your gut.
+
+This code is under heavy construction, and it's important to understand what
+CTree is and is not, so you don't end up waiting for features that are not
+going to be added. For example, authentication. The protocol being designed
+for ConcurrenTree includes operation signing but leaves the majority of auth
+to the larger project implementing CTree to do stuff. CTree is not so much its
+own thing, as it is something that's embedded in other projects as a simple
+backend that handles all your network concurrency.
