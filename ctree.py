@@ -69,10 +69,10 @@ class CTree:
 
 	def __str__(self):
 		rstring = ""
-		for i in self:
-			if i[1]:
-				rstring += i[0]
-		return self._value
+		for i in range(len(self)):
+			if not self._deletions[i]:
+				rstring += self._value[i]
+		return rstring
 
 class CTreeChild:
 	def __init__(self, trees = [], markers = []):
