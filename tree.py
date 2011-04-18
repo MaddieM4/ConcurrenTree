@@ -20,6 +20,10 @@ class Tree:
 		''' Set a marker on a position '''
 		raise NotImplmentedError("Subclasses of ConcurrenTree.tree.Tree must define self.mark(pos, marker)")
 
+	def __len__(self):
+		''' Return the length of the internal immutable string '''
+		raise NotImplmentedError("Subclasses of ConcurrenTree.tree.Tree must define self.__len__()")
+
 	# The following are not necessary for Instructions, but are
 	# nice, and may be relied upon by other stuff in the future
 
