@@ -19,18 +19,80 @@
 	This handler class is pretty basic and general, so you can use it
 	however you want. It expects you to subclass ConcurrenTree.display.
 	Display for objects that want to communicate with CTree docs.
+
+	Docnames are arbitrary strings. Preventing name collisions is up
+	to your implementation.
 '''
 
 import Queue
+import threading
+from time import sleep
+from display import Display
 
 class Handler:
 	def __init__(self):
+		self.stopflag = False
 		self.documents = {}
 		self.displays = {}
 		self.netiq = Queue.Queue()
 		self.netoq = Queue.Queue()
 		self.userq = Queue.Queue()
+		self.thread = None
+		self.lock = threading.Lock()
 
 	def replace(self, docname, start, end, value):
-		pass
+		self.userq.put((docname, start, end, value))
 
+	def add_display(self, docname, display):
+		with self.lock:
+			if not docname in self.documents:
+				raise ValueError("Document '%s' is not loaded in the handler" % docname)
+			elif Display in type(display).__bases__:
+				self.displays[docname].add(display)
+			else:
+				raise TypeError(str(type(display))+" is not a descendant of ConcurrenTree.display.Display")
+
+	def remove_display(self, docname, display):
+		with self.lock:
+			if docname in self.displays:
+				self.displays[docname].remove(display)
+			else:
+				raise ValueError("Document '%s' is not loaded in the handler" % docname)
+
+	def __getitem__(self, docname):
+		with self.lock:
+			return self.documents[docname]
+
+	def __setitem__(self, docname, document):
+		with self.lock:
+			self.documents[docname] = document
+			self.displays[docname] = set()
+
+	def __delitem__(self, docname):
+		with self.lock:
+			del self.documents[docname]
+			del self.displays[docname]
+
+	def process(self):
+		while not self.stopflag:
+			with self.lock:
+				while not self.netiq.empty():
+					# clear out all user stuff first
+					while not self.userq.empty():
+						# process user action
+					# process network operation
+			sleep(.05)
+
+	def start(self):
+		if not self.thread:
+			self.thread = threading.Thread(target = self.process)
+			self.thread.setDaemon(True)
+
+	def stop(self):
+		if self.thread:
+			self.stopflag=True
+			self.thread.join()
+			self.thread = None
+
+	def get_network_out(self):
+		return self.netoq.get()

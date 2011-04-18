@@ -8,6 +8,12 @@ class Display:
 		in one display. The display is an abstract object
 		that may or may not plug directly into a graphical
 		library, it's up to you.
+
+		All these functions will called by the Handler
+		thread, so thread-safety/locks should probably be
+		used if these functions have to interact with any
+		other threads, such as the main thread or whatever
+		GUI threads your implementation uses.
 	'''
 
 	def replace(self, start, end, value):
