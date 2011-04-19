@@ -1,7 +1,7 @@
 from address import Address
 
 def validpos(tree, pos):
-	if not (pos <= len(tree) and pos => 0):
+	if not (pos <= len(tree) and pos >= 0):
 		raise IndexError(pos, len(tree), "0 <= %d <= %d not true!" % (pos, len(tree)))
 
 class Instruction:
@@ -42,7 +42,7 @@ class Insertion(Instruction):
 		self.value = value
 
 	def sanitycheck(self, tree):
-		validpos(tree, self.position):
+		validpos(tree, self.position)
 
 	def _apply(self, tree):
 		tree.insert(self.position, self.value)

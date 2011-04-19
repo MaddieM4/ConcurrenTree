@@ -1,5 +1,7 @@
 import instruction
 import hasher
+from address import Address
+from copy import deepcopy
 
 class Operation:
 	''' A collection of instructions '''
@@ -12,18 +14,27 @@ class Operation:
 		else:
 			self.instructions = instructions
 
+	def apply(self, tree):
+		backup = deepcopy(tree)
+		for i in self.instructions:
+			try:
+				i.apply(tree)
+			except Exception as e:
+				tree = backup
+				raise e
+
 	@property
 	def inserts(self):
 		results = []
 		for i in self.instructions:
-			if type(i) == instruction.Insertion:
+			if isinstance(i,instruction.Insertion):
 				results.append(i)
 		return results
 
 	@property
 	def dep_provides(self):
 		''' The dependencies that this operation provides to the tree '''
-		return set([str(i.address_object)+str(i.position)+":"+i.value for i in self.inserts])
+		return set([str(i.address_object)+str(i.position)+":"+hasher.make(i.value) for i in self.inserts])
 
 	@property
 	def dep_requires(self):
@@ -34,8 +45,9 @@ class Operation:
 		''' Checks a tree for existence of all dependencies '''
 		for i in self.dep_requires:
 			try:
-				i.address_object.resolve(tree)
-			except:
+				Address(i).resolve(tree)
+			except Exception as e:
+				print e
 				return False
 		return True
 
