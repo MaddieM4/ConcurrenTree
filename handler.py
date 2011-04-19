@@ -47,7 +47,7 @@ class Handler:
 		with self.lock:
 			if not docname in self.documents:
 				raise ValueError("Document '%s' is not loaded in the handler" % docname)
-			elif Display in type(display).__bases__:
+			elif isinstance(display, Display):
 				self.displays[docname].add(display)
 			else:
 				raise TypeError(str(type(display))+" is not a descendant of ConcurrenTree.display.Display")
