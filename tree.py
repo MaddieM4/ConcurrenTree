@@ -44,3 +44,9 @@ class Tree:
 		Returns a single-level tree that is display-equivalent to self.
 		'''
 		raise NotImplmentedError("Subclasses of ConcurrenTree.tree.Tree should define self.flatten()")
+
+	def trace(self, pos):
+		''' 
+		Given a position in the flat text, compute an (address, position) pair.
+		'''
+		raise NotImplmentedError("Subclasses of ConcurrenTree.tree.Tree should define self.flatten()")

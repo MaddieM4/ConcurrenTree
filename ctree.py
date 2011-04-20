@@ -77,6 +77,29 @@ class CTree(TreeBase):
 					rstring += self._value[i]
 		return CTree(rstring)
 
+	def trace(self, pos):
+		t = self._trace(pos)
+		if type(t) == tuple:
+			return t
+		else:
+			raise IndexError("%d is out of range" % pos)
+
+	def _trace(self, pos):
+		togo = pos
+		for i in range(len(self)+1):
+			if togo == 0:
+				return ("",i)
+			for child in self._children[i].children():
+				x = child._trace(togo)
+				print "///",x
+				if type(x) == tuple:
+					return ("%d:%s/%s" % (i,child.hash,x[0]),x[1])
+				else:
+					togo -= x
+			if i < len(self) and not self._deletions[i]:
+				togo -=1
+		return togo
+
 	def __str__(self):
 		rstring = ""
 		for i in range(len(self)):
