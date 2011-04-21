@@ -27,6 +27,27 @@ function md5(text) {
 	}
 }
 
+function textdiff(olds, news) {
+	// simplistic algorithm that assumes a pattern of same|different|same where any section could be length 0
+	// returns a replacement object ({'start':int, 'end':int, 'new':string})
+	// replacement objects ALWAYS use coordinates in old string space
+
+	var min = Math.min(olds.length, news.length);
+	// find start
+	var start, end;
+	for(var i=0; i<min; i++) {
+		start = i;
+		if (olds[i]!=news[i]) break;
+	}
+	// find end
+	for(var i=0; i<min; i++) {
+		end = olds.length-i;
+		if (olds[end]!=news[news.length-i] || end == start || news.length-i == start) break;
+	}
+	var newend = news.length-(olds.length-end);
+	return {'start':start, 'end':end, 'new':news.substr(start, newend-start)}
+}
+
 // CTREE ----------------------------------------------------------------------------------------------------------------------------------------
 
 function CTree(value) {
