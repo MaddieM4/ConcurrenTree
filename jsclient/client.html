@@ -1,13 +1,18 @@
 <html>
 <head>
 	<title>JS CTree/Textile Example</title>
+
 	<script src="jquery-1.4.2.min.js"></script>
+	<script src="textile-editor.min.js"></script>
 	<script src="ctree.js"></script>
 </head>
 
 <body>
 
-<div>Textile object to go here.</div>
+<a href="http://guillaume.bort.fr/textile-editor/index.html">
+<h4>Get Textile Editor by Guillame Bort!</h4></a>
+
+<p><canvas id="editor" width="800" height="300"></canvas></p>
 
 <footer>
 This is an example of how to use ConcurrenTree technology in
@@ -16,6 +21,10 @@ editor, for its ability to intercept keystrokes - basically
 it already has all the generic requirements for a concurrent
 text display built in.
 </footer>
+
+<script>
+	new Textile.Editor('editor');
+</script>
 
 </body>
 </html>
