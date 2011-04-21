@@ -32,20 +32,35 @@ function textdiff(olds, news) {
 	// returns a replacement object ({'start':int, 'end':int, 'new':string})
 	// replacement objects ALWAYS use coordinates in old string space
 
+	if (olds==news) return undefined;
 	var min = Math.min(olds.length, news.length);
 	// find start
-	var start, end;
+	console.log("start")
+	var start=0, end=olds.length-1;
 	for(var i=0; i<min; i++) {
+		console.log(olds[i]+news[i])
 		start = i;
 		if (olds[i]!=news[i]) break;
 	}
 	// find end
-	for(var i=0; i<min; i++) {
+	console.log("end")
+	for(var i=1; i<min; i++) {
 		end = olds.length-i;
+		console.log(olds[end]+news[news.length-i])
+		console.log("end="+end+" start="+start+" i="+i);
 		if (olds[end]!=news[news.length-i] || end == start || news.length-i == start) break;
 	}
 	var newend = news.length-(olds.length-end);
 	return {'start':start, 'end':end, 'new':news.substr(start, newend-start)}
+}
+
+function read(f,g,i) {
+	// Every i milliseconds, calls f, which should return either undefined or a replacement object.
+	// Function g should accept replacement objects.
+	return setInterval(function() {
+		x=f();
+		if (x!=undefined) g(x);
+	}, i)
 }
 
 // CTREE ----------------------------------------------------------------------------------------------------------------------------------------
@@ -64,11 +79,11 @@ function CTree(value) {
 	}
 
 	this.delete = function(pos) {
-		self.deletions[pos] = true;
+		this.deletions[pos] = true;
 	}
 
 	this.get = function(pos, hash) {
-		return self.children[pos][hash];
+		return this.children[pos][hash];
 	}
 
 	this.flatten = function() {
@@ -96,6 +111,7 @@ function CTree(value) {
 			for (c in this.children[i]) {
 				r = this.children[i][c].trace(togo);
 				console.log(r)
+				console.log(c)
 				if (r['address'] == 'overflow') {
 					togo -= r['position'];
 				} else if (r['address'] == "") {
@@ -112,17 +128,13 @@ function CTree(value) {
 	}
 
 	this.resolve = function(addrstring) {
+		if (addrstring == "") return this;
 		parts = addrstring.split("/");
-		if (parts == [""]) return this;
 		tree = this;
 		for (i in parts) {
-			split = i.split(":");
+			split = parts[i].split(":");
 			tree = tree.get(split[0], split[1]);
 		}
 		return tree;
 	}
 }
-
-cable = new CTree("cable");
-bacon = cable.insert(3, "bacon");
-console.log(cable.flatten());

@@ -24,6 +24,53 @@ text display built in.
 
 <script>
 	ted = new Textile.Editor('editor');
+
+	main = new CTree(ted.model.content);
+
+	hadfocus = undefined;
+	function lock() {
+		if (hadfocus == undefined) {
+			hadfocus = ted.hasFocus;
+		}
+		ted.hasFocus = false;
+	}
+
+	function unlock() {
+		if (hadfocus != undefined) {
+			ted.hasFocus = hadfocus;
+		}
+		hadfocus = undefined;
+	}
+
+	lastcommand = -1;
+	function readcommands() {
+		lock(); // lock ted
+		// read and apply commands
+		var com = ted.history.commands;
+		for (var i=lastcommand+1; com.length>i; i++) {
+			readcommand(com[i]);
+		}
+		lastcommand = com.length-1;
+		unlock();
+	}
+
+	function readcommand(com) {
+		if (com['type']=="i") {
+			// insert
+			t = main.trace(com['at']);
+			main.resolve(t['address']).insert(t['position'], com['txt']);
+		}
+		console.log(main.flatten())
+	}
+
+	function pushchange(replacement) {
+		lock(); // lock ted
+		var content = ted.model.content;
+		ted.setContent(content.substr(0,replacement['start'])+replacement['new']+content.substr(replacement['end']));
+		unlock();
+	}
+
+	//setInterval(readcommands, 200)
 </script>
 
 </body>
