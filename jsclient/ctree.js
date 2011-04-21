@@ -9,7 +9,11 @@ function net_get(obj) {
 // UTILITY --------------------------------------------------------------------------------------------------------------------------------------
 
 function arrayfill(array, value, count) {
-	for (var i=0;i<count;i++) {array.push(value)}
+	for (var i=0;i<count;i++) {array.push(value(i))}
+}
+
+function af_obj(id) {
+	return {};
 }
 
 md5table = {};
@@ -28,13 +32,14 @@ function md5(text) {
 function CTree(value) {
 	this.value = value;
 	this.hash = md5(value);
-	this.deletions = []; arrayfill(this.deletions, false, value.length);
-	this.markers = []; arrayfill(this.markers, {}, value.length+1);
-	this.children = []; arrayfill(this.children, {}, value.length+1);
+	this.deletions = []; arrayfill(this.deletions, function(){return false}, value.length);
+	this.markers = []; arrayfill(this.markers, af_obj, value.length+1);
+	this.children = []; arrayfill(this.children, af_obj, value.length+1);
 
 	this.insert = function(pos, childtext) {
 		var child = new CTree(childtext);
-		this.position[pos][child.hash] = child;
+		this.children[pos][child.hash] = child;
+		return child;
 	}
 
 	this.delete = function(pos) {
@@ -50,7 +55,7 @@ function CTree(value) {
 		result = "";
 		for (var i=0; i<this.value.length+1; i++) {
 			for (c in this.children[i]) {
-				console.log(c);
+				result += this.children[i][c].flatten();
 			}
 			if (i<this.value.length && !this.deletions[i]) {
 				result += this.value[i];
@@ -61,8 +66,27 @@ function CTree(value) {
 
 	this.trace = function(pos) {
 		// returns {'address':string, 'position':int}
-		// 'address' will == "overflow" if pos > len
-		
+		// 'address' will == "overflow" if pos > len, 'position' will == overflow amount
+		togo = pos;
+		for (var i=0;i<this.value.length+1;i++) {
+			if (togo == 0) {
+				return {'address':'', 'position':i};
+			}
+			for (c in this.children[i]) {
+				r = this.children[i][c].trace(togo);
+				if (r['address'] == 'overflow') {
+					togo -= r['position'];
+				} else if (r['address'] == "") {
+					return {'address':''+i+':'+c, 'position':r['position']};
+				} else {
+					return {'address':''+i+':'+c+'/'+r['address'], 'position':r['position']};
+				}
+			}
+			if (i<this.value.length && !this.deletions[i]) {
+				togo -= 1;
+			}
+		}
+		return {'address':'overflow', 'position':togo};
 	}
 
 	this.resolve = function(addrstring) {
@@ -78,4 +102,5 @@ function CTree(value) {
 }
 
 cable = new CTree("cable");
+bacon = cable.insert(3, "bacon");
 console.log(cable.flatten());
