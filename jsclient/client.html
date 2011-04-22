@@ -57,6 +57,7 @@ text display built in.
 	function readcommand(com) {
 		if (com['type']=="i") {
 			// insert
+			console.log(com['at']);
 			t = main.trace(com['at']);
 			main.resolve(t['address']).insert(t['position'], com['txt']);
 		}
@@ -70,7 +71,7 @@ text display built in.
 		unlock();
 	}
 
-	//setInterval(readcommands, 200)
+	setInterval(readcommands, 200)
 </script>
 
 </body>

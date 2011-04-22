@@ -108,10 +108,8 @@ function CTree(value) {
 			if (togo == 0) {
 				return {'address':'', 'position':i};
 			}
-			for (c in this.children[i]) {
+			for (var c in this.children[i]) {
 				r = this.children[i][c].trace(togo);
-				console.log(r)
-				console.log(c)
 				if (r['address'] == 'overflow') {
 					togo -= r['position'];
 				} else if (r['address'] == "") {
