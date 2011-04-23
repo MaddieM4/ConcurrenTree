@@ -87,8 +87,6 @@ class CTree(TreeBase):
 	def _trace(self, pos):
 		togo = pos
 		for i in range(len(self)+1):
-			if togo == 0:
-				return ("",i)
 			for child in self._children[i].children():
 				x = child._trace(togo)
 				print "///",x
@@ -96,6 +94,8 @@ class CTree(TreeBase):
 					return ("%d:%s/%s" % (i,child.hash,x[0]),x[1])
 				else:
 					togo -= x
+			if togo == 0:
+				return ("",i)
 			if i < len(self) and not self._deletions[i]:
 				togo -=1
 		return togo
