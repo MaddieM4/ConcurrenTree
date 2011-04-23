@@ -105,9 +105,6 @@ function CTree(value) {
 		// 'address' will == "overflow" if pos > len, 'position' will == overflow amount
 		togo = pos;
 		for (var i=0;i<this.value.length+1;i++) {
-			if (togo == 0) {
-				return {'address':'', 'position':i};
-			}
 			for (var c in this.children[i]) {
 				r = this.children[i][c].trace(togo);
 				if (r['address'] == 'overflow') {
@@ -117,6 +114,9 @@ function CTree(value) {
 				} else {
 					return {'address':''+i+':'+c+'/'+r['address'], 'position':r['position']};
 				}
+			}
+			if (togo == 0) {
+				return {'address':'', 'position':i};
 			}
 			if (i<this.value.length && !this.deletions[i]) {
 				togo -= 1;
@@ -134,5 +134,17 @@ function CTree(value) {
 			tree = tree.get(split[0], split[1]);
 		}
 		return tree;
+	}
+
+	this.kidscan = function() {
+		var result = [];
+		for (var i in this.children) {
+			var index = {};
+			for (var c in this.children[i]) {
+				index[c] = this.children[i][c].kidscan()
+			}
+			result.push(index);
+		}
+		return result;
 	}
 }
