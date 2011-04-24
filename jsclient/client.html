@@ -55,15 +55,22 @@ text display built in.
 	}
 
 	function readcommand(com) {
-		console.log(com['at']);
+		//console.log(com['at']);
 		if (com['type']=="i") {
 			// insert single character
 			main.flatinsert(com['at'], com['txt']);
 		} else if (com['type']=="d"){
 			// delete single character
 			main.flatdelete(com['at']);
+		} else if (com['type']=="r"){
+			// replacement
+			var sel = com['selection'];
+			main.flatreplace(sel['from'],sel['to']-1, com['newTxt']);
+		} else {
+			console.log("Could not understand command:");
+			console.log(com);
 		}
-		console.log(main.flatten())
+		//console.log(main.flatten())
 	}
 
 	function pushchange(replacement) {

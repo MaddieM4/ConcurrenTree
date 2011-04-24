@@ -158,4 +158,10 @@ function CTree(value) {
 		trace = this.trace(pos);
 		return this.resolve(trace['address']).delete(trace['position']);
 	}
+
+	this.flatreplace = function(start, end, value) {
+		if (start>end) return undefined;
+		for (var i=end; i>=start; i--) this.flatdelete(i);
+		return this.flatinsert(start, value);
+	}
 }
