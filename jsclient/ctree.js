@@ -80,6 +80,7 @@ function CTree(value) {
 
 	this.delete = function(pos) {
 		this.deletions[pos] = true;
+		return this;
 	}
 
 	this.get = function(pos, hash) {
@@ -115,7 +116,7 @@ function CTree(value) {
 					return {'address':''+i+':'+c+'/'+r['address'], 'position':r['position']};
 				}
 			}
-			if (togo == 0) {
+			if (togo == 0 && !this.deletions[i]) {
 				return {'address':'', 'position':i};
 			}
 			if (i<this.value.length && !this.deletions[i]) {
@@ -146,5 +147,15 @@ function CTree(value) {
 			result.push(index);
 		}
 		return result;
+	}
+
+	this.flatinsert = function(pos, value) {
+		trace = this.trace(pos);
+		return this.resolve(trace['address']).insert(trace['position'], value);
+	}
+
+	this.flatdelete = function(pos) {
+		trace = this.trace(pos);
+		return this.resolve(trace['address']).delete(trace['position']);
 	}
 }

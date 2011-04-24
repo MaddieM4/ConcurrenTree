@@ -55,11 +55,13 @@ text display built in.
 	}
 
 	function readcommand(com) {
+		console.log(com['at']);
 		if (com['type']=="i") {
-			// insert
-			console.log(com['at']);
-			t = main.trace(com['at']);
-			main.resolve(t['address']).insert(t['position'], com['txt']);
+			// insert single character
+			main.flatinsert(com['at'], com['txt']);
+		} else if (com['type']=="d"){
+			// delete single character
+			main.flatdelete(com['at']);
 		}
 		console.log(main.flatten())
 	}
