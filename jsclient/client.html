@@ -5,6 +5,7 @@
 	<script src="jquery-1.4.2.min.js"></script>
 	<script src="textile-editor.min.js"></script>
 	<script src="ctree.js"></script>
+	<script src="chainer.js"></script>
 </head>
 
 <body>
@@ -20,12 +21,22 @@ JavaScript/HTML. We're using Textile, a canvas-based text
 editor, for its ability to intercept keystrokes - basically
 it already has all the generic requirements for a concurrent
 text display built in.
+
+<h4>To Do:</h4>
+<ul>
+	<li>Work out the protocol</li>
+	<li>Make a server</li>
+	<li>Write an exop processor</li>
+	<li><s>Write a better inop processor that chains commands.</s></li>
+</ul>
 </footer>
 
 <script>
 	ted = new Textile.Editor('editor');
 
-	main = new CTree(ted.model.content);
+	main = new Chainer(new CTree(ted.model.content));
+
+	setInterval(function(){main.apply()}, 1000);
 
 	hadfocus = undefined;
 	function lock() {
