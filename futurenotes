@@ -1,0 +1,122 @@
+--- Eras
+
+I think I figured out how to make eras work in a way that makes sense, doesn't
+require a ton of code rewrite, and completely obliterates any need for
+persistant operation hashes. It only took one simple constraint, although
+figuring out the details and repercussions from there took me awhile.
+
+First of all, arbitrary eras don't work. Eras as completely different trees
+that need all sorts of composure BS don't work either. But used in a different
+sense, as kind of "depth layers" of a root tree, how much history you hold can
+very quickly become flexible.
+
+I got the idea when I got a live-typing demo working in Javascript. I quickly
+ran into exactly the problem I'd been afraid of - a rich history of very tiny
+trees, very hard to compress. It finally hit me that most tree structures are
+going to be much deeper than they are wide. And then I thought, almost all the
+action happening to this tree is happening exclusively to the deep stuff. The
+more "root" a bit of text is, the less likely to be modified. The better for
+archiving/flattening!
+
+So here's how it works:
+
+Each era represents a set of CTree objects 16 deep (or some other arbitrary
+number that all clients know). The era's root node is a flattened version
+of all nodes "above" the era. Anything below the era is expressed in normal
+CTrees, and as long as we translate addresses according to some really simple
+rules (see below), we can apply any operation that doesn't require knowledge
+above the era line.
+
+But what if that happens? What if you have era 17 loaded, and someone sends
+an op that has an era 14 dependency? Quite simple, really. You queue the op,
+and send a request for eras 14-16. It will send you the flattened version of
+everything above E14, and all trees between E14 and E16 (including E16), which
+your parser then plugs your E17 trees into. This works because the CTree data
+structure is parent-ignorant (nodes only know their children, not their
+parents), so none of your E17 data has to be modified to plug it into higher-
+level nodes.
+
+This process also works in reverse, since the flattening process is pretty
+standardizable. Haven't used an upper era in awhile? Flatten it down to what
+you are actually gonna use. Memory usage can scale to your needs, instead of
+always requiring you to carry the full tree. Plus, you can cache old data to
+disk and retrieve it as if it was network data for lower latency.
+
+--- Protocol
+
+Figuring out eras has made a huge impact on being able to figure out a 
+protocol. Obviously all first drafts need refining, but we never really even
+had a first draft before. So here we go.
+
+-------------------------------------------------------------------------------
+Assumptions: you are connected to one or more peers at any time, and all are
+connected with a duplex pipe.
+-------------------------------------------------------------------------------
+
+Okay, so each data stream is a series of JSON objects called messages. Each
+message should be small, since JSON can't be easily parsed on incomplete
+objects. Small objects mean meaningful data can be read on a closer pace to the
+pace at which it's being written.
+
+A message should have a "type" property, which indicates the type of message
+and its schema.
+
+Message types:
+
+	select - select a docname for sending ops and requests
+	  * docname (string)
+
+	subscribe - request that operations on a given document be relayed
+	  * docname (string) - can be *, if you want to act as a full server
+
+	unsubscribe - tell server to stop sending ops and requests on a doc
+	  * docname (string) - can be *
+
+	get - request a series of eras
+	  * start (int) - optional, inclusive. Defaults to latest on server.
+	  * end (int) - optional, inclusive. Defaults to start.
+
+	op - an operation
+	  * instructions - An array of instructions
+	  * signature - optional, but unsigned ops may be rejected
+		* user - generally an email, up to you
+		* sig - the encrypted hash of the instructions string
+		* server - optional, can often be implied by user address
+
+	encr - encrypted message
+	   * message - string containing encrypted message
+	   * user
+	   * server - optional
+
+	----------objects----------v
+
+	instruction
+	   * type - insert, delete, or mark, as a string
+	   * address
+	   * pos - for delete, may be a 2-element array representing a range
+	   * value - insert and mark only. For mark, it's a marker object.
+
+	marker
+	   * type - "a/b" style
+	   * value
+
+Notes about security:
+
+Signing is simple enough. You encrypt the hash of an instruction string with
+your private key, provide enough information in the rest of the signature
+object for other people to be able to look up your public key, and you're good.
+There's a lot left up to the implementation here, but not so much as to make
+authorization an impossible task.
+
+Next, SSL. If speed is not an absolute obsession for you, you'll probably be
+plenty fine using SSL to encrypt between connected peers. However, those peers
+may not be trusted participants of every CTDoc they relay. They can only
+forward encrypted messages blindly. This means you can use untrustworthy peers
+(or at least, untrusted) to communicate with secure docs, using encrypted
+operations.
+
+There are still anonymity issues with this approach, though. You have to select
+a document with an unencrypted message so that the peer knows what document
+your cryptops apply to, you have to subscribe to them, etc. There probably are
+some simple solutions to this kind of thing, but my brain's a bit fried at the
+moment, so I'm having a bit of difficulty working it out.
