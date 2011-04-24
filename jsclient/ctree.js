@@ -126,6 +126,30 @@ function CTree(value) {
 		return {'address':'overflow', 'position':togo};
 	}
 
+	this.untrace = function(addr, pos) {
+		var resolved = this.resolve(addr);
+		if (resolved==undefined) return undefined;
+		return this._ut(resolved, pos)[0];
+	}
+
+	this._ut = function(targtree, pos) {
+		// return [amount, done]
+		var result = 0;
+		var iam = (this == targtree);
+		for (var i in this.children) {
+			if (iam && i==pos) {
+				return [result, true]
+			}
+			for (c in this.children[i]) {
+				var ut = this.children[i][c]._ut(targtree, pos);
+				result += ut[0];
+				if (ut[1]) return [result, true]
+			}
+			if (i < this.value.length && !this.deletions[i]) result += 1;
+		}
+		return [result, false];
+	}
+
 	this.resolve = function(addrstring) {
 		if (addrstring == "") return this;
 		parts = addrstring.split("/");

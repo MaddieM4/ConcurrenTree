@@ -15,6 +15,7 @@ function Chainer(tree) {
 
 	this.flatten = function() {this.apply(); return this.tree.flatten()}
 	this.trace = function(pos) {this.apply(); return this.tree.trace(pos)}
+	this.untrace = function(addr, pos) {this.apply(); return this.tree.untrace(addr, pos)}
 	this.resolve = function(addrstring) {this.apply(); return this.tree.resolve(addrstring)}
 	this.kidscan = function() {this.apply(); return this.tree.kidscan()}
 
