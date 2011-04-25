@@ -42,6 +42,13 @@ you are actually gonna use. Memory usage can scale to your needs, instead of
 always requiring you to carry the full tree. Plus, you can cache old data to
 disk and retrieve it as if it was network data for lower latency.
 
+As for addresses, there's a bit of tweaking, but nothing a little simple
+preprocessing can't handle. All addresses have a "shorthand" that collapses
+everything above that address' era. It works like this: "2@h>8:ab/0:23", where
+2 is the nearest era upward, h is the hash of the full address of the
+"connecting node" (last node in that era and in our node's full address), and
+the rest is a regular address that would be resolved by the connecting node.
+
 --- Protocol
 
 Figuring out eras has made a huge impact on being able to figure out a 
@@ -72,9 +79,18 @@ Message types:
 	unsubscribe - tell server to stop sending ops and requests on a doc
 	  * docname (string) - can be *
 
+	check - send an era hash to see if it matches the remote hash
+	  * era (int)
+	  * hash (string)
+
 	get - request a series of eras
 	  * start (int) - optional, inclusive. Defaults to latest on server.
 	  * end (int) - optional, inclusive. Defaults to start.
+
+	struct - response to 'get' - children can be figured out by addresses
+	  * address (string)
+	  * value (string)
+	  * deletions (int) - each deletion should be added in as 2^i
 
 	op - an operation
 	  * instructions - An array of instructions
@@ -85,8 +101,7 @@ Message types:
 
 	encr - encrypted message
 	   * message - string containing encrypted message
-	   * user
-	   * server - optional
+	   * user - used to figure out what key to decrypt with
 
 	----------objects----------v
 
@@ -99,6 +114,18 @@ Message types:
 	marker
 	   * type - "a/b" style
 	   * value
+
+This is the BCP, or "Basic ConcurrenTree Protocol", which can be used as a
+standardized language for exchanging CTree data in arbitrary situations. As
+opposed to the ECP (E for extended), which is a more specific protocol for
+which one would make clients. ECP is a superset of BCP, and fully backwards-
+compatible, but has more defined security tools and such. BCP is for when you
+want to use ConcurrenTree technology in your own software, but not the global
+CTree server network, or when you need to add your own proprietary message set
+extensions. ECP is basically one of these, a distinct implementation built upon
+BCP. ECP is still just kind of a dim idea, though, I'll be doing a lot of
+security and encryption research in order to figure out what ECP needs to have.
+Any input you have would be helpful.
 
 Notes about security:
 
@@ -120,3 +147,22 @@ a document with an unencrypted message so that the peer knows what document
 your cryptops apply to, you have to subscribe to them, etc. There probably are
 some simple solutions to this kind of thing, but my brain's a bit fried at the
 moment, so I'm having a bit of difficulty working it out.
+
+What I'm thinking is having "virtual peers" that you communicate with through
+regular peers. You don't know the IP address of the virtual peer, it doesn't
+know yours, but you get a persistant connection all the same which none of the
+peers in between can read.
+
+--- Encrypted Documents
+
+Gonna try to collect my thoughts here on this one. Obviously, there are gonna
+be situations where you want your conversations to be private. Wave does this
+by default, and it shouldn't be terribly hard to figure out for our purposes.
+
+First of all, we want to officialize participants. A participant can be anon,
+but it still has a specific login token. Tokens should be revokable, but we
+should use the timestamp of the revocation to decide whether operations made
+the cut or not, instead of subsequently rejecting all ops with that token,
+which can lead to inconsistencies due to network latency.
+
+So, tokens, encryption, stuff. Where do we go with it?
