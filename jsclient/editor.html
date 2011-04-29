@@ -53,34 +53,50 @@ Integer id eros lacus, in hendrerit neque. Morbi in nisi turpis, quis dictum dia
 
 var key = {
     onKeyEvent: function (obj, el) {
-        //console.log(obj);
+        console.log(['onKeyEvent', JSON.stringify(obj)]);
         },
-        
+    fauxKeyPressMap: {
+        8: 'backspace',
+        9: 'tab',
+        27: 'escape',
+        33: 'pageup',
+        34: 'pagedown',
+        35: 'end',
+        36: 'home',
+        37: 'left',
+        38: 'up',
+        39: 'right',
+        40: 'down',
+        46: 'delete',
+        },
     modifierMap: {
-        16: 'shift',
+        //Capitalisation is done by the browser automagically
+
+        //16: 'shift',
         17: 'control',
         18: 'alt',
-        20: 'capslock',
+        //20: 'capslock',
+
         224: 'meta'
         },
     currentModifiers: {
-        'shift': false,
+        //'shift': false,
         'control': false,
         'alt': false,
-        'capslock': false,
+        //'capslock': false,
         'meta': false,
         },
-    getKeyBundle: function (character) {
+    getKeyBundle: function (obj) {
         cM = key.currentModifiers;
-        return {
-            capital: key.isCapital(),
+        return $.extend({
+            //capital: key.isCapital(),
             control: cM.control,
             alt: cM.alt,
             meta: cM.meta,
-            character: character
-            }
+            character: "",
+            }, obj)
         },
-    isCapital: function () {
+    /*isCapital: function () {
         if (key.currentModifiers.capslock) {
             if (key.currentModifiers.shift) {
                 // Capslock + Shift = uncapitalised
@@ -101,22 +117,24 @@ var key = {
                 return false
                 }
             }
-        },
+        },*/
     // keypress is used for letter entry, while keydown and keyup
     // are used for functional keys (shift, delete etc.)
     keyDownHandler: function (event) {
         if (key.modifierMap.hasOwnProperty(event.keyCode)) {
             var modifier = key.modifierMap[event.keyCode];
             if (modifier==='capslock') {
-                
                 key.currentModifiers[modifier] = !key.currentModifiers[modifier];
                 }
             else {
                 key.currentModifiers[modifier] = true;
                 }
             }
+        else if (key.fauxKeyPressMap.hasOwnProperty(event.keyCode)) {
+            key.onKeyEvent(key.getKeyBundle({key:key.fauxKeyPressMap[event.keyCode]}), this);
+            }
         //console.log(key.currentModifiers);
-        console.log(key.getKeyBundle(String.fromCharCode(event.charCode)));
+        console.log(['KeyDown',event.charCode,String.fromCharCode(event.charCode),event.keyCode,key.getKeyBundle({character:String.fromCharCode(event.charCode)})]);
         },
     keyUpHandler: function (event) {
         if (key.modifierMap.hasOwnProperty(event.keyCode)) {
@@ -129,12 +147,12 @@ var key = {
                 }
             }
         //console.log(key.currentModifiers);
-        console.log(key.getKeyBundle(String.fromCharCode(event.charCode)));
+        console.log(['KeyUp', event.charCode,String.fromCharCode(event.charCode),event.keyCode,key.getKeyBundle({character:String.fromCharCode(event.charCode)})]);
         },
     keyPressHandler: function (event) {
         if (event.charCode) {            
-            console.log(key.getKeyBundle(String.fromCharCode(event.charCode)));
-            key.onKeyEvent(key.getKeyBundle(String.fromCharCode(event.charCode)), this);
+            console.log(['KeyPress', event.charCode,String.fromCharCode(event.charCode),event.keyCode,key.getKeyBundle({character:String.fromCharCode(event.charCode)})]);
+            key.onKeyEvent(key.getKeyBundle(String.fromCharCode({character:event.charCode})), this);
             return
             }
         //console.log(key.currentModifiers);
