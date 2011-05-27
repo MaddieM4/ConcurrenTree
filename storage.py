@@ -1,7 +1,7 @@
 import os.path
 import simplejson as json
 
-import tree
+from tree import Tree
 from encryption import LocalStorageCipher
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
@@ -24,7 +24,7 @@ class Storage(object):
             return self._cache[x]
         elif os.path.exists(os.path.join(STORAGE_DIR, x)):
             with open(os.path.join(STORAGE_DIR, x), 'r') as f:
-                tree = tree.Tree(
+                tree = Tree(
                     json.loads(
                         LocalStorageCipher.decrypt(
                             f.read()
