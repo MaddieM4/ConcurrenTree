@@ -1,3 +1,11 @@
+Contents
+    About
+    Dependencies
+
+
+-----
+About
+-----
 ConcurrenTree is a concurrency solution that does the heavy lifting for you.
 It was originally called OT+, but has diverged so much from OT that the name
 was beginning to be deceptive.
@@ -33,3 +41,9 @@ for ConcurrenTree includes operation signing but leaves the majority of auth
 to the larger project implementing CTree to do stuff. CTree is not so much its
 own thing, as it is something that's embedded in other projects as a simple
 backend that handles all your network concurrency.
+
+------------
+Dependencies
+------------
+python
+pycrypto (2.3): https://www.dlitz.net/software/pycrypto/
