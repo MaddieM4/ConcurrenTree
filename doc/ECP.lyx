@@ -1,0 +1,306 @@
+#LyX 1.6.7 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+ECP - A Protocol for P2P CTree Clouds
+\end_layout
+
+\begin_layout Author
+By Philip Horger
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part
+Introduction
+\end_layout
+
+\begin_layout Standard
+ECP in its modern sense was 
+\begin_inset Quotes eld
+\end_inset
+
+invented
+\begin_inset Quotes erd
+\end_inset
+
+ fairly recently, but it's been in the works for a long time, with a lot
+ of research dead ends.
+ This has led to a lot of misinformation, stale information, etc.
+ That's what this introduction intends to help clear up.
+ It does not cover what BCP is, or CTree, or what either is used for.
+ Those resources exist elsewhere publicly, so we're assuming that if you're
+ reading this, you're already familiar with them, or you're familiar with
+ Google.
+\end_layout
+
+\begin_layout Standard
+The most notable dead end of the whole thing was that ECP was going to be
+ an extension of the BCP message set.
+ In fact, that's where the name comes from: Extended CTree Protocol (as
+ opposed to Basic CTree Protocol).
+ It was intended to add topology management, routing, authentication, and
+ other such niceties to BCP, by adding a few more message types.
+ We were so sure about this part of it...
+ well, we told everybody that's how it was gonna work.
+ 
+\emph on
+Everybody.
+\end_layout
+
+\begin_layout Standard
+Modern ECP is very fundamentally different from this.
+ It's a document standard that sits on top of a generalized DHT model.
+ Plug in whatever DHT tech you want underneath it - Kademlia, Chord, Pastry...
+ any tech where keys can be arbitrarily chosen (not a hash of the value,
+ for example) can be used.
+ Live connections are handled with direct P2P BCP over TCP connections.
+\end_layout
+
+\begin_layout Standard
+As well, there are some optional parts on top that you can use to encourage
+ 
+\begin_inset Quotes eld
+\end_inset
+
+good behavior
+\begin_inset Quotes erd
+\end_inset
+
+ in the DHT network.
+ You are highly encouraged to use memristor limiting, which is a network-wide
+ option.
+ Viral survival should in theory be a very powerful data replication algorithm
+ in concert with memristor limiting, which is a client-level option.
+\end_layout
+
+\begin_layout Part
+Terminology
+\end_layout
+
+\begin_layout Section
+Object
+\end_layout
+
+\begin_layout Subsection
+In general
+\end_layout
+
+\begin_layout Standard
+An object has 4 properties: key, name, typecode, and value.
+ It represents a single entity in the DHT.
+ The key is always the typecode plus the SHA512 hash of the name.
+ The only variable that can change is the value.
+\end_layout
+
+\begin_layout Standard
+All objects are meant to be preprocessed by PGP.
+ They might take advantage of this, they might not.
+\end_layout
+
+\begin_layout Standard
+The primary thing that ECP does is standardize the contents of these objects
+ according to object type.
+ This in some cases includes restrictions or requirements for certain PGP
+ features, like signing or encryption.
+\end_layout
+
+\begin_layout Subsection
+Structure
+\end_layout
+
+\begin_layout Standard
+A document is, generally, preceded by a 
+\begin_inset Quotes eld
+\end_inset
+
+permission
+\begin_inset Quotes erd
+\end_inset
+
+ header based on the document name, with a delicious PGP center.
+\end_layout
+
+\begin_layout Section
+DHT
+\end_layout
+
+\begin_layout Standard
+Distributed hash tables are a general category of swarm-based storage that,
+ with a little abstraction, allows you to treat the sum total of all client
+ hosting as a single, queryable database.
+ Popular ones often come with APIs and libraries for a variety of languages.
+\end_layout
+
+\begin_layout Standard
+ECP doesn't dictate what DHT algorithm or library you use, just what you
+ store on it.
+ But you do need to consider the following:
+\end_layout
+
+\begin_layout Enumerate
+Arbitrary keys.
+ Any DHT that doesn't let you set arbitrary keys for your values (such as
+ the Content-Addressable Network) simply aren't compatible with ECP at all.
+\end_layout
+
+\begin_layout Enumerate
+The ability to throttle, drop, and monitor bandwidth for a connection.
+ This is not a strictly necessary feature for basic ECP, but are the minimum
+ requirements for the optional feature 
+\begin_inset Quotes eld
+\end_inset
+
+memristor routing,
+\begin_inset Quotes erd
+\end_inset
+
+ which provides resillience against 
+\begin_inset Quotes eld
+\end_inset
+
+spammy
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+leechy
+\begin_inset Quotes erd
+\end_inset
+
+ nodes - superbly useful if you're expecting DoS or DDoS attacks on your
+ network.
+\end_layout
+
+\begin_layout Enumerate
+Peer queryability.
+ For DHTs that do not make much in the way of guaranteed robustness, a less-agre
+ssive, memristor-aware variation of viral survival can make documents less
+ susceptible to deletion through unpopularity.
+ This lets you use other metrics (such as paying for hosting with hosting).
+ It does require that your network allows you to query your peers for whether
+ they contain a given object, or determine that algorithmically, so that
+ all objects can be backed up/hosted on at least 
+\emph on
+n
+\emph default
+ machines.
+\end_layout
+
+\begin_layout Section
+MEL
+\end_layout
+
+\begin_layout Standard
+An MEL, or multiple-encryption list, is a way to restrict a small piece
+ of information to a list of participants based on their public keys.
+\end_layout
+
+\begin_layout Standard
+The source text (information to be encrypted) along with a magic string
+ is encrypted with each public key individually.
+ Given the whole list, any user with the correct private key can find the
+ decrypted source text by using their key to decrypt each line indidually
+ and searching for the magic string as a substring.
+\end_layout
+
+\begin_layout Standard
+Since it's not hard to do the equivalent of find-and-replace on the correct
+ answer, there's no reason the magic string can't be at any arbitrary position.
+ This means we can increase security by using a different random substring
+ position for every line when we encode, which increases the security of
+ the other participants if anyone's private key is cracked.
+\end_layout
+
+\begin_layout Part
+Object Type Standards
+\end_layout
+
+\begin_layout Description
+Auth: an object that stores the symmetric keys of documents in a key:value
+ (or really, name:value) type of format.
+ It is encrypted with its own symmetric key, signatures optional.
+ Typecode 0001.
+\end_layout
+
+\begin_layout Description
+AuthRoute: an MEL of the symmetric key of an Auth, encoded in the keys of
+ all the people with access to those documents.
+ Must not be encrypted or signed with PGP.
+ Has the same name as the Auth it allows access to (so the only difference
+ between keys is the typecode).
+ Typecode 0000.
+\end_layout
+
+\begin_layout Description
+DocMeta: a JSON object that stores metadata information about a document.
+ This includes participant information, live node locations, and other informati
+on.
+ The structure is still under development at the time of this writing.
+ Shares the same name as the document it describes, is encrypted with the
+ document's symmetric key.
+ Typecode 0010.
+\end_layout
+
+\begin_layout Description
+DocSegment: a JSON-serialized CTree layer.
+ Uses the document's symmetric key for encryption.
+ Typecode 0011.
+\end_layout
+
+\begin_layout Description
+NameValidation: the public key associated with a name.
+ This allows storage nodes to validate and version-compare DHT insertions.
+ Its self-validation mechanism is yet to be determined.
+\end_layout
+
+\end_body
+\end_document
