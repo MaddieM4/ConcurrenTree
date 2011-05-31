@@ -1,0 +1,1710 @@
+#LyX 1.6.7 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+BCP Message Set
+\end_layout
+
+\begin_layout Paragraph
+This document is a continuous process of flux and being fleshed out.
+ Direct any questions or complaints to Philip Horger at campadrenalin@gmail.com.
+\end_layout
+
+\begin_layout Part
+Transfer of live data
+\end_layout
+
+\begin_layout Section
+select
+\end_layout
+
+\begin_layout Standard
+Until next 
+\begin_inset Quotes eld
+\end_inset
+
+select
+\begin_inset Quotes erd
+\end_inset
+
+ message, all document-specific messages will apply to the given docname.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+select
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+docname
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+op
+\end_layout
+
+\begin_layout Standard
+An operation, consisting of a list of instructions.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+op
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+instructions
+\begin_inset Quotes erd
+\end_inset
+
+:[ ...
+ ]}
+\end_layout
+
+\begin_layout Section
+ad
+\end_layout
+
+\begin_layout Standard
+A message that tells other clients that it has an operation ready to read.
+ This is more time- and bandwidth-efficient than broadcasting an op to machines
+ that likely already have it.
+ For this reason, clients 
+\emph on
+should
+\emph default
+ straight-broadcast ops that originate from them, and advertise ops from
+ other sources.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+ad
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+hash
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+89a7344
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Part
+Syncronization/Merging
+\end_layout
+
+\begin_layout Section
+check
+\end_layout
+
+\begin_layout Standard
+Request for hashes of eras of the currently selected tree.
+ The 
+\begin_inset Quotes eld
+\end_inset
+
+eras
+\begin_inset Quotes erd
+\end_inset
+
+ property should be an array of ints and/or strings.
+ Strings denote ranges, possibly including X, which represents the current
+ top era.
+ Strings that do not follow the /[0-9xX]?-[0-9xX]?/ should be rejected and
+ invalidate the message and trigger an error.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+check
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+eras
+\begin_inset Quotes erd
+\end_inset
+
+:[1,3,5,
+\begin_inset Quotes erd
+\end_inset
+
+9-11
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+13-X
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Section
+thash
+\end_layout
+
+\begin_layout Standard
+\begin_inset Quotes eld
+\end_inset
+
+Tree hash,
+\begin_inset Quotes erd
+\end_inset
+
+ the response to 
+\begin_inset Quotes eld
+\end_inset
+
+check
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+eras
+\begin_inset Quotes erd
+\end_inset
+
+ will always be a dictionary with era numbers (integers) for keys and string
+ hashes for values.
+ Any ranges will be expanded by the server into individual era numbers.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+thash
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+eras
+\begin_inset Quotes erd
+\end_inset
+
+:{1:
+\begin_inset Quotes erd
+\end_inset
+
+7a844263
+\begin_inset Quotes erd
+\end_inset
+
+...}}
+\end_layout
+
+\begin_layout Section
+get
+\end_layout
+
+\begin_layout Standard
+A request for one or more 
+\begin_inset Quotes eld
+\end_inset
+
+era
+\begin_inset Quotes erd
+\end_inset
+
+ responses.
+ This can either be a 
+\begin_inset Quotes eld
+\end_inset
+
+flat
+\begin_inset Quotes erd
+\end_inset
+
+ or a 
+\begin_inset Quotes eld
+\end_inset
+
+tree
+\begin_inset Quotes erd
+\end_inset
+
+, denoting whether to send the flattened result of all previous eras, or
+ send the actual eras themselves.
+ If the property 
+\begin_inset Quotes eld
+\end_inset
+
+flat
+\begin_inset Quotes erd
+\end_inset
+
+ is used, it must be an int.
+ If the property 
+\begin_inset Quotes eld
+\end_inset
+
+tree
+\begin_inset Quotes erd
+\end_inset
+
+ is used, it's in the same format as the 
+\begin_inset Quotes eld
+\end_inset
+
+eras
+\begin_inset Quotes erd
+\end_inset
+
+ property for the 
+\begin_inset Quotes eld
+\end_inset
+
+check
+\begin_inset Quotes erd
+\end_inset
+
+ message.
+ Both can be used in the same message.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+get
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+flat
+\begin_inset Quotes erd
+\end_inset
+
+:5}
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+get
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+tree
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\begin_inset Quotes eld
+\end_inset
+
+9-X
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Quote
+// or, as a single message
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+get
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+flat
+\begin_inset Quotes erd
+\end_inset
+
+:5,
+\begin_inset Quotes eld
+\end_inset
+
+tree
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\begin_inset Quotes eld
+\end_inset
+
+9-X
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Section
+era
+\end_layout
+
+\begin_layout Standard
+A concisely-constructed representation of an era.
+ While this 
+\emph on
+can
+\emph default
+ be expressed as an operation, this would be fairly bulky compared to a
+ purely structural view.
+ It's a right-tool-for-the-right-job situation.
+ Ops modify, eras declare.
+\end_layout
+
+\begin_layout Standard
+While a 
+\begin_inset Quotes eld
+\end_inset
+
+get
+\begin_inset Quotes erd
+\end_inset
+
+ can request a lot of stuff at once, each 
+\begin_inset Quotes eld
+\end_inset
+
+era
+\begin_inset Quotes erd
+\end_inset
+
+ response can only send one thing at a time.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+era
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+flat
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+layer
+\begin_inset Quotes erd
+\end_inset
+
+:5,
+\begin_inset Quotes erd
+\end_inset
+
+objects
+\begin_inset Quotes erd
+\end_inset
+
+:{...}}
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+era
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+tree
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes erd
+\end_inset
+
+layer
+\begin_inset Quotes erd
+\end_inset
+
+:9,
+\begin_inset Quotes erd
+\end_inset
+
+objects
+\begin_inset Quotes erd
+\end_inset
+
+:{...}}
+\end_layout
+
+\begin_layout Part
+Notifications
+\end_layout
+
+\begin_layout Standard
+There is a bit of functional overlap between this and Part I (live transfer).
+ Just remember that you still have to subscribe to a document for other
+ machines to send live updates of any kind to you.
+\end_layout
+
+\begin_layout Section
+subscribe
+\end_layout
+
+\begin_layout Standard
+There are different levels of subscription: 
+\emph on
+live
+\emph default
+, 
+\emph on
+notify
+\emph default
+, and 
+\emph on
+marked
+\emph default
+.
+ A document can only be subscribed as one at a time, so subscribing to something
+ twice will put it in whatever level was used the second time, overwriting
+ the level of the previous subscription.
+\end_layout
+
+\begin_layout Description
+live means that the remote end will send operations (or ads) as soon as
+ they happen.
+\end_layout
+
+\begin_layout Description
+notify means that only ads will be sent.
+\end_layout
+
+\begin_layout Description
+marked subscriptions use a read/unread model, which will be covered in more
+ detail later.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+live
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+docnames
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\begin_inset Quotes eld
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Section
+unsubscribe
+\end_layout
+
+\begin_layout Standard
+Disable any subscription on the given docnames.
+ 
+\emph on
+Warning: sending an empty list will disable all subscriptions from the remote
+ end to you, so never send this if you don't mean it!
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+unsubscribe
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+docnames
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\begin_inset Quotes eld
+\end_inset
+
+The Event
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+Smallville
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+unsubscribe
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+docnames
+\begin_inset Quotes erd
+\end_inset
+
+:[]} // unsubscribes you from everything
+\end_layout
+
+\begin_layout Section
+getunread
+\end_layout
+
+\begin_layout Standard
+Requests a list of 
+\begin_inset Quotes eld
+\end_inset
+
+unread
+\begin_inset Quotes erd
+\end_inset
+
+ documents.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+getunread
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+unread
+\end_layout
+
+\begin_layout Standard
+A list of documents the server thinks you haven't read, as a dictionary
+ where keys are docnames and values are hashes.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+unread
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+documents
+\begin_inset Quotes erd
+\end_inset
+
+:{
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+4ccdf83e
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+Casablanca
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+764ea8c1
+\begin_inset Quotes erd
+\end_inset
+
+}}
+\end_layout
+
+\begin_layout Section
+read
+\end_layout
+
+\begin_layout Standard
+Mark a document as read.
+ Assumes the current hash if none is given.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+read
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+documents
+\begin_inset Quotes erd
+\end_inset
+
+:{
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+4ccdf83e
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+Casablanca
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Part
+Authorization
+\end_layout
+
+\begin_layout Section
+login
+\end_layout
+
+\begin_layout Standard
+The BCP authorization system uses, for the most part, the private/public
+ key model.
+ The login message is provided as an alternative for more traditional username/p
+assword scenarios.
+\end_layout
+
+\begin_layout Standard
+The response to a correct login is an authok with no 
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+ property.
+ Incorrect logins should trigger an error.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+login
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes erd
+\end_inset
+
+username
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+philip
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes erd
+\end_inset
+
+password
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+bukket
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+auth
+\end_layout
+
+\begin_layout Standard
+A request for an MEL of a random string.
+ A live BCP node can only authorize for documents it's a part of/knows the
+ participants of.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+auth
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+docname
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+authmel
+\end_layout
+
+\begin_layout Standard
+The response to an auth request.
+ It's a random string encoded into an MEL (multiply-encoded list, where
+ each element is the plaintext data encoded in a different participant's
+ public key).
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+authmel
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes erd
+\end_inset
+
+docname
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+mel
+\begin_inset Quotes erd
+\end_inset
+
+:[ ...
+ ]}
+\end_layout
+
+\begin_layout Section
+authmd
+\end_layout
+
+\begin_layout Standard
+Response to authmel.
+ It's a list of decrypted strings, one of which hopefully will match the
+ random string.
+ It stands for Authorization MEL Decrypted.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+authmd
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes erd
+\end_inset
+
+docname
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+mel
+\begin_inset Quotes erd
+\end_inset
+
+:[ ...
+ ]}
+\end_layout
+
+\begin_layout Section
+authok
+\end_layout
+
+\begin_layout Standard
+The final part of the auth dance.
+ The server sends the client the symmetric key of the document.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+authok
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+docname
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+...
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Part
+Meta
+\end_layout
+
+\begin_layout Standard
+Messages that contain messages.
+ Well, except for 
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+, but it still seemed like the right place to put that one, so hush.
+\end_layout
+
+\begin_layout Section
+part
+\end_layout
+
+\begin_layout Standard
+In order to keep large messages from hanging a connection interminably,
+ BCP enforces a very strict character limit: 2048 characters per message.
+ This is more than enough for most messages, but for larger messages, it's
+ the grim reaper.
+\end_layout
+
+\begin_layout Standard
+Multipart messages are a simple way to send large messages without clogging
+ the pipe or hitting the character limit.
+ The example below is a segment of a large segmented message.
+ The contained message is treated like a big string and will be evaluated
+ as soon as a piece is sent with the property done set to true (this can
+ be ommitted in any non-final piece).
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+part
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+hash
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+ac44f385
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+contents
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+...
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+encrypted
+\end_layout
+
+\begin_layout Standard
+Ideally, you should run a BCP stream inside an encrypted connection (preferably
+ point-to-point), instead of running encrypted messages over an unencrypted
+ channel.
+ Sometimes, though, that's not an option, and we want to make a standard
+ mechanism for encryption in those use cases.
+\end_layout
+
+\begin_layout Standard
+When there is a key for each end, the sender always encrypts with their
+ private key first, then with the recipient's public key (the recipient
+ decrypts this in reverse order).
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+encrypted
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes erd
+\end_inset
+
+hash
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+0b00411f
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+contents
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+...
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+key
+\end_layout
+
+\begin_layout Standard
+You probably noticed that there was no key exchange in the 
+\begin_inset Quotes eld
+\end_inset
+
+encrypted
+\begin_inset Quotes erd
+\end_inset
+
+ message.
+ That's because we do that with 
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+ messages, which work a bit like 
+\begin_inset Quotes eld
+\end_inset
+
+select
+\begin_inset Quotes erd
+\end_inset
+
+ messages.
+ Key messages exchange public keys between ends of a connection, and are
+ also used to acknowledge that a key has been recieved.
+ A key can be set to a string or to null.
+\end_layout
+
+\begin_layout Standard
+Encryption should not be used on a key until it has been acknowledged.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+mine
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+...
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+yours
+\begin_inset Quotes erd
+\end_inset
+
+:null}
+\end_layout
+
+\begin_layout Part
+Objects
+\end_layout
+
+\begin_layout Section
+Instruction
+\end_layout
+
+\begin_layout Standard
+Instructions are one of the integral pieces of ConcurrenTree technology.
+ 
+\emph on
+TODO: fill this section in later using Wave as a reference.
+\end_layout
+
+\begin_layout Section
+Tree
+\end_layout
+
+\begin_layout Standard
+Used in 
+\begin_inset Quotes eld
+\end_inset
+
+era
+\begin_inset Quotes erd
+\end_inset
+
+ messages, tree structures use both direct containment in the data structure
+ and references to objects outside them (simply use an array of child hashes
+ rather than a dictionary matching hashes to values).
+ It's used to describe flats as well, which pack rather succinctly in this
+ structure.
+\end_layout
+
+\begin_layout Quote
+{
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes erd
+\end_inset
+
+2/39e2125b
+\begin_inset Quotes erd
+\end_inset
+
+:{
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+text
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+labama
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+deletions
+\begin_inset Quotes erd
+\end_inset
+
+:[0,5,6,7],
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes erd
+\end_inset
+
+children
+\begin_inset Quotes erd
+\end_inset
+
+:{4:{
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+5821ce93
+\begin_inset Quotes erd
+\end_inset
+
+:{ ...
+ }
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+93bef739
+\begin_inset Quotes erd
+\end_inset
+
+:{ ...
+ }
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}},
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+markers
+\begin_inset Quotes erd
+\end_inset
+
+:{1:{
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+style/italic
+\begin_inset Quotes erd
+\end_inset
+
+:true;
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}}
+\end_layout
+
+\begin_layout Quote
+}
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Part
+Errors
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+TODO: fill this section in later using Wave as a reference.
+\end_layout
+
+\end_body
+\end_document
