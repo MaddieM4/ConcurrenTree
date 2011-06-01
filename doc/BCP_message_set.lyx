@@ -1294,6 +1294,258 @@ key
 }
 \end_layout
 
+\begin_layout Section
+lookup
+\end_layout
+
+\begin_layout Standard
+Look up metadata about something, found by an identifier.
+ The identifier will vary in type and format based on how you're using BCP,
+ it can be whatever you want as long as you're consistent.
+ In ECP, for example, we use a public key for finding people.
+ Example subtypes are 
+\emph on
+person
+\emph default
+ and 
+\emph on
+document.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+lookup
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+person
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset Quotes erd
+\end_inset
+
+id
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+philip.horger
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+metadata
+\end_layout
+
+\begin_layout Standard
+The response to 
+\begin_inset Quotes eld
+\end_inset
+
+lookup
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The only defined properties are 
+\begin_inset Quotes eld
+\end_inset
+
+id
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+name
+\begin_inset Quotes erd
+\end_inset
+
+, the latter of which can be either a string or a dictionary (for things
+ like last name, first name, and username).
+ It's really open-ended for a reason - you can use it for anything you want.
+ Obviously you have to be self-consistent, though!
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+metadata
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+id
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+philip.horger
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+name
+\begin_inset Quotes erd
+\end_inset
+
+:{
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+first
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+Philip
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+last
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+Horger
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+nick
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+Philip
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}, 
+\begin_inset Quotes eld
+\end_inset
+
+avatar
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+http://example.com/avatar.gif
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+hobby
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+Collecting decapitated teddy bears
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Quote
+}
+\end_layout
+
 \begin_layout Part
 Meta
 \end_layout
