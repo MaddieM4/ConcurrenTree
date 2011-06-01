@@ -41,7 +41,7 @@
 \begin_body
 
 \begin_layout Title
-BCP/ConcurrenTree Theory
+BCP/ConcurrenTree Basics
 \end_layout
 
 \begin_layout Paragraph
@@ -278,7 +278,7 @@ But no worries if it's got overlap with stuff you've already applied to
 \end_layout
 
 \begin_layout Section
-Eras and Shorthand Addresses
+Eras
 \end_layout
 
 \begin_layout Standard
@@ -306,6 +306,342 @@ Yeah, that look of horror and the memory usage panics running through your
 
 \begin_layout Standard
 Well, the good news is that we fixed it.
+ The bad news is that the fix is one of the more difficult concepts in Concurren
+Tree.
+ It's called an 
+\begin_inset Quotes eld
+\end_inset
+
+era.
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Every tree heirarchy can be thought of as being in layers.
+ Let's use directories as an example.
+ 
+\emph on
+/
+\emph default
+ is at layer 0, 
+\emph on
+/dev
+\emph default
+ and 
+\emph on
+/bin
+\emph default
+ are on layer 2, and 
+\emph on
+/var/lib/alsa
+\emph default
+ is on the same layer as 
+\emph on
+/home/philip/documents
+\emph default
+ even though they're distantly diverged in the tree.
+\end_layout
+
+\begin_layout Standard
+In the same way, you can think of CTree documents as having layers (although
+ unlike our directory example, layer zero can have as many nodes as you
+ want, there is no top-level node).
+ For every 16 layers
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Why 16? Well, it was an arbitrary decision.
+ We decided it was a nice power of two about the right size for it.
+ Theoretically, we could use any era size, but then you wouldn't have the
+ nice symmetry with hexadecimal numbers (for example, era 0 starts at 00,
+ era 1 starts at 10, era 2 at 20, and so on).
+\end_layout
+
+\end_inset
+
+ in a document, there's an era.
+ Layer 15 is the last layer in era 0, layer 16 is the first in era 1.
+ Or, if you like hexadecimal, layer 0F is the last layer in era 0, and layer
+ 10 is the first in era 1.
+\end_layout
+
+\begin_layout Standard
+So, we've organized our layers into bigger segments, but we haven't solved
+ any memory crises quite yet.
+ But we're getting there.
+ You see, at each era border, we can collapse all previous eras into a single
+ 
+\begin_inset Quotes eld
+\end_inset
+
+virtual node
+\begin_inset Quotes erd
+\end_inset
+
+ called a flat, allowing us to treat unlimited structural data like a single
+ node.
+\end_layout
+
+\begin_layout Standard
+This voodoo is accomplished with more or less the same algorithms used to
+ convert a tree into a resultant string.
+ This lets us scale 
+\emph on
+down
+\emph default
+ our memory usage.
+ We can also scale it back 
+\emph on
+up
+\emph default
+ as needed if we get an operation that operates on nodes above our copy's
+ flatline, by requesting that information from the hard drive cache or the
+ web.
+ Era algorithms let us plug in higher eras to our stack and move the flatline
+ in either direction at will.
+\end_layout
+
+\begin_layout Section
+Shorthand Addresses
+\end_layout
+
+\begin_layout Standard
+So now that you understand eras (or at least enough to nod your head and
+ pretend you do), you can now understand shorthand addresses.
+\end_layout
+
+\begin_layout Standard
+On deep trees (let's say, 80 layers deep), absolute addresses are just gonna
+ be unmanageably large.
+ With about 12 characters per layer minimum...
+ that's 96 characters.
+ Not so bad on its own, but addresses are used everywhere, and that's a
+ lot of overhead, and it's assuming fairly short hashes.
+\end_layout
+
+\begin_layout Standard
+The answer to this is a special type of address that lets us shortcut to
+ certain nodes - say, any node on the first layer of any era.
+ It's not too complicated to do this.
+\end_layout
+
+\begin_layout Standard
+The shortcut format is 
+\begin_inset Quotes eld
+\end_inset
+
+#738bbe95
+\begin_inset Quotes erd
+\end_inset
+
+, where the number is the hash of it's shortcut address from the next shortcut
+ up the tree.
+ For era 1 shortcuts, this is just their absolute address, for era 2 it's
+ the shortcut from their era 1 ancestor, etc.
+ From there you can add on normal 
+\begin_inset Quotes eld
+\end_inset
+
+/index:hash
+\begin_inset Quotes erd
+\end_inset
+
+ segments to move further down the tree.
+\end_layout
+
+\begin_layout Standard
+This is a little more complicated than always using the absolute address,
+ but it allows for gradual 
+\begin_inset Quotes eld
+\end_inset
+
+forgetting
+\begin_inset Quotes erd
+\end_inset
+
+ of ancient eras.
+\end_layout
+
+\begin_layout Part
+Algorithms
+\end_layout
+
+\begin_layout Standard
+The ConcurrenTree model is designed so that you can figure out algorithms
+ from scratch correctly without a reference, but it's still useful to have
+ some examples, especially for stuff like markers.
+ These algorithms to not do any sanity or validity checking, for the sake
+ of simplicity, so while they may be easier to read than the source code
+ in the repository, they're also a bit brittle, and for educational purposes
+ only.
+\end_layout
+
+\begin_layout Section
+find
+\end_layout
+
+\begin_layout Standard
+This resolves an address to a node object in memory using recursion.
+ It's the foundation of other document-level algorithms.
+\end_layout
+
+\begin_layout Quote
+tree::resolve(string address) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+// isolate top-level piece
+\end_layout
+
+\begin_layout Quote
+string top = everything to the left of the first 
+\begin_inset Quotes eld
+\end_inset
+
+/
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Quote
+address = everything after it
+\end_layout
+
+\begin_layout Quote
+tree next;
+\end_layout
+
+\begin_layout Quote
+if top[0] == 
+\begin_inset Quotes eld
+\end_inset
+
+#
+\begin_inset Quotes erd
+\end_inset
+
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+// shortcut address
+\end_layout
+
+\begin_layout Quote
+next = document.shortcuts[top];
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+} else {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+int index = top.split(
+\begin_inset Quotes eld
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+)[0]
+\end_layout
+
+\begin_layout Quote
+string child = top.split(
+\begin_inset Quotes eld
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+)[1]
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Section
+trace
+\end_layout
+
+\begin_layout Standard
+The trace algorithm takes a position in a resultant string and converts
+ it into an (address, index) pair representing an index position in a specific
+ node.
+ This allows you to do all your other operations in result-space, for example,
+ inserting text to a position in the displayed resultant text.
+\end_layout
+
+\begin_layout Standard
+While it's one of the most fundamentally useful algorithms, it's also one
+ of the most complicated.
+\end_layout
+
+\begin_layout Part
+BCP Basics
+\end_layout
+
+\begin_layout Standard
+Basic ConcurrenTree Protocol is a protocol specification for transferring
+ and syncronizing CTree documents.
+ The syntax is not too hard to learn - it's just a bidirectional stream
+ of JSON objects called 
+\begin_inset Quotes eld
+\end_inset
+
+messages.
+\begin_inset Quotes erd
+\end_inset
+
+ Each message always has a required property called 
+\begin_inset Quotes eld
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+BCP can be used over any stream where packet order can be guaranteed, for
+ example TCP sockets.
+ For browser-based CTree systems, one might find a lot of usefulness with
+ Socket.IO, Node.js, and the Javascript library provided in the ConcurrenTree/Orch
+ard repository.
+\end_layout
+
+\begin_layout Standard
+If you want to write your own BCP interpreter in your language of choice
+ (and good for you, you awesome person), you're gonna find the BCP Message
+ Set reference document in the repository 
+\emph on
+very
+\emph default
+ handy.
+ It details every message type with examples and everything, and even if
+ you're just going to use an existing BCP library, you might find it interesting
+ reading to see how things work under the hood.
 \end_layout
 
 \end_body
