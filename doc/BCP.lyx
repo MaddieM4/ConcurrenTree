@@ -1,0 +1,312 @@
+#LyX 1.6.7 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+BCP/ConcurrenTree Theory
+\end_layout
+
+\begin_layout Paragraph
+This document is a continuous process of flux and being fleshed out.
+ Direct any questions or complaints to Philip Horger at campadrenalin@gmail.com.
+\end_layout
+
+\begin_layout Part
+ConcurrenTree Model
+\end_layout
+
+\begin_layout Standard
+ConcurrenTree is a concurrent text technology that puts live text editing
+ in everybody's hands with its simplicity, especially compared to competitors
+ like Operational Transform.
+ CTree code is easy to write, easy to port, and doesn't have algorithmic
+ ambiguity.
+\end_layout
+
+\begin_layout Section
+Trees
+\end_layout
+
+\begin_layout Standard
+Trees are a fairly simple data structure at the core of ConcurrenTree.
+ Just about every operation you can perform on a CTree document will traverse
+ and/or modify trees, so it's good to get a nice solid understanding of
+ them before rushing into the rest of this documentation.
+ I mean, you can if you want, but you should learn to walk before you run,
+ grasshoppa.
+\end_layout
+
+\begin_layout Standard
+A tree consists (most importantly) of an immutable string and a boolean
+ array called the 
+\begin_inset Quotes eld
+\end_inset
+
+deletions array.
+\begin_inset Quotes erd
+\end_inset
+
+ There's a boolean in the array for every character marking whether it's
+ deleted or not.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+One might ask why we don't just, you know, actually delete characters instead
+ of having an immutable string.
+ Good question, and there's a lot of interesting theory behind that - but
+ it's mostly beyond the scope of this document.
+ The headlines: we need to maintain our index positions in the face of deletions
+, storing a char is basically as efficient as marking it deleted anyways,
+ and it allows for consistent hashing throughout the lifetime of the tree.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The tree has a few more properties we have to worry about, though.
+ The next biggest one (importance-wise, I mean) is the tree's children.
+ The most conceptually accurate way to do this is as an array of string-key
+ dictionaries, but there's nothing stopping you from finding more space-
+ or memory-efficient ways to do it.
+ What you're trying to model here is the fact that any arbitrary number
+ of child trees can be attached to any index position
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+An index position represents a space between characters or on either end
+ of the full string.
+ So it can be any integer between (and including) 0 and 
+\emph on
+n
+\emph default
+ for a string of length 
+\emph on
+n.
+\end_layout
+
+\end_inset
+
+ in the parent tree, and it can be found again given the hash of its original
+ value and the index it's attached to.
+\end_layout
+
+\begin_layout Standard
+Using these properties, we have a working plaintext model for which we can
+ write algorithms that insert text (by adding children), delete text (by
+ applying deletions), 
+\begin_inset Quotes eld
+\end_inset
+
+export
+\begin_inset Quotes erd
+\end_inset
+
+ the tree to a single resultant string, and convert a position in the resultant
+ string to a position in the tree or its children.
+ Expect a lot of recursion when we get to the algorithm section.
+ If you don't like recursion, then tough, it's a fundamental programming
+ concept and the right tool for this kind of job.
+\end_layout
+
+\begin_layout Standard
+Finally, we have markers.
+ Markers handle formatting in a way that gets out of the way of regular
+ text (important for concurrently edited documents) and makes a very simple
+ kind of sense.
+ Things get a bit nastier and dirtier under the hood to maintain eventual
+ consistency though, which is one of the key properties of ConcurrenTree.
+ So we'll get into the inner workings a bit later, but for now, here's markers
+ in a nutshell: a marker has a type, a value, and a position, and it applies
+ to everything to the right of it in the resultant text, at least until
+ another marker of the same type shows up.
+\end_layout
+
+\begin_layout Section
+Addresses
+\end_layout
+
+\begin_layout Standard
+There are two types of addresses, 
+\emph on
+absolute
+\emph default
+ and 
+\emph on
+shorthand
+\emph default
+.
+ Absolute addresses are conceptually simpler, so you can learn those now,
+ build on that knowledge, and then learn the shorthand variation later on
+ when you learn about eras.
+\end_layout
+
+\begin_layout Standard
+The basic idea of an address is not as complicated as it sounds.
+ We want to be able to reference any node in a complex tree with a string.
+ And we can! The best part is we borrow a little syntax from filesystem
+ syntax to make it intuitive and familiar.
+\end_layout
+
+\begin_layout Quote
+0:a98321/4:393bf8/1:de73c0
+\end_layout
+
+\begin_layout Standard
+As you might have guessed from our example, each node is referenced with
+ an index:hash combination, the / denotes a parent-child relationship, and
+ we can see that a tree with a hash of 393bf8 is a child of root node 0:a98321
+ at index 4.
+\end_layout
+
+\begin_layout Standard
+Here's how it works.
+ Any node can find any of its children given an index and a hash.
+ A recursive algorithm can pass a request down a tree and bring the answer
+ to the top by having each node pop a child off the front of it, so each
+ node gets an address to resolve that's a little shorter, until finally
+ the correct node is found and passed back up with return statements.
+\end_layout
+
+\begin_layout Section
+Instructions and Operations
+\end_layout
+
+\begin_layout Standard
+One thing that CTree borrows from its 
+\emph on
+very
+\emph default
+ distant ancestor OT is the notion of instructions and operations.
+ However, some neat properties of CTree make them a lot simpler.
+ Operations never need to be 
+\begin_inset Quotes eld
+\end_inset
+
+tranformed
+\begin_inset Quotes erd
+\end_inset
+
+, they can be applied on any machine in any state or queued until their
+ dependencies are satisfied.
+ It's even okay to do stuff more than once, since everything is designed
+ to be idempotent - multiple applications of the same operation have the
+ same effect as one.
+\end_layout
+
+\begin_layout Standard
+But I'm getting ahead of myself.
+ If you're reading this, you're probably new to the party.
+ So don't panic, this stuff is simpler than it sounds.
+\end_layout
+
+\begin_layout Standard
+Instructions are individual actions you can on a tree given an address and
+ a few other parameters.
+ Basically, the kind of stuff that takes one function call.
+ Insert a child to a node, delete characters from a node, marker stuff,
+ etc.
+ So there's not too many types of instructions to worry about, and we'll
+ get into them individually with sample algorithms soon enough.
+\end_layout
+
+\begin_layout Standard
+An operation is a sequence of instructions.
+ You can write functions that analyze the instructions to figure out the
+ dependencies of an operation (what nodes have to be in a tree before the
+ operation makes sense/can be applied), you can operation merging functions,
+ but ultimately, an operation is a vector.
+ Nothing more, nothing less.
+\end_layout
+
+\begin_layout Standard
+So, you might be wondering why we even bothered to use terminology for this
+ stuff.
+ The reason is serialization.
+ Instructions and operations can be serialized to JSON in a consistent fashion
+ that allows them to be transferred between machines and applications, and
+ quite importantly, can be hash-checked to see if it's already been applied.
+\end_layout
+
+\begin_layout Standard
+But no worries if it's got overlap with stuff you've already applied to
+ your tree! A few CPU cycles wasted, but no harm done.
+ Everything will merge together correctly and not increase memory usage
+ with the overlap.
+\end_layout
+
+\begin_layout Section
+Eras and Shorthand Addresses
+\end_layout
+
+\begin_layout Standard
+ConcurrenTree's magic 
+\begin_inset Quotes eld
+\end_inset
+
+secret
+\begin_inset Quotes erd
+\end_inset
+
+ formula is that on a conceptual level, information cannot be deleted.
+ It can only increase or overwrite in fairly non-destructive ways.
+\end_layout
+
+\begin_layout Standard
+Yeah, that look of horror and the memory usage panics running through your
+ head are normal.
+ We had 'em too during the development process.
+ It sounds like the data storage requirements of a single document would
+ eventually spiral out of control, especially in live-typing situations
+ where you very quickly get deeply-structured trees of small nodes with
+ a scary overhead-to-data ratio.
+\end_layout
+
+\begin_layout Standard
+Well, the good news is that we fixed it.
+\end_layout
+
+\end_body
+\end_document
