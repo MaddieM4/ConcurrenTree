@@ -1,4 +1,6 @@
-from hashlib import md5
+from hashlib import new
+
+HASH_FUNCTION = 'sha256' # was md5
 
 def make(string):
-	return md5(string).hexdigest()
+	return new(HASH_FUNCTION, string).hexdigest()
