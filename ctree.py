@@ -8,6 +8,7 @@ class CTree(TreeBase):
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
+		self.operations = {}
 		for i in range(len(self)+1):
 			self._children.append(CTreeChild())
 		self.hash = hasher.make(self._value)
