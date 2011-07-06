@@ -4,6 +4,9 @@
 \begin_header
 \textclass article
 \use_default_options true
+\begin_modules
+logicalmkup
+\end_modules
 \language english
 \inputencoding auto
 \font_roman default
@@ -17,6 +20,7 @@
 
 \graphics default
 \paperfontsize default
+\spacing single
 \use_hyperref false
 \papersize default
 \use_geometry false
@@ -35,6 +39,7 @@
 \paperpagestyle default
 \tracking_changes false
 \output_changes false
+\author "" 
 \author "" 
 \end_header
 
@@ -486,7 +491,8 @@ find
 
 \begin_layout Standard
 This resolves an address to a node object in memory using recursion.
- It's the foundation of other document-level algorithms.
+ It's the foundation of other document-level algorithms (which are really
+ just shortcuts to tree-level actions in most cases).
 \end_layout
 
 \begin_layout Quote
@@ -507,11 +513,23 @@ string top = everything to the left of the first
 \begin_inset Quotes erd
 \end_inset
 
-
+;
 \end_layout
 
 \begin_layout Quote
-address = everything after it
+address = everything after it;
+\end_layout
+
+\begin_layout Quote
+if (address ==
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+) return this;
 \end_layout
 
 \begin_layout Quote
@@ -536,7 +554,7 @@ if top[0] ==
 \end_layout
 
 \begin_layout Quote
-next = document.shortcuts[top];
+next = this.document.shortcuts[top];
 \end_layout
 
 \end_deeper
@@ -554,7 +572,7 @@ int index = top.split(
 \begin_inset Quotes erd
 \end_inset
 
-)[0]
+)[0];
 \end_layout
 
 \begin_layout Quote
@@ -566,12 +584,20 @@ string child = top.split(
 \begin_inset Quotes erd
 \end_inset
 
-)[1]
+)[1];
+\end_layout
+
+\begin_layout Quote
+next = this.children[index][child];
 \end_layout
 
 \end_deeper
 \begin_layout Quote
 }
+\end_layout
+
+\begin_layout Quote
+return next.resolve(address);
 \end_layout
 
 \end_deeper
@@ -592,8 +618,364 @@ The trace algorithm takes a position in a resultant string and converts
 \end_layout
 
 \begin_layout Standard
-While it's one of the most fundamentally useful algorithms, it's also one
- of the most complicated.
+While it's one of the most fundamentally useful algorithms, it can also
+ be one of the most complicated in strongly typed languages.
+ In JavaScript and Python, we like to rely on the return type to imply results
+ as well as the value - did we find the end result, or should we just shave
+ off some of the total we're trying to reach - which handles things very
+ efficiently in terms of computation.
+ This is a big deal for functions called as much as trace, especially when
+ the language is interpreted.
+\end_layout
+
+\begin_layout Standard
+If you pass the target total as an int pointer, and return a null pointer
+ when the target is not among the current node's descendants, you can get
+ around this in an even more efficient way, but it requires a pointer-aware
+ language (or at least one where you can hack it to pass an int by reference).
+ This is what we give an example of below.
+ Most of this carries over quite well to a return-type-based approach like
+ we talked about earlier, most notably the loop design.
+\end_layout
+
+\begin_layout Quote
+tree::trace(int* target) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+for (int i in this.children) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+for (string x in this.children[i]) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+dict result = this.children[i][x].trace(target);
+\end_layout
+
+\begin_layout Quote
+if (result != null) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+result[
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+] = string(i) + 
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+ + x + 
+\begin_inset Quotes erd
+\end_inset
+
+/
+\begin_inset Quotes erd
+\end_inset
+
+ + result[address];
+\end_layout
+
+\begin_layout Quote
+return result;
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Quote
+if (i<this.children.length) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+/* remember, there's more indexes than characters, we have to be careful
+ not to access characters that don't exist! */
+\end_layout
+
+\begin_layout Quote
+if (this.deleted[i]) &target--;
+\end_layout
+
+\begin_layout Quote
+if (&target ==0) return {
+\begin_inset Quotes erd
+\end_inset
+
+tree
+\begin_inset Quotes erd
+\end_inset
+
+:this,
+\begin_inset Quotes erd
+\end_inset
+
+pos
+\begin_inset Quotes erd
+\end_inset
+
+:i, 
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+};
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Section
+insert
+\end_layout
+
+\begin_layout Standard
+By now you can probably figure this out from the context of the previous
+ algorithms, but here we go in case you're skipping around or in over your
+ head.
+ The tree-level insert function is brilliantly simple, although it is omitting
+ the constructor for the subtree from a string.
+\end_layout
+
+\begin_layout Quote
+tree::insert(int pos, tree* subtree) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+// how you want to do pointers and
+\end_layout
+
+\begin_layout Quote
+// references is up to you, here.
+\end_layout
+
+\begin_layout Quote
+this.children[pos][subtree->hash] = subtree;
+\end_layout
+
+\begin_layout Quote
+// optional step if you want nodes to
+\end_layout
+
+\begin_layout Quote
+// be parent-aware for any reason
+\end_layout
+
+\begin_layout Quote
+subtree.parent = &this;
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Standard
+The document-level insert algorithm on the other hand is fairly simple as
+ well, but in a different way.
+ Instead of directly affecting the tree, document-level functions return
+ operations, which allows you to easily translate from display actions 
+\emph on
+and
+\emph default
+ keep track of local and foreign operations.
+\end_layout
+
+\begin_layout Quote
+document::insert(int pos, string contents) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+dict trace_results = this.root.trace(pos);
+\end_layout
+
+\begin_layout Quote
+return new operation([
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+new insertion(
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+trace_results[
+\begin_inset Quotes eld
+\end_inset
+
+pos
+\begin_inset Quotes erd
+\end_inset
+
+],
+\end_layout
+
+\begin_layout Quote
+trace_results[
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+]
+\end_layout
+
+\begin_layout Quote
+);
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Quote
+]);
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Section
+delete
+\end_layout
+
+\begin_layout Standard
+Again, we're gonna show off multiple algorithms, like we did for insert,
+ starting with our beloved tree.
+\end_layout
+
+\begin_layout Quote
+tree::delete(int pos) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+self.deletions[pos] = true;
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Standard
+Yep.
+ That was easy.
+ Now the document-level algorithm:
+\end_layout
+
+\begin_layout Quote
+document::delete(int pos) {
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+dict trace_results = this.root.trace(pos);
+\end_layout
+
+\begin_layout Quote
+return new operation([
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+new deletion(
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+trace_results[
+\begin_inset Quotes eld
+\end_inset
+
+pos
+\begin_inset Quotes erd
+\end_inset
+
+],
+\end_layout
+
+\begin_layout Quote
+trace_results[
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+]
+\end_layout
+
+\begin_layout Quote
+);
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Quote
+]);
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\begin_layout Standard
+Basically document::insert copied, pasted, and very slightly modified.
+ In fact, if you want to generalize code like this into another function
+ and be a better code reuser, you're highly welcome to, as it'll make your
+ life a bit easier should you ever need to maintain these parts of the codebase.
 \end_layout
 
 \begin_layout Part
