@@ -18,6 +18,12 @@ class Storage(object):
             return True
         except NameError:
             return False
+
+    def __getitem__(self, name):
+        return self.get(name)
+
+    def __setitem__(self, name, tree):
+        self._cache[name] = tree
             
     def get(self, x):
         if x in self._cache:

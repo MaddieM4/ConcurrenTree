@@ -9,3 +9,15 @@ start branching out to support more DHT algorithms.
 
 '''
 
+import optparse
+import orchardlive
+
+parser = optparse.OptionParser()
+parser.add_option("-p", "--port", dest="port", default="9090",
+	help="The port you want to host on for peers")
+parser.add_option("-w", "--websocket", dest="wsport", default="9091",
+	help="The port you want to host for websocket clients")
+args, peers = parser.parse_args()
+
+live = orchardlive.Live(args['port'], args['wsport'], peers)
+live.run()

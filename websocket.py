@@ -109,13 +109,14 @@ class WebSocket(object):
         self.client.close()
 
 class WebSocketServer(object):
-    def __init__(self, bind, port, cls):
+    def __init__(self, bind, port, cls, sendto):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((bind, port))
         self.bind = bind
         self.port = port
         self.cls = cls
+	self.sendto = sendto
         self.connections = {}
         self.listeners = [self.socket]
 
