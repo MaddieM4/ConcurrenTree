@@ -192,7 +192,10 @@ class ServerPool:
 	''' A collection of server objects that provide real
 	or virtual peers. '''
 
-	def __init__(self):
+	def __init__(self, docHandler, authHandler):
+		self.doc = docHandler
+		self.auth = authHandler
+
 		self.servers = []
 		self.lock = Lock()
 		self.closed = False
@@ -219,7 +222,20 @@ class ServerPool:
 						s += 1
 
 	def process_server(self, i):
-		pass
+		# Accept new connections
+		for conn in self.server(i).starting():
+			self.connect(i, conn)
+		# Scan through connections
+		c = 0
+		while c < len(self.connections(i)):
+			conn = self.connections(i)[c]
+			conn.read()
+			# Do something with the log, according to policy
+
+	def connect(self, server, queue):
+		# use server.policy() here somewhere, for extensions/log
+		conn = Connection(self.doc, self.auth, queue)
+		self.servers[server].append(conn)
 
 	def server(self, index):
 		return self.servers[index][0]

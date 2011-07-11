@@ -10,9 +10,11 @@ start branching out to support more DHT algorithms.
 '''
 
 import optparse
+import webbrowser
+
 import BCP
 import orchardserver
-import webbrowser
+import storage
 
 parser = optparse.OptionParser()
 parser.add_option("-p", "--peers", dest="peers", default="9090",
@@ -23,7 +25,9 @@ parser.add_option("-H", "--http", dest="http", default="80",
 	help="HTTP host port")
 args, peers = parser.parse_args()
 
-pool = BCP.ServerPool()
+doc = storage.Storage()
+auth = None
+pool = BCP.ServerPool(doc, auth)
 
 # add interface servers
 pool.start(orchardserver.HTTP, port=args['http'])
