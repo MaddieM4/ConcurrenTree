@@ -5,7 +5,7 @@ Classes for BCP message processing.
 '''
 
 import socket
-from threading import Lock
+from threading import Lock, Thread
 from time import sleep
 from json import decoder.JSONDecoder as Decoder
 from json import dumps
@@ -185,14 +185,52 @@ class Pool:
 		result.remove(conn)
 		return result
 
-class Mux(Pool):
-	''' 
-		A type of pool optimized for having better knowledge
-		of what ops have been applied to the first connection.
-
-		This class has not been written yet, but Pool has all
-		the same functionality, it's just got a bit of extra
-		round-trip baggage and doesn't treat any connections
-		special. So for now, use that.
-	'''
+class ClosedError(Exception):
 	pass
+
+class ServerPool:
+	''' A collection of server objects that provide real
+	or virtual peers. '''
+
+	def __init__(self):
+		self.servers = []
+		self.lock = Lock()
+		self.closed = False
+
+	def start(self, cls, *args, **kwargs):
+		''' Add a server to the pool '''
+		server = cls(*args, **kwargs)
+		thread = Thread(target=server.run)
+		thread.start()
+		with self.lock:
+			self.check_closed()
+			self.servers.append((server, thread))
+
+	def run(self):
+		''' Run the pool, allowing interserver communication '''
+		while not self.closed:
+			with self.lock():
+				pass
+
+	def close(self):
+		with self.lock():
+			self.check_closed()
+			self.closed = True
+			for i in self.servers:
+				i[0].close()
+			for i in self.servers:
+				i[1].join()
+
+	def check_closed(self):
+		if self.closed:
+			raise ClosedError("ServerPool is closed")
+
+class PoolServer:
+	''' Base class for ServerPool Servers. '''
+	def run(self):
+		''' Start the server running '''
+		raise NotImplementedError()
+
+	def close(self):
+		''' Stop the server, terminating self.run '''
+		raise NotImplementedError()
