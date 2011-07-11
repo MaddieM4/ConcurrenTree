@@ -204,13 +204,31 @@ class ServerPool:
 		thread.start()
 		with self.lock:
 			self.check_closed()
-			self.servers.append((server, thread))
+			self.servers.append((server, thread, []))
 
 	def run(self):
 		''' Run the pool, allowing interserver communication '''
 		while not self.closed:
 			with self.lock():
-				pass
+				s = 0
+				while s < len(self.servers):
+					if self.server(s).closed:
+						del self.servers[s]
+					else:
+						self.process_server(s)
+						s += 1
+
+	def process_server(self, i):
+		pass
+
+	def server(self, index):
+		return self.servers[index][0]
+
+	def thread(self, index):
+		return self.servers[index][1]
+
+	def connections(self, index):
+		return self.servers[index][2]
 
 	def close(self):
 		with self.lock():
@@ -247,6 +265,19 @@ class PoolServer:
 		'''
 		raise NotImplementedError()
 
+	def policy(self):
+		''' Return a BCP.Policy() object '''
+		raise NotImplementedError()
+
 	def close(self):
 		''' Stop the server, terminating self.run '''
 		raise NotImplementedError()
+
+	@property
+	def closed(self):
+		raise NotImplementedError()
+
+def Policy:
+	''' A Server policy is a bit like a config file. '''
+	def __init__(self):
+		pass
