@@ -23,11 +23,10 @@ class Peer:
 
 class Connection:
 	''' A connection between two Peers '''
-	def __init__(self, docHandler, authHandler, socket, extensions = {}, log=[]):
+	def __init__(self, docHandler, authHandler, queue, extensions = {}, log=[]):
 		self.docs = docHandler
 		self.auth = authHandler
-		self.socket = socket
-		self.socket.setblocking(False)
+		self.queue = queue
 		self.extensions = extensions
 		self.logtypes = log
 
@@ -44,9 +43,9 @@ class Connection:
 			False if there was a timeout.
 		'''
 		try:
-			self.feed(self.socket.recv(4096))
+			self.feed(self.queue.get_nowait())
 			return True
-		except socket.timeout:
+		except Queue.Empty:
 			return False
 
 	def send(self):
@@ -231,6 +230,7 @@ class ServerPool:
 			conn = self.connections(i)[c]
 			conn.read()
 			# Do something with the log, according to policy
+			c += 1
 
 	def connect(self, server, queue):
 		# use server.policy() here somewhere, for extensions/log
