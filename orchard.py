@@ -41,4 +41,7 @@ pass
 pool.start(orchardserver.Peers, port=args['peers'])
 pool.start(orchardserver.HALP)
 pool.start(orchardserver.DHT)
-pool.run()
+try:
+	pool.run()
+except KeyboardInterrupt:
+	pool.close()
