@@ -2,7 +2,10 @@ import os.path
 import json
 
 from tree import Tree
-from encryption import LocalStorageCipher
+try:
+	from encryption import LocalStorageCipher
+except ImportError:
+	raise ImportError("You don't have PyCrypto++ installed. Storage won't work.")
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
 
