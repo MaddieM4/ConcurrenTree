@@ -42,7 +42,9 @@ class Server:
 		self.server.serve_forever()
 
 	def close(self):
-		self.server.socket.close()
+		print "Shutting down HTTP server"
+		self.server.shutdown()
+		print "HTTP server killed"
 
 def main():
 	server = Server(('',8080), {"/futurenotes":("/home/philip/documents/ConcurrenTree/futurenotes","text/html")})
