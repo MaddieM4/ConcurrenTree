@@ -81,7 +81,7 @@ class PoolServer:
 
 	def starting(self):
 		''' 
-		Return a list of Queue.Queue objects, 
+		Return a list of BCP.doublequeue.DQ() objects, 
 		one for each NEW connection. Do not include
 		connections that have already been returned
 		through this function. 
@@ -107,7 +107,7 @@ class PoolServer:
 	def closed(self):
 		raise NotImplementedError()
 
-def Policy:
+class Policy:
 	''' A Server policy is a bit like a config file. '''
 	def __init__(self):
 		pass
