@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 ''' 
 The general-purpose BCP user-level interface. This is the Python backend,
 which communicates with the graphical client frontend in ./jsclient.
