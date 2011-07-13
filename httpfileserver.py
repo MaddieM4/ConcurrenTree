@@ -4,8 +4,8 @@ class BaseFileHandler(BaseHTTPRequestHandler):
 	def do_GET(self):
 		files = self.files().dict
 		try:
-			print self.path
-			print files[self.path]
+			#print self.path
+			#print files[self.path]
 			ctype = path = None
 
 			if type(files[self.path])==tuple:
