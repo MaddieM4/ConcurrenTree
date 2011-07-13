@@ -1,0 +1,3 @@
+class ClosedError(Exception):
+	pass
+
