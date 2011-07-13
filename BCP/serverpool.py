@@ -1,4 +1,4 @@
-from threading import Lock
+from threading import Lock, Thread
 from Queue import Queue
 
 class ServerPool:
@@ -25,7 +25,7 @@ class ServerPool:
 	def run(self):
 		''' Run the pool, allowing interserver communication '''
 		while not self.closed:
-			with self.lock():
+			with self.lock:
 				s = 0
 				while s < len(self.servers):
 					if self.server(s).closed:
@@ -61,7 +61,7 @@ class ServerPool:
 		return self.servers[index][2]
 
 	def close(self):
-		with self.lock():
+		with self.lock:
 			self.check_closed()
 			self.closed = True
 			for i in self.servers:

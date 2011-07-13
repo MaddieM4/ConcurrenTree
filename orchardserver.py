@@ -15,6 +15,7 @@ from BCP.serverpool import PoolServer
 
 class HTTP(PoolServer):
 	def __init__(self, port=8080):
+		self.closed = False
 		def derel(path):
 			return os.path.join(os.path.curdir,"./jsclient/", path)
 		self.server = httpfileserver.Server(('',port), {
@@ -40,6 +41,7 @@ class HTTP(PoolServer):
 		return []
 
 	def close(self):
+		self.server.closed = True
 		self.server.close()
 
 class WebSocket(PoolServer):
