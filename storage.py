@@ -1,5 +1,5 @@
 import os.path
-import simplejson as json
+import json
 
 from tree import Tree
 from encryption import LocalStorageCipher

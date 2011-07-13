@@ -12,35 +12,35 @@ start branching out to support more DHT algorithms.
 import optparse
 import webbrowser
 
-import BCP
+from BCP.serverpool import ServerPool
 import orchardserver
-import storage
+#import storage
 
 parser = optparse.OptionParser()
-parser.add_option("-p", "--peers", dest="peers", default="9090",
+parser.add_option("-p", "--peers", dest="peers", default=9090,
 	help="The port you want to host on for peers")
-parser.add_option("-w", "--websocket", dest="wsport", default="9091",
+parser.add_option("-w", "--websocket", dest="wsport", default=9091,
 	help="The port you want to host for websocket clients")
-parser.add_option("-H", "--http", dest="http", default="80",
+parser.add_option("-H", "--http", dest="http", default=8080,
 	help="HTTP host port")
 args, peers = parser.parse_args()
 
-doc = storage.Storage()
+doc = None #storage.Storage()
 auth = None
-pool = BCP.ServerPool(doc, auth)
+pool = ServerPool(doc, auth)
 
 # add interface servers
-pool.start(orchardserver.HTTP, port=args['http'])
-pool.start(orchardserver.WebSocket, port=args['wsport'])
+pool.start(orchardserver.HTTP, port=args.http)
+#pool.start(orchardserver.WebSocket, port=args.wsport)
 # Start browser
-webbrowser.open("localhost:"+str(args['http']))
+webbrowser.open("localhost:"+str(args.http))
 # start notification icon
 pass
 
 # start background servers
-pool.start(orchardserver.Peers, port=args['peers'])
-pool.start(orchardserver.HALP)
-pool.start(orchardserver.DHT)
+#pool.start(orchardserver.Peers, port=args.peers)
+#pool.start(orchardserver.HALP)
+#pool.start(orchardserver.DHT)
 try:
 	pool.run()
 except KeyboardInterrupt:
