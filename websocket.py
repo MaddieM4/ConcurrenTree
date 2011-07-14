@@ -16,6 +16,7 @@ import re
 import logging
 from threading import Thread
 import signal
+from Queue import Queue
 
 class WebSocket(object):
     handshake = (
@@ -105,26 +106,31 @@ class WebSocket(object):
         logging.info("Sent message: %s" % data)
         self.client.send("\x00%s\xff" % data)
 
+    def onsweep(self):
+        pass
+
     def close(self):
         self.client.close()
 
 class WebSocketServer(object):
-    def __init__(self, bind, port, cls, sendto):
+    def __init__(self, bind, port, cls):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((bind, port))
         self.bind = bind
         self.port = port
         self.cls = cls
-	self.sendto = sendto
         self.connections = {}
         self.listeners = [self.socket]
+        self.queue = Queue()
 
     def listen(self, backlog=5):
         self.socket.listen(backlog)
         logging.info("Listening on %s" % self.port)
         self.running = True
         while self.running:
+            for conn in self.connections:
+                self.connections[conn].onsweep()
             rList, wList, xList = select(self.listeners, [], self.listeners, 1)
             for ready in rList:
                 if ready == self.socket:
@@ -132,7 +138,8 @@ class WebSocketServer(object):
                     client, address = self.socket.accept()
                     fileno = client.fileno()
                     self.listeners.append(fileno)
-                    self.connections[fileno] = self.cls(client, self)
+                    newconn = self.connections[fileno] = self.cls(client, self)
+                    self.queue.put(newconn)
                 else:
                     logging.debug("Client ready for reading %s" % ready)
                     client = self.connections[ready].client

@@ -1,8 +1,8 @@
 import Queue
-from json import decoder.JSONDecoder as Decoder
+from json.decoder import JSONDecoder as Decoder
 from json import dumps
 
-from BCP import peer
+from BCP.peer import Peer
 
 class Connection:
 	''' A connection between two Peers '''
@@ -26,14 +26,14 @@ class Connection:
 			False if there was a timeout.
 		'''
 		try:
-			self.feed(self.queue.pull_server(timeout=0))
+			self.feed(self.queue.server_pull(timeout=0))
 			return True
 		except Queue.Empty:
 			return False
 
 	def send(self):
 		if self.outbuffer:
-			self.queue.push_server(self.outbuffer)
+			self.queue.server_push(self.outbuffer)
 			self.outbuffer = ""
 			return True
 		else:

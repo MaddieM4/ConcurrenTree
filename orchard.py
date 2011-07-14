@@ -15,7 +15,7 @@ import optparse
 import webbrowser
 
 from BCP.serverpool import ServerPool
-import orchardserver
+from orchardserver import http, ws
 #import storage
 
 parser = optparse.OptionParser()
@@ -32,8 +32,8 @@ auth = None
 pool = ServerPool(doc, auth)
 
 # add interface servers
-pool.start(orchardserver.HTTP, port=args.http)
-#pool.start(orchardserver.WebSocket, port=args.wsport)
+pool.start(http.HTTP, port=args.http)
+pool.start(ws.WebSocketServer, port=args.wsport)
 # Start browser
 webbrowser.open("localhost:"+str(args.http))
 # start notification icon

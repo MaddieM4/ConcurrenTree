@@ -1,6 +1,8 @@
 from threading import Lock, Thread
 from Queue import Queue
 
+from connection import Connection
+
 class ServerPool:
 	''' A collection of server objects that provide real
 	or virtual peers. '''
@@ -42,14 +44,14 @@ class ServerPool:
 		c = 0
 		while c < len(self.connections(i)):
 			conn = self.connections(i)[c]
-			conn.read()
+			conn.exchange()
 			# Do something with the log, according to policy
 			c += 1
 
 	def connect(self, server, queue):
 		# use server.policy() here somewhere, for extensions/log
 		conn = Connection(self.doc, self.auth, queue)
-		self.servers[server].append(conn)
+		self.servers[server][2].append(conn)
 
 	def server(self, index):
 		return self.servers[index][0]

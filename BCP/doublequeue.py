@@ -18,14 +18,14 @@ class DQ:
 		self.server = Queue()
 		self.client = Queue()
 
-	def push_client(self, obj, timeout=None):
+	def client_push(self, obj, timeout=None):
 		self.server.put(obj, timeout=timeout)
 
-	def push_server(self, obj, timeout=None):
+	def server_push(self, obj, timeout=None):
 		self.client.put(obj, timeout=timeout)
 
-	def pull_client(self, timeout=None):
-		return self.client.get(timout=timeout)
+	def client_pull(self, timeout=None):
+		return self.client.get(timeout=timeout)
 
-	def pull_server(self, timeout=None):
-		return self.server.get(timout=timeout)
+	def server_pull(self, timeout=None):
+		return self.server.get(timeout=timeout)
