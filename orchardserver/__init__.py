@@ -7,15 +7,3 @@ so as always, feel free to copy it out for your own
 non-Orchard use.
 
 '''
-
-from BCP.serverpool import PoolServer
-
-class Peers(PoolServer):
-	pass
-
-class HALP(PoolServer):
-	pass
-
-class DHT(PoolServer):
-	''' By default, the Kademlia CTree hosting cloud. '''
-	pass
