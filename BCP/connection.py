@@ -19,12 +19,14 @@ class Connection:
 		self.log = Queue.Queue()
 		self.here = Peer()
 		self.there = Peer()
+		self.closed = False
 
 	def recv(self):
 		''' 
 			Returns True if there was data to read,
 			False if there was a timeout.
 		'''
+		if self.closed: return False
 		try:
 			self.feed(self.queue.server_pull(timeout=0))
 			return True
@@ -32,6 +34,7 @@ class Connection:
 			return False
 
 	def send(self):
+		if self.closed: return False
 		if self.outbuffer:
 			self.queue.server_push(self.outbuffer)
 			self.outbuffer = ""
@@ -46,6 +49,10 @@ class Connection:
 
 	def feed(self, string=""):
 		''' Read a string into the buffer and process it '''
+		if type(string)==int:
+			# close this connection
+			self.close()
+			return
 		self.buffer += string
 		try:
 			obj, length = self.decoder.raw_decode(self.buffer)
@@ -121,3 +128,6 @@ class Connection:
 			else:
 				self.there.subscriptions.clear()
 
+
+	def close(self):
+		self.closed = True

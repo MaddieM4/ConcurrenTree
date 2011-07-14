@@ -15,7 +15,7 @@ import optparse
 import webbrowser
 
 from BCP.serverpool import ServerPool
-from orchardserver import http, ws
+from orchardserver import http, ws, peers
 #import storage
 
 parser = optparse.OptionParser()
@@ -25,7 +25,7 @@ parser.add_option("-w", "--websocket", dest="wsport", default=9091,
 	help="The port you want to host for websocket clients")
 parser.add_option("-H", "--http", dest="http", default=8080,
 	help="HTTP host port")
-args, peers = parser.parse_args()
+args, startpeers = parser.parse_args()
 
 doc = None #storage.Storage()
 auth = None
@@ -40,7 +40,7 @@ webbrowser.open("localhost:"+str(args.http))
 pass
 
 # start background servers
-#pool.start(orchardserver.Peers, port=args.peers)
+pool.start(peers.Peers, port=args.peers)
 #pool.start(orchardserver.HALP)
 #pool.start(orchardserver.DHT)
 try:

@@ -46,7 +46,10 @@ class ServerPool:
 			conn = self.connections(i)[c]
 			conn.exchange()
 			# Do something with the log, according to policy
-			c += 1
+			if conn.closed:
+				del self.servers[i][2][c]
+			else:
+				c += 1
 
 	def connect(self, server, queue):
 		# use server.policy() here somewhere, for extensions/log
@@ -112,4 +115,5 @@ class PoolServer:
 class Policy:
 	''' A Server policy is a bit like a config file. '''
 	def __init__(self):
-		pass
+		self.input = {}
+		self.output = {}
