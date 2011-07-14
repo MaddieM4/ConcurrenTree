@@ -23,7 +23,8 @@ class HTTP(PoolServer):
 			'/img/logo.svg':(derel("OrchardLogo.svg"),'image/svg+xml'),
 			'/OrchardLogo.svg':(derel("OrchardLogo.svg"),'image/svg+xml'),
 			'/img/biglogo.svg':(derel("OrchardBigLogo.svg"),'image/svg+xml'),
-			'/OrchardBigLogo.svg':(derel("OrchardBigLogo.svg"),'image/svg+xml')
+			'/OrchardBigLogo.svg':(derel("OrchardBigLogo.svg"),'image/svg+xml'),
+			'/favicon.ico':(derel("../img/logos/Orchard32.ico"),'image/svg+xml') #find mime type for ico
 		})
 
 	def run(self):
