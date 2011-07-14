@@ -115,5 +115,40 @@ class PoolServer:
 class Policy:
 	''' A Server policy is a bit like a config file. '''
 	def __init__(self):
+		self._layers = {}
+
+	def __getitem__(self, i):
+		self.checkint(i)
+		if not i in self._layers:
+			self._layers[i] = PolicyLayer()
+		return self._layers[i]
+
+	def __delitem__(self, i):
+		self.checkint(i)
+		del self._layers[i]
+
+	def __setitem__(self, i, obj):
+		self.checkint(i)
+		if type(i)!=PolicyLayer:
+			raise TypeError("Trying to set a policy layer to a non-PolicyLayer object")
+		self._layers[i] = obj
+
+	def checkint(self,i):
+		if type(i)!=int:
+			raise TypeError("Policy layer keys are restricted to integer numbers")
+
+	def __contains__(self, obj):
+		return obj in self._layers
+
+	def keys(self):
+		return self._layers.keys()
+	def max(self):
+		return max(self.keys())
+	def min(self):
+		return min(self.keys())
+
+class PolicyLayer:
+	''' A priority layer of a policy'''
+	def __init__(self):
 		self.input = {}
 		self.output = {}
