@@ -7,3 +7,7 @@ so as always, feel free to copy it out for your own
 non-Orchard use.
 
 '''
+
+def startmessage(servname, port):
+	servname = (servname + " Server").ljust(18)
+	print "%s starting on port %d" % (servname, port)

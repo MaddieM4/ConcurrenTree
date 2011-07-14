@@ -1,4 +1,5 @@
 from BCP.serverpool import PoolServer
+import orchardserver
 
 import httpfileserver
 import os.path
@@ -6,6 +7,7 @@ import os.path
 class HTTP(PoolServer):
 	def __init__(self, port=8080):
 		self.closed = False
+		self.port = port
 		def derel(path):
 			return os.path.join(os.path.curdir,"./jsclient/", path)
 		self.server = httpfileserver.Server(('',port), {
@@ -25,6 +27,7 @@ class HTTP(PoolServer):
 		})
 
 	def run(self):
+		orchardserver.startmessage('HTTP',self.port)
 		self.server.start()
 
 	def starting(self):

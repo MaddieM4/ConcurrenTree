@@ -1,3 +1,4 @@
+import orchardserver
 from BCP.serverpool import PoolServer
 import BCP.doublequeue as dq
 from threading import Lock
@@ -43,7 +44,7 @@ class Peers(PoolServer):
 		self.unread = []
 
 	def run(self):
-		print "Peer server starting"
+		orchardserver.startmessage('Peer', self.socket.getsockname()[1])
 		self.socket.listen(4)
 		while not self.closed:
 			for i in self.peers:
@@ -54,11 +55,11 @@ class Peers(PoolServer):
 				if ready == self.socket:
 					client, address = self.socket.accept()
 					newpeer = self.peers[client.fileno()] = PeerSocket(client)
-					print "New peer connection", client.fileno()
+					print "New peer connection (%d)" % client.fileno()
 					with self.lock:
 						self.unread.append(newpeer.dq)
 				else:
-					print "PeerSocket ready for reading", ready
+					print "PeerSocket ready for reading (%d)" % ready
 					self.peers[ready].recv()
 			for failed in Xlist:
 				if failed==self.socket:

@@ -1,5 +1,6 @@
 from BCP.serverpool import PoolServer
 import BCP.doublequeue as dq
+import orchardserver
 
 import websocket
 
@@ -29,7 +30,8 @@ class WebSocketServer(PoolServer):
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
 
 	def run(self):
-		print "WebSocket server starting on port %d" % self.port
+		orchardserver.startmessage("WebSocket", self.port)
+		#print "WebSocket server starting on port %d" % self.port
 		self.server.listen(5)
 		print "WebSocket server terminating"
 
