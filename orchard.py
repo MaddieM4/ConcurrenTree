@@ -25,6 +25,8 @@ parser.add_option("-w", "--websocket", dest="wsport", default=9091,
 	help="The port you want to host for websocket clients")
 parser.add_option("-H", "--http", dest="http", default=8080,
 	help="HTTP host port")
+parser.add_option("-b", "--browserless", dest="browser", action="store_true",
+	help="Open orchard with no browser")
 args, startpeers = parser.parse_args()
 
 doc = None #storage.Storage()
@@ -35,7 +37,8 @@ pool = ServerPool(doc, auth)
 pool.start(http.HTTP, port=args.http)
 pool.start(ws.WebSocketServer, port=args.wsport)
 # Start browser
-webbrowser.open("localhost:"+str(args.http))
+if not args.browser:
+	webbrowser.open("localhost:"+str(args.http))
 # start notification icon
 pass
 
