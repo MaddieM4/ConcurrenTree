@@ -1,4 +1,4 @@
-from BCP.serverpool import PoolServer
+from BCP.serverpool import PoolServer, Policy
 import BCP.doublequeue as dq
 import orchardserver
 
@@ -28,6 +28,7 @@ class WebSocketServer(PoolServer):
 		self.closed = False
 		self.port = port
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
+		self._policy = Policy()
 
 	def run(self):
 		orchardserver.startmessage("WebSocket", self.port)
@@ -43,6 +44,9 @@ class WebSocketServer(PoolServer):
 			except dq.Empty:
 				break
 		return news
+
+	def policy(self):
+		return self._policy
 
 	def close(self):
 		self.server.running = False

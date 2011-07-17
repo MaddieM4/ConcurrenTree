@@ -1,5 +1,5 @@
 import orchardserver
-from BCP.serverpool import PoolServer
+from BCP.serverpool import PoolServer, Policy
 import BCP.doublequeue as dq
 from threading import Lock
 
@@ -42,6 +42,7 @@ class Peers(PoolServer):
 		self.closed = False
 		self.peers = {}
 		self.unread = []
+		self._policy = Policy()
 
 	def run(self):
 		orchardserver.startmessage('Peer', self.socket.getsockname()[1])
@@ -72,6 +73,9 @@ class Peers(PoolServer):
 			unread = self.unread
 			self.unread = []
 			return unread
+
+	def policy(self):
+		return self._policy
 
 	def close(self):
 		for peer in self.peers:

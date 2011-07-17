@@ -1,4 +1,4 @@
-from BCP.serverpool import PoolServer
+from BCP.serverpool import PoolServer, Policy
 import orchardserver
 
 import httpfileserver
@@ -26,6 +26,7 @@ class HTTP(PoolServer):
 			'/OrchardBigLogo.svg':(derel("OrchardBigLogo.svg"),'image/svg+xml'),
 			'/favicon.ico':(derel("../img/logos/Orchard32.ico"),'image/svg+xml') #find mime type for ico
 		})
+		self._policy = Policy()
 
 	def run(self):
 		orchardserver.startmessage('HTTP',self.port)
@@ -33,6 +34,9 @@ class HTTP(PoolServer):
 
 	def starting(self):
 		return []
+
+	def policy(self):
+		return self._policy
 
 	def close(self):
 		self.server.closed = True
