@@ -35,7 +35,10 @@ class ServerPool:
 					if self.server(s).closed:
 						del self.servers[s]
 					else:
-						self.process_server(s)
+						try:
+							self.process_server(s)
+						except:
+							traceback.print_exc()
 						s += 1
 
 	def process_server(self, i):
@@ -49,10 +52,7 @@ class ServerPool:
 		c = 0
 		while c < len(self.connections(i)):
 			conn = self.connections(i)[c]
-			try:
-				conn.exchange()
-			except Exception as e:
-				traceback.print_exc()
+			conn.exchange()
 			# Do something with the log, according to policy
 			while True:
 				try:
