@@ -1,5 +1,6 @@
 from threading import Lock, Thread
 from Queue import Queue, Empty
+import traceback
 
 from connection import Connection
 
@@ -48,11 +49,15 @@ class ServerPool:
 		c = 0
 		while c < len(self.connections(i)):
 			conn = self.connections(i)[c]
-			conn.exchange()
+			try:
+				conn.exchange()
+			except Exception as e:
+				traceback.print_exc()
 			# Do something with the log, according to policy
 			while True:
 				try:
 					msg = conn.log.get_nowait()
+					print i, c, msg
 					policy.output(msg, conn, broadcast)
 				except Empty:
 					break
