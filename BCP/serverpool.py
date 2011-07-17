@@ -1,5 +1,5 @@
 from threading import Lock, Thread
-from Queue import Queue
+from Queue import Queue, Empty
 
 from connection import Connection
 
@@ -14,6 +14,7 @@ class ServerPool:
 		self.servers = []
 		self.lock = Lock()
 		self.closed = False
+		self.env = [[],[]]
 
 	def start(self, cls, *args, **kwargs):
 		''' Add a server to the pool '''
@@ -37,23 +38,33 @@ class ServerPool:
 						s += 1
 
 	def process_server(self, i):
+		policy = self.server(i).policy()
 		# Accept new connections
 		for conn in self.server(i).starting():
 			self.connect(i, conn)
+		def broadcast(msg):
+			self.buffer.append(msg)
 		# Scan through connections
 		c = 0
 		while c < len(self.connections(i)):
 			conn = self.connections(i)[c]
 			conn.exchange()
 			# Do something with the log, according to policy
+			while True:
+				try:
+					msg = conn.log.get_nowait()
+					policy.output(msg, conn, broadcast)
+				except Empty:
+					break
+			for msg in self.lastbuffer:
+				policy.input(msg, conn, broadcast)
 			if conn.closed:
 				del self.servers[i][2][c]
 			else:
 				c += 1
 
 	def connect(self, server, queue):
-		# use server.policy() here somewhere, for extensions/log
-		conn = Connection(self.doc, self.auth, queue)
+		conn = Connection(self.doc, self.auth, queue, log="*")
 		self.servers[server][2].append(conn)
 
 	def server(self, index):
@@ -64,6 +75,17 @@ class ServerPool:
 
 	def connections(self, index):
 		return self.servers[index][2]
+
+	@property
+	def buffer(self):
+		return self.env[0]
+
+	@property
+	def lastbuffer(self):
+		return self.env[1]
+
+	def buffer_flip(self):
+		self.env = [self.env[1], []]
 
 	def close(self):
 		with self.lock:
@@ -113,16 +135,29 @@ class PoolServer:
 		raise NotImplementedError()
 
 class Policy:
-	''' A Server policy is a bit like a config file. '''
+	''' 
+		A Server policy is a bit like a config file. It
+		defines what will be inputted to and outputted from
+		a BCP.Connection. It does this with functions that
+		are called on the appropriate message types by the
+		ServerPool.
+
+		callback(msgdict, connection, broadcast):
+			# msgdict - the dict representation of a BCP message
+			# connection - the BCP.Connection in question
+			# broadcast - single-argument function to broadcast a msgdict to the environment
+	'''
 	def __init__(self, inputs = {}, outputs = {}):
 		self.inputs = SubPolicy(inputs)
 		self.outputs = SubPolicy(outputs)
 
 	def input(self, message, *args):
-		self.run(self.inputs, message, *args)
+		''' Function to broadcast a message to a Connection '''
+		return self.run(self.inputs, message, *args)
 
 	def output(self, message, *args):
-		self.run(self.outputs, message, *args)
+		''' Function to run on Connection logs '''
+		return self.run(self.outputs, message, *args)
 
 	def run(self, ivo, message, *args):
 		try:
