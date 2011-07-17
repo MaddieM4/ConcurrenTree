@@ -57,13 +57,16 @@ class Connection:
 		try:
 			obj, length = self.decoder.raw_decode(self.buffer)
 			msg, self.buffer = self.buffer[:length], self.buffer[length:]
-			self.dedict(obj, msg)
+			self.analyze(obj, msg)
 			self.feed()
 		except:
 			pass
 
 	def extend(self, name, callback):
 		self.extensions[name] = callback
+
+	def is_extended(self, name):
+		return name in self.extensions
 
 	def unextend(self, name):
 		del self.extensions[name]
@@ -76,17 +79,26 @@ class Connection:
 		if self.here.selected != docname:
 			self.push("select", docname=docname)
 
-	def dedict(self, obj, objstring):
+	def analyze(self, obj, objstring):
+		obt = obj['type']
+		# log
+		if self.logtypes == "*" or obt in self.logtypes:
+			self.log.put((obj, self.there.selected))
+		# Check extensions for override on type
+		if obt in self.extensions:
+			return self.extensions[obt](obj)
+		elif "*" in self.extensions:
+			# Global extension on all message types
+			return self.extensions["*"](obj)
+		else:
+			# No extension, do normal stuff
+			self.apply(obj, objstring)
+
+	def apply(self, obj, objstring):
 		''' 
-			The part of the Peer class that analyzes the
-			remote communication.
+			Apply a message as a piece of remote communication.
 		'''
 		obt = obj['type']
-		if obt in self.logtypes:
-			self.log.put((obj, self.there.selected))
-		if obt in self.extensions:
-			self.extensions[obt](obj)
-			return
 		if obt=='select':
 			self.there.selected = obj['docname']
 		elif obt=='op':
