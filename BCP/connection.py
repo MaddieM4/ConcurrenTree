@@ -49,6 +49,7 @@ class Connection:
 
 	def feed(self, string=""):
 		''' Read a string into the buffer and process it '''
+		print "BCP.Connection receiving %s:" % type(string), string
 		if type(string)==int:
 			# close this connection
 			self.close()
@@ -56,11 +57,12 @@ class Connection:
 		self.buffer += string
 		try:
 			obj, length = self.decoder.raw_decode(self.buffer)
-			msg, self.buffer = self.buffer[:length], self.buffer[length:]
-			self.analyze(obj, msg)
-			self.feed()
-		except:
-			pass
+		except ValueError:
+			print "Could not decode buffer:", self.buffer
+			return
+		msg, self.buffer = self.buffer[:length], self.buffer[length:]
+		self.analyze(obj, msg)
+		self.feed()
 
 	def extend(self, name, callback):
 		self.extensions[name] = callback
@@ -140,6 +142,8 @@ class Connection:
 			else:
 				self.there.subscriptions.clear()
 
+	def error(self):
+		pass
 
 	def close(self):
 		self.closed = True

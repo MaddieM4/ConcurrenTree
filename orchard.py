@@ -49,4 +49,5 @@ pool.start(peers.Peers, port=args.peers)
 try:
 	pool.run()
 except KeyboardInterrupt:
+	print
 	pool.close()
