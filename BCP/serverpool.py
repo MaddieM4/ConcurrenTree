@@ -190,10 +190,14 @@ class SubPolicy(dict):
 		with self.lock:
 			del super(SubPolicy, self)[i]
 
-	def set_multi(self, value, *args, keys=[]):
-		for i in args + keys:
+	def set_multi(self, value, *args, **kwargs):
+		if "keys" in kwargs:
+			args += kwargs['keys']
+		for i in args:
 			self[i] = value
 
-	def bloom(self, source, *args, keys=[]):
-		for i in args+keys:
+	def bloom(self, source, *args, **kwargs):
+		if "keys" in kwargs:
+			args += kwargs['keys']
+		for i in args:
 			self[i] = self[source]
