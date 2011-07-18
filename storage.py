@@ -3,7 +3,10 @@ import json
 
 from tree import Tree
 try:
-	from encryption import LocalStorageCipher
+	import Crypto.Cipher.AES
+        import Crypto.Hash.SHA256
+        import Crypto.Random
+        import Crypto.PublicKey.RSA
 except ImportError:
 	raise ImportError("You don't have PyCrypto++ installed. Storage won't work.")
 
