@@ -6,6 +6,20 @@
 	<script src="textile-editor.min.js"></script>
 	<script src="ctree.js"></script>
 	<script src="chainer.js"></script>
+	<style>
+		textarea#writebcp {
+			width: 800px;
+			background-color: #FAA;
+		}
+
+		textarea#writebcp.valid {
+			background-color: #AFA;
+		}
+
+		input#submitbcp {
+			display:block;
+		}
+	</style>
 </head>
 
 <body>
@@ -19,6 +33,13 @@
 
 <p><canvas id="editor" width="800" height="300"></canvas></p>
 
+<p>
+BCP log:
+<ul id="bcplog">
+</ul>
+<textarea id="writebcp"></textarea>
+<input type="submit" id="submitbcp"/>
+</p>
 <footer>
 This is an example of how to use ConcurrenTree technology in
 JavaScript/HTML. We're using Textile, a canvas-based text
@@ -98,9 +119,51 @@ text display built in.
 
 	setInterval(readcommands, 200)
 
-	function send(ws, obj) {
+	function wssend(ws, obj) {
 		ws.send(JSON.stringify(obj)+"\x00");
 	}
+
+	var hostws = new WebSocket("ws://localhost:9091/"); // TODO: un-hard-code this
+	var wbcp = $('#writebcp')
+
+	function isJSON(str){
+		try {
+			JSON.parse(str)
+			return true;
+		} catch(exception){
+			return false;
+		}
+	}
+
+	function checkJSON(){
+		//console.log("checking JSON: "+wbcp.val())
+		if (isJSON(wbcp.val())) {
+			wbcp.addClass("valid")
+		} else {
+			wbcp.removeClass("valid")
+		}
+	}
+
+	writetimer = null;
+	wbcp.keypress(function(){
+		if (writetimer!=null) {
+			clearTimeout(writetimer);
+		}
+		writetimer = setTimeout(checkJSON, 300);
+	})
+
+	function log(source, msg) {
+		$('#bcplog').append("<li><b>"+source+": </b>"+msg+"</li>")
+	}
+
+	$('#submitbcp').click(function(){
+		log("CLIENT", wbcp.val())
+		wssend(hostws, wbcp.val());
+		wbcp.val("");
+		wbcp.removeClass("valid");
+	})
+
+	hostws.onmessage = function(e) {log("SERVER", e.data)}
 </script>
 
 </body>
