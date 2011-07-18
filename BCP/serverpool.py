@@ -86,16 +86,18 @@ class ServerPool:
 
 	@property
 	def buffer(self):
+		''' The part of the environment currently being edited '''
 		return self.env[0]
 
 	@property
 	def lastbuffer(self):
+		''' The read-only results of the last env cycle '''
 		return self.env[1]
 
 	def buffer_flip(self):
 		self.env = [self.env[1], []]
 
-	def crash(self, exception):
+	def crash(self, e):
 		''' 
 			Process an error in a way that will not
 			bork the thread. 
