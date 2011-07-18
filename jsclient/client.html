@@ -163,7 +163,10 @@ text display built in.
 		wbcp.removeClass("valid");
 	})
 
+	hostws.onopen = function(e) {log("SOCKET", "opened")}
 	hostws.onmessage = function(e) {log("SERVER", e.data)}
+	hostws.onerror = function(e) {log("ERROR", e.data)}
+	hostws.onclose = function(e) {log("SOCKET", "closed")}
 </script>
 
 </body>
