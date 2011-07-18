@@ -38,9 +38,7 @@ class ServerPool:
 						try:
 							self.process_server(s)
 						except Exception as e:
-							traceback.print_exc()
-							if type(e)==KeyboardInterrupt:
-								self.close()
+							self.crash(e)
 						s += 1
 
 	def process_server(self, i):
@@ -71,10 +69,7 @@ class ServerPool:
 				else:
 					c += 1
 			except Exception as e:
-				traceback.print_exc()
-				if type(e)==KeyboardInterrupt:
-					self.close()
-				
+				self.crash(e)
 
 	def connect(self, server, queue):
 		conn = Connection(self.doc, self.auth, queue, log="*")
@@ -99,6 +94,23 @@ class ServerPool:
 
 	def buffer_flip(self):
 		self.env = [self.env[1], []]
+
+	def crash(self, exception):
+		''' 
+			Process an error in a way that will not
+			bork the thread. 
+
+			Warning: it will stop any error except
+			KeyboardInterrupt and never raise it,
+			therefore any code after the except
+			statement that calls self.crash(e)
+			will run whether an error occurs or not.
+			This is normal behavior for except
+			statements, I'm just remindin' ya.
+		'''
+		traceback.print_exc()
+		if type(e)==KeyboardInterrupt:
+			self.close()
 
 	def close(self):
 		with self.lock:
