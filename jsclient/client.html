@@ -97,6 +97,10 @@ text display built in.
 	}
 
 	setInterval(readcommands, 200)
+
+	function send(ws, obj) {
+		ws.send(JSON.stringify(obj)+"\x00");
+	}
 </script>
 
 </body>
