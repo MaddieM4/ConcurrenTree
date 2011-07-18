@@ -53,22 +53,28 @@ class ServerPool:
 		# Scan through connections
 		c = 0
 		while c < len(self.connections(i)):
-			conn = self.connections(i)[c]
-			conn.exchange()
-			# Do something with the log, according to policy
-			while True:
-				try:
-					msg = conn.log.get_nowait()
-					print "receiving message:  ", i, c, msg
-					policy.output(msg, conn, broadcast)
-				except Empty:
-					break
-			for msg in self.lastbuffer:
-				policy.input(msg, conn, broadcast)
-			if conn.closed:
-				del self.servers[i][2][c]
-			else:
-				c += 1
+			try:
+				conn = self.connections(i)[c]
+				conn.exchange()
+				# Do something with the log, according to policy
+				while True:
+					try:
+						msg = conn.log.get_nowait()
+						print "receiving message:  ", i, c, msg
+						policy.output(msg, conn, broadcast)
+					except Empty:
+						break
+				for msg in self.lastbuffer:
+					policy.input(msg, conn, broadcast)
+				if conn.closed:
+					del self.servers[i][2][c]
+				else:
+					c += 1
+			except Exception as e:
+				traceback.print_exc()
+				if type(e)==KeyboardInterrupt:
+					self.close()
+				
 
 	def connect(self, server, queue):
 		conn = Connection(self.doc, self.auth, queue, log="*")
