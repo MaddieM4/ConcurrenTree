@@ -37,8 +37,10 @@ class ServerPool:
 					else:
 						try:
 							self.process_server(s)
-						except:
+						except Exception as e:
 							traceback.print_exc()
+							if type(e)==KeyboardInterrupt:
+								self.close()
 						s += 1
 
 	def process_server(self, i):
@@ -57,7 +59,7 @@ class ServerPool:
 			while True:
 				try:
 					msg = conn.log.get_nowait()
-					print i, c, msg
+					print "receiving message:  ", i, c, msg
 					policy.output(msg, conn, broadcast)
 				except Empty:
 					break
@@ -180,7 +182,7 @@ class SubPolicy(dict):
 
 	def __getitem__(self, i):
 		with self.lock:
-			return super(SubPolicy, self)[i]
+			return dict.__getitem__(self, i)
 
 	def __setitem__(self, i, y):
 		# validate value
@@ -189,11 +191,11 @@ class SubPolicy(dict):
 		if not hasattr(y,"__call__"):
 			raise TypeError("SubPolicy values must be callable")
 		with self.lock:
-			super(SubPolicy, self)[i] = y
+			dict.__setitem__(self, i, y)
 
 	def __delitem__(self, i):
 		with self.lock:
-			del super(SubPolicy, self)[i]
+			dict.__delitem__(self, i)
 
 	def set_multi(self, value, *args, **kwargs):
 		if "keys" in kwargs:

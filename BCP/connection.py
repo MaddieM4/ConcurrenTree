@@ -1,8 +1,9 @@
 import Queue
-from json.decoder import JSONDecoder as Decoder
-from json import dumps
+import json
 
 from BCP.peer import Peer
+
+nullbyte = "\x00"
 
 class Connection:
 	''' A connection between two Peers '''
@@ -15,7 +16,6 @@ class Connection:
 
 		self.buffer = ""
 		self.outbuffer = ""
-		self.decoder = Decoder()
 		self.log = Queue.Queue()
 		self.here = Peer()
 		self.there = Peer()
@@ -55,14 +55,16 @@ class Connection:
 			self.close()
 			return
 		self.buffer += string
-		try:
-			obj, length = self.decoder.raw_decode(self.buffer)
-		except ValueError:
-			print "Could not decode buffer:", self.buffer
-			return
-		msg, self.buffer = self.buffer[:length], self.buffer[length:]
-		self.analyze(obj, msg)
-		self.feed()
+		if nullbyte in self.buffer:
+			length = self.buffer.index(nullbyte)
+			msg, self.buffer = self.buffer[:length], self.buffer[length+1:]
+			try:
+				obj = json.loads(msg)
+			except ValueError:
+				# TODO - send syntax error warning to remote end
+				raise SyntaxError('Bad Object: "%s"' % msg)
+			self.analyze(obj, msg)
+			self.feed()
 
 	def extend(self, name, callback):
 		self.extensions[name] = callback
@@ -75,7 +77,7 @@ class Connection:
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
-		outbuffer += dumps(kwargs)
+		outbuffer += json.dumps(kwargs)
 
 	def select(self, docname):
 		if self.here.selected != docname:
@@ -85,7 +87,8 @@ class Connection:
 		obt = obj['type']
 		# log
 		if self.logtypes == "*" or obt in self.logtypes:
-			self.log.put((obj, self.there.selected))
+			obj["selected"] = self.there.selected
+			self.log.put(obj)
 		# Check extensions for override on type
 		if obt in self.extensions:
 			return self.extensions[obt](obj)
