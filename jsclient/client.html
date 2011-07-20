@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>JS CTree/Textile Example</title>
+	<title>Orchard Test Platform</title>
 
 	<script src="jquery-1.4.2.min.js"></script>
 	<script src="textile-editor.min.js"></script>
@@ -42,18 +42,25 @@ BCP log:
 <input type="button", value="Reconnect" id="reconnectbutton"/>
 </p>
 <footer>
-This is an example of how to use ConcurrenTree technology in
+<p>This is an example of how to use ConcurrenTree technology in
 JavaScript/HTML. We're using Textile, a canvas-based text
 editor, for its ability to intercept keystrokes - basically
 it already has all the generic requirements for a concurrent
-text display built in.
+text display built in.</p>
+
+<p>Also we have a live feed of the communications between client
+and server, which you can inject into with the red textbox.
+This really is a testing ground right now, with rough edges
+and hastily-built walls, so expect undocumented functionality
+and a proneness toward errors. This is what the developers use
+to see inside the program.</p>
 
 <h4>To Do:</h4>
 <ul>
-	<li>Work out the protocol</li>
-	<li>Make a server</li>
-	<li>Write an exop processor</li>
-	<li><s>Write a better inop processor that chains commands.</s></li>
+	<li><s>Work out the protocol</s></li>
+	<li><s>Make a server</s></li>
+	<li>Write a BCP processor for the JS end</li>
+	<li>Hook up the JS BCP system to the websocket</li>
 	<li>Use a DOM-based editor instead of a canvas solution</li>
 </ul>
 </footer>
