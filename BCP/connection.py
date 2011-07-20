@@ -17,7 +17,6 @@ class Connection:
 		self.logtypes = log
 
 		self.buffer = ""
-		self.outbuffer = ""
 		self.log = Queue.Queue()
 		self.here = Peer()
 		self.there = Peer()
@@ -36,13 +35,7 @@ class Connection:
 			return False
 
 	def send(self):
-		if self.closed: return False
-		if self.outbuffer:
-			self.queue.server_push(self.outbuffer)
-			self.outbuffer = ""
-			return True
-		else:
-			return False
+		return False
 
 	def exchange(self):
 		flag = True
@@ -86,7 +79,7 @@ class Connection:
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
-		self.outbuffer += json.dumps(kwargs)
+		self.queue.server_push(json.dumps(kwargs))
 
 	def select(self, docname):
 		if self.here.selected != docname:
@@ -122,7 +115,9 @@ class Connection:
 			op = operation.Operation(protostring=objstring)
 			op.apply(self.docs[self.there.selected])
 		elif obt=='ad':
-			if not obj['hash'] in self.here.ops:
+			if not 'hash' in obj:
+				self.error(452, 'Missing required argument: "hash"')
+			elif not obj['hash'] in self.here.ops:
 				self.select(self.there.selected)
 				self.push("getop", hash=obj['hash'])
 		elif obt=='getop':
