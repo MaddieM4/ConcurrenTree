@@ -36,6 +36,7 @@
 \tracking_changes false
 \output_changes false
 \author "" 
+\author "" 
 \end_header
 
 \begin_body
@@ -172,6 +173,59 @@ type
 \end_inset
 
 ad
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+hash
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+89a7344
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Section
+getop
+\end_layout
+
+\begin_layout Standard
+The reaction message to 
+\begin_inset Quotes eld
+\end_inset
+
+ad
+\begin_inset Quotes erd
+\end_inset
+
+.
+ As you might guess, it requests an op message by a hash.
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+getop
 \begin_inset Quotes erd
 \end_inset
 
@@ -671,15 +725,11 @@ subscribe
 \begin_layout Standard
 There are different levels of subscription: 
 \emph on
-live
-\emph default
-, 
-\emph on
-notify
+oponly, live
 \emph default
 , and 
 \emph on
-marked
+notify
 \emph default
 .
  A document can only be subscribed as one at a time, so subscribing to something
@@ -688,17 +738,27 @@ marked
 \end_layout
 
 \begin_layout Description
+oponly is exactly what it sounds like.
+ Don't bother sending ads, always send the operation directly and save a
+ round trip by assuming the op has not been recieved from another source.
+\end_layout
+
+\begin_layout Description
 live means that the remote end will send operations (or ads) as soon as
- they happen.
+ they happen, and ads when the operation is secondhand.
+ This is the default mode, and will be assumed if no 
+\begin_inset Quotes eld
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+ argument is present.
 \end_layout
 
 \begin_layout Description
 notify means that only ads will be sent.
-\end_layout
-
-\begin_layout Description
-marked subscriptions use a read/unread model, which will be covered in more
- detail later.
 \end_layout
 
 \begin_layout Quote
@@ -707,6 +767,22 @@ marked subscriptions use a read/unread model, which will be covered in more
 \end_inset
 
 type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+subscribe
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+subtype
 \begin_inset Quotes erd
 \end_inset
 
@@ -819,180 +895,6 @@ docnames
 \end_inset
 
 :[]} // unsubscribes you from everything
-\end_layout
-
-\begin_layout Section
-getunread
-\end_layout
-
-\begin_layout Standard
-Requests a list of 
-\begin_inset Quotes eld
-\end_inset
-
-unread
-\begin_inset Quotes erd
-\end_inset
-
- documents.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-getunread
-\begin_inset Quotes erd
-\end_inset
-
-}
-\end_layout
-
-\begin_layout Section
-unread
-\end_layout
-
-\begin_layout Standard
-A list of documents the server thinks you haven't read, as a dictionary
- where keys are docnames and values are hashes.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-unread
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-documents
-\begin_inset Quotes erd
-\end_inset
-
-:{
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-4ccdf83e
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-Casablanca
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-764ea8c1
-\begin_inset Quotes erd
-\end_inset
-
-}}
-\end_layout
-
-\begin_layout Section
-read
-\end_layout
-
-\begin_layout Standard
-Mark a document as read.
- Assumes the current hash if none is given.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-read
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-documents
-\begin_inset Quotes erd
-\end_inset
-
-:{
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-4ccdf83e
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-Casablanca
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-
-\begin_inset Quotes erd
-\end_inset
-
-}
 \end_layout
 
 \begin_layout Part

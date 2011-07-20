@@ -282,6 +282,15 @@ But no worries if it's got overlap with stuff you've already applied to
  with the overlap.
 \end_layout
 
+\begin_layout Standard
+There's also a built-in transactional benefit to operations, letting you
+ bundle together instructions that should apply more or less at once and
+ have semantic relatedness, allowing you a little control in a world of
+ unpredictable application order, personal view, and eventual consistency.
+ There's no real safety benefit to transactions in CTree though, so they
+ are not nearly as useful here as in other situations.
+\end_layout
+
 \begin_layout Section
 Eras
 \end_layout
@@ -1002,7 +1011,7 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-.
+, and messages are separated by null bytes.
 \end_layout
 
 \begin_layout Standard
