@@ -2,6 +2,7 @@ import Queue
 import json
 
 from BCP.peer import Peer
+from BCP.errors import errors
 
 nullbyte = "\x00"
 
@@ -52,7 +53,7 @@ class Connection:
 		print "BCP.Connection receiving %s:" % type(string), string
 		if type(string)==int:
 			# close this connection
-			self.close()
+			self.close(string)
 			return
 		self.buffer += string
 		if nullbyte in self.buffer:
@@ -77,13 +78,14 @@ class Connection:
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
-		outbuffer += json.dumps(kwargs)
+		self.outbuffer += json.dumps(kwargs)
 
 	def select(self, docname):
 		if self.here.selected != docname:
 			self.push("select", docname=docname)
 
 	def analyze(self, obj, objstring):
+		print type(obj), type(objstring)
 		obt = obj['type']
 		# log
 		if self.logtypes == "*" or obt in self.logtypes:
@@ -144,9 +146,13 @@ class Connection:
 					del self.there.subscriptions[name]
 			else:
 				self.there.subscriptions.clear()
+		else:
+			self.error(401)
 
-	def error(self):
-		pass
+	def error(self, num=500, details=""):
+		if num in errors:
+			details = errors[num]
+		self.push("error", code=num, details=details)
 
-	def close(self):
+	def close(self, error=0):
 		self.closed = True

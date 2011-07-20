@@ -124,6 +124,10 @@ text display built in.
 		ws.send(JSON.stringify(obj)+"\x00");
 	}
 
+	function wssendstr(ws, str) {
+		wssend(ws,JSON.parse(str))
+	}
+
 	var hostws = null;
 	function connect_WS(){
 		hostws = new WebSocket("ws://localhost:9091/"); // TODO: un-hard-code this
@@ -168,7 +172,7 @@ text display built in.
 
 	$('#submitbcp').click(function(){
 		log("CLIENT", wbcp.val())
-		wssend(hostws, wbcp.val());
+		wssendstr(hostws, wbcp.val());
 		wbcp.val("");
 		wbcp.removeClass("valid");
 	})
