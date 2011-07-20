@@ -22,6 +22,20 @@ BCP Errors
 450-499 = message parsing errors
 
 100 = Connection Broken, No given reason
+
 400 = Bad Message
-404 = Docname could not be resolved
+401 = Unknown message type
+402 = Document moved temporarily
+403 = Document moved permanently
+404 = Document could not be found
 451 = Could not parse JSON
+452 = Missing argument
+453 = Wrong argument type
+454 = Wrong JSON root type
+
+500 = Unknown Server Error
+501 = Service not supported
+502 = Resource not found
+503 = Service recognized but unavailable
+504 = Request timeout
+505 = BCP version not supported
