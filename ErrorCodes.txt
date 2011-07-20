@@ -1,0 +1,27 @@
+HTTP Error series (apparent)
+
+	1XX Establishing a Connection*
+	2XX Request fulfillment*
+	3XX Meta/Redirect
+	4XX Foreign Error (You did it)
+	5XX Local Error (I did it)
+
+	*Non-error
+
+BCP Error series
+
+	1XX Connection status meta
+	2XX ???
+	3XX Auth Error / Failure
+	4XX Foreign Error
+	5XX Local Error
+	
+BCP Errors
+
+401-449 = semantic errors
+450-499 = message parsing errors
+
+100 = Connection Broken, No given reason
+400 = Bad Message
+404 = Docname could not be resolved
+451 = Could not parse JSON
