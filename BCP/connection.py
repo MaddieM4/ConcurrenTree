@@ -1,5 +1,6 @@
 import Queue
 import json
+import traceback
 
 from BCP.peer import Peer
 from BCP.errors import errors
@@ -67,7 +68,11 @@ class Connection:
 			if type(obj)!=dict:
 				self.error(454) # Wrong root type
 				return
-			self.analyze(obj, msg)
+			try:
+				self.analyze(obj, msg)
+			except:
+				traceback.print_exc()
+				self.error(500)
 			self.feed()
 
 	def extend(self, name, callback):
@@ -88,6 +93,9 @@ class Connection:
 			self.push("select", docname=docname)
 
 	def analyze(self, obj, objstring):
+		if not "type" in obj:
+			self.error(452, 'Missing required argument: "type"')
+			return
 		obt = obj['type']
 		# log
 		if self.logtypes == "*" or obt in self.logtypes:
@@ -152,7 +160,7 @@ class Connection:
 			self.error(401) # Unknown Message Type
 
 	def error(self, num=500, details=""):
-		if num in errors:
+		if num in errors and not details:
 			details = errors[num]
 		self.push("error", code=num, details=details)
 
