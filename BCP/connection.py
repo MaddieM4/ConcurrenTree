@@ -50,7 +50,7 @@ class Connection:
 
 	def feed(self, string=""):
 		''' Read a string into the buffer and process it '''
-		print "BCP.Connection receiving %s:" % type(string), string
+		#print "BCP.Connection receiving %s:" % type(string), string
 		if type(string)==int:
 			# close this connection
 			self.close(string)
@@ -62,8 +62,11 @@ class Connection:
 			try:
 				obj = json.loads(msg)
 			except ValueError:
-				# TODO - send syntax error warning to remote end
-				raise SyntaxError('Bad Object: "%s"' % msg)
+				self.error(451) # Bad JSON
+				return
+			if type(obj)!=dict:
+				self.error(454) # Wrong root type
+				return
 			self.analyze(obj, msg)
 			self.feed()
 
@@ -85,7 +88,6 @@ class Connection:
 			self.push("select", docname=docname)
 
 	def analyze(self, obj, objstring):
-		print type(obj), type(objstring)
 		obt = obj['type']
 		# log
 		if self.logtypes == "*" or obt in self.logtypes:
@@ -147,7 +149,7 @@ class Connection:
 			else:
 				self.there.subscriptions.clear()
 		else:
-			self.error(401)
+			self.error(401) # Unknown Message Type
 
 	def error(self, num=500, details=""):
 		if num in errors:
