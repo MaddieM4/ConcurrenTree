@@ -39,6 +39,7 @@ BCP log:
 </ul>
 <textarea id="writebcp"></textarea>
 <input type="submit" id="submitbcp"/>
+<input type="button", value="Reconnect" id="reconnectbutton"/>
 </p>
 <footer>
 This is an example of how to use ConcurrenTree technology in
@@ -123,7 +124,16 @@ text display built in.
 		ws.send(JSON.stringify(obj)+"\x00");
 	}
 
-	var hostws = new WebSocket("ws://localhost:9091/"); // TODO: un-hard-code this
+	var hostws = null;
+	function connect_WS(){
+		hostws = new WebSocket("ws://localhost:9091/"); // TODO: un-hard-code this
+
+		hostws.onopen = function(e) {log("SOCKET", "opened")}
+		hostws.onmessage = function(e) {log("SERVER", e.data)}
+		hostws.onerror = function(e) {log("ERROR", e.data)}
+		hostws.onclose = function(e) {log("SOCKET", "closed")}
+	}
+	connect_WS()
 	var wbcp = $('#writebcp')
 
 	function isJSON(str){
@@ -163,10 +173,11 @@ text display built in.
 		wbcp.removeClass("valid");
 	})
 
-	hostws.onopen = function(e) {log("SOCKET", "opened")}
-	hostws.onmessage = function(e) {log("SERVER", e.data)}
-	hostws.onerror = function(e) {log("ERROR", e.data)}
-	hostws.onclose = function(e) {log("SOCKET", "closed")}
+	$('#reconnectbutton').click(function(){
+		hostws.close()
+		connect_WS()
+	});
+
 </script>
 
 </body>
