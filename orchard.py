@@ -12,22 +12,50 @@ start branching out to support more DHT algorithms.
 '''
 
 import optparse
+
+defaults = {
+	1:{
+		"peers":9090,
+		"wsport":9091,
+		"http":8080
+	},
+	2:{
+		"peers":9092,
+		"wsport":9093,
+		"http":8081
+	}
+
+}
+
+parser = optparse.OptionParser(description=''' 
+Orchard is a BCP client with a web interface and
+a Python server that runs in the background. It's
+a reference implementation of the ConcurrenTree
+concurrent text model.
+''', version="Orchard v0.3")
+
+parser.add_option("-p", "--peers", dest="peers", default=defaults[1]['peers'],
+	help="The port you want to host on for peers")
+parser.add_option("-w", "--websocket", dest="wsport", default=defaults[1]['wsport'],
+	help="The port you want to host for websocket clients")
+parser.add_option("-H", "--http", dest="http", default=defaults[1]['http'],
+	help="HTTP host port")
+parser.add_option("-b", "--browserless", dest="browser", action="store_true",
+	help="Open orchard with no browser")
+parser.add_option("-v", action="store_true", help="Print version")
+#parser.add_option("-2", "--browserless", dest="browser", action="store_true",
+#	help="Open orchard with no browser")
+args, startpeers = parser.parse_args()
+
+if args.v:
+	parser.print_version()
+	quit()
+
 import webbrowser
 
 from BCP.serverpool import ServerPool
 from orchardserver import http, ws, peers
 import storage
-
-parser = optparse.OptionParser()
-parser.add_option("-p", "--peers", dest="peers", default=9090,
-	help="The port you want to host on for peers")
-parser.add_option("-w", "--websocket", dest="wsport", default=9091,
-	help="The port you want to host for websocket clients")
-parser.add_option("-H", "--http", dest="http", default=8080,
-	help="HTTP host port")
-parser.add_option("-b", "--browserless", dest="browser", action="store_true",
-	help="Open orchard with no browser")
-args, startpeers = parser.parse_args()
 
 doc = storage.Storage()
 auth = None
