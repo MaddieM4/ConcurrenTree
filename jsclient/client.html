@@ -138,6 +138,7 @@ to see inside the program.</p>
 
 	function get_url_variable(name, def){
 		query = window.location.href.split('?')[1];
+		if (query==undefined) return def;
 		params = query.split("&");
 		for (i in params) {
 			split = params[i].split("=");
