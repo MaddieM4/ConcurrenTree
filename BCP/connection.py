@@ -4,6 +4,7 @@ import traceback
 
 from BCP.peer import Peer
 from BCP.errors import errors
+import operation
 
 nullbyte = "\x00"
 
@@ -113,10 +114,17 @@ class Connection:
 			if not self.require("docname", obj): return
 			self.there.selected = obj['docname']
 		elif obt=='op':
-			if not self.check_selected():
-				return
-			op = operation.Operation(protostring=objstring)
-			op.apply(self.docs[self.there.selected])
+			if not self.check_selected():return
+			if not self.require("instructions", obj): return
+			try:
+				op = operation.Operation(instructions = obj['instructions'])
+			except operation.ParseError:
+				return self.error(453)
+			# TODO: authorize
+			try:
+				op.apply(self.docs[self.there.selected])
+			except operation.OpApplyError:
+				self.error(500) # General Local Error
 		elif obt=='ad':
 			if not self.require("hash", obj): return
 			elif not obj['hash'] in self.here.ops:

@@ -2,6 +2,7 @@ import instruction
 import hasher
 from address import Address
 from copy import deepcopy
+import traceback
 
 class Operation:
 	''' A collection of instructions '''
@@ -9,10 +10,12 @@ class Operation:
 	def __init__(self, instructions = [], protostring = None):
 		''' If protostring is present, uses that existing protocol object. If not, use instructions list. '''
 		if protostring:
-			# process protostring
-			pass
+			self.instructions = instructions_from_protostring(protostring)
 		else:
-			self.instructions = instructions
+			try:
+				self.instructions = instruction.set(instructions)
+			except:
+				raise ParseError()
 
 	def apply(self, tree):
 		backup = deepcopy(tree)
@@ -21,8 +24,10 @@ class Operation:
 				i.apply(tree)
 			except Exception as e:
 				tree = backup
-				raise e
+				traceback.print_exc()
+				raise OpApplyError()
 		tree.operations[self.hash] = self
+		print "Tree '%s' modified: " % tree.name, tree.flatten()
 
 	@property
 	def inserts(self):
@@ -59,3 +64,6 @@ class Operation:
 	def __str__(self):
 		''' Returns a protocol operation object '''
 		return ""
+
+class ParseError(SyntaxError): pass
+class OpApplyError(SyntaxError): pass

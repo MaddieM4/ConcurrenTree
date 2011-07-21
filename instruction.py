@@ -52,7 +52,10 @@ class Deletion(Instruction):
 
 	def __init__(self, address, range):
 		self.address = address
-		self.range = range
+		if type(range)==int:
+			self.range = [range, range]
+		else:
+			self.range = range
 
 	def sanitycheck(self, tree):
 		validpos(tree, self.range[0]) 
@@ -63,5 +66,23 @@ class Deletion(Instruction):
 	def _apply(self, tree):
 		for i in range(self.range[0], self.range[1]+1):
 			tree.delete(i)
+
+def set(array):
+	result = []
+	for i in array:
+		result += deproto(i)
+	return result
+
+def deproto(instr):
+	''' Returns a list of Instruction objects '''
+	if isinstance(instr, Instruction):
+		return [instr]
+	address = instr[1]
+	if instr[0]==0:
+		# Deletion
+		return [Deletion(address, i) for i in instr[2:]]
+	else:
+		# Insertion
+		return [Insertion(address, instr[2], instr[3])]
 
 # TODO - Marker instruction(s)

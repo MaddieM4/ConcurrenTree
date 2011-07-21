@@ -2,7 +2,8 @@ import hasher
 import marker
 
 class Tree:
-	def __init__(self, value=""):
+	def __init__(self, value="", name=''):
+		self.name = name
 		self._value = value
 		self._length = len(value)
 		self._deletions = [False] * len(self)
