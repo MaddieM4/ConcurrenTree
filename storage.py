@@ -46,7 +46,8 @@ class Storage(object):
             self._cache[x] = tree
             return tree
         else:
-            raise NameError('Not Found in local storage: Tree with id ' + x)
+            return Tree()
+            #raise NameError('Not Found in local storage: Tree with id ' + x)
 
     def set(self, tree):
         self._cache[tree.id] = tree
