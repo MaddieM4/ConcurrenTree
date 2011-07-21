@@ -1,0 +1,28 @@
+
+[X] Modify BCP.Connection to use nullbyte separators.
+[X] BCP Errors
+
+[ ] Write BCP recieving code
+	[X] select
+	[ ] op
+	[ ] ad
+	[X] getop
+	[ ] check
+	[ ] thash
+	[ ] get
+	[ ] era
+	[ ] subscribe
+	[ ] unsubscribe
+	[ ] login
+	[ ] auth
+	[ ] authmel
+	[ ] authmd
+	[ ] authok
+	[ ] lookup
+	[ ] metadata
+	[ ] part
+	[ ] encrypted
+	[ ] key
+	[ ] error
+
+
