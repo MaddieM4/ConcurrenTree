@@ -96,11 +96,13 @@ class Connection:
 			obj["selected"] = self.there.selected
 			self.log.put(obj)
 		# Check extensions for override on type
+		def broadcast(msg):
+			self.log.put(msg)
 		if obt in self.extensions:
-			return self.extensions[obt](obj)
+			return self.extensions[obt](obj, self, broadcast)
 		elif "*" in self.extensions:
 			# Global extension on all message types
-			return self.extensions["*"](obj)
+			return self.extensions["*"](obj, self, broadcast)
 		else:
 			# No extension, do normal stuff
 			self.apply(obj, objstring)

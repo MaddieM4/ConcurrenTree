@@ -46,7 +46,7 @@ class ServerPool:
 		policy = self.server(i).policy()
 		# Accept new connections
 		for conn in self.server(i).starting():
-			self.connect(i, conn)
+			self.connect(i, conn, policy.extensions)
 		def broadcast(msg):
 			self.buffer.append(msg)
 		# Scan through connections
@@ -72,8 +72,8 @@ class ServerPool:
 			except Exception as e:
 				self.crash(e)
 
-	def connect(self, server, queue):
-		conn = Connection(self.doc, self.auth, queue, log="*")
+	def connect(self, server, queue, extensions = {}):
+		conn = Connection(self.doc, self.auth, queue, extensions=extensions, log="*")
 		self.servers[server][2].append(conn)
 
 	def server(self, index):
@@ -175,9 +175,10 @@ class Policy:
 			# connection - the BCP.Connection in question
 			# broadcast - single-argument function to broadcast a msgdict to the environment
 	'''
-	def __init__(self, inputs = {}, outputs = {}):
+	def __init__(self, inputs = {}, outputs = {}, extensions = {}):
 		self.inputs = SubPolicy(inputs)
 		self.outputs = SubPolicy(outputs)
+		self.extensions = SubPolicy(extensions)
 
 	def input(self, message, *args):
 		''' Function to broadcast a message to a Connection '''

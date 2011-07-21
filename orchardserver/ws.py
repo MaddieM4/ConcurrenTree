@@ -1,6 +1,7 @@
 from BCP.serverpool import PoolServer, Policy
 import BCP.doublequeue as dq
 import orchardserver
+import hasher
 
 import websocket
 
@@ -29,6 +30,10 @@ class WebSocketServer(PoolServer):
 		self.port = port
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
 		self._policy = Policy()
+		def hash(msg, conn, broadcast):
+			if not conn.require("value", msg): return
+			conn.push("hashvalue", value=hasher.make(msg['value']))
+		self._policy.extensions['hash'] = hash
 
 	def run(self):
 		orchardserver.startmessage("WebSocket", self.port)
