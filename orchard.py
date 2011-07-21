@@ -20,9 +20,14 @@ defaults = {
 		"http":8080
 	},
 	"2":{
-		"peers":9092,
-		"wsport":9093,
-		"http":8081
+		"peers":9190,
+		"wsport":9191,
+		"http":8180
+	},
+	"3":{
+		"peers":9290,
+		"wsport":9291,
+		"http":8280
 	}
 
 }
@@ -47,6 +52,8 @@ parser.add_option("-1", dest="portset", const="1", action="store_const", default
 	help="Use default port set")
 parser.add_option("-2", dest="portset", const="2", action="store_const",
 	help="Use secondary port set")
+parser.add_option("-3", dest="portset", const="3", action="store_const",
+	help="Use third port set")
 args, startpeers = parser.parse_args()
 
 #print args
