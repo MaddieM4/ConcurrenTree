@@ -112,6 +112,8 @@ class Connection:
 		if obt=='select':
 			self.there.selected = obj['docname']
 		elif obt=='op':
+			if not self.check_selected():
+				return
 			op = operation.Operation(protostring=objstring)
 			op.apply(self.docs[self.there.selected])
 		elif obt=='ad':
@@ -121,8 +123,10 @@ class Connection:
 				self.select(self.there.selected)
 				self.push("getop", hash=obj['hash'])
 		elif obt=='getop':
+			if not self.check_selected():
+				return
 			op = self.docs[self.there.selected].operations[obj['hash']]
-			self.outbuffer += str(op)
+			self.push(str(op))
 		elif obt=='check':
 			pass
 		elif obt=='thash':
@@ -153,6 +157,13 @@ class Connection:
 				self.there.subscriptions.clear()
 		else:
 			self.error(401) # Unknown Message Type
+
+	def check_selected(self, is_loaded=True):
+		if not self.there.selected:
+			return self.error(405) # No document selected
+		if is_loaded and not self.there.selected in self.docs:
+			return self.error(404) # Document not found
+		return True
 
 	def error(self, num=500, details=""):
 		if num in errors and not details:
