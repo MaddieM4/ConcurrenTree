@@ -1089,8 +1089,9 @@ Peer State
 Maintaining a connection in BCP does require tracking a minimalist set of
  state for each end of the connection.
  For each end of the connection, you need to store the selected docname,
- any operations you advertise to the remote, a little authorization state,
- and optionally, the op hashes you know have been applied at that end.
+ subscriptions, any operations you advertise to the remote, a little authorizati
+on state, and optionally, the op hashes you know have been applied at that
+ end.
 \end_layout
 
 \begin_layout Standard

@@ -1704,9 +1704,78 @@ Instruction
 
 \begin_layout Standard
 Instructions are one of the integral pieces of ConcurrenTree technology.
- 
+ Their JSON serialization is very compact and much less semantically friendly
+ than most of BCP, but bandwidth is a big concern when you're sending (potential
+ly) thousands of instructions.
+\end_layout
+
+\begin_layout Quote
+[0, 
+\begin_inset Quotes eld
+\end_inset
+
+0:89aff6b
+\begin_inset Quotes erd
+\end_inset
+
+, 3, [5,7] ]
+\end_layout
+
+\begin_layout Quote
+[1, 
+\begin_inset Quotes eld
+\end_inset
+
+0:89aff6b
+\begin_inset Quotes erd
+\end_inset
+
+, 4, 
+\begin_inset Quotes eld
+\end_inset
+
+querque, by W
+\begin_inset Quotes erd
+\end_inset
+
+]
+\end_layout
+
+\begin_layout Quotation
+
 \emph on
-TODO: fill this section in later using Wave as a reference.
+Two examples: a deletion of positions 3 and range 5-7, and an insertion
+ at position 4 of a node with value 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph default
+querque, by W
+\emph on
+
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+An instruction always starts off with an integer typecode and an address.
+ The typecode specifies what kind of instruction it is.
+\end_layout
+
+\begin_layout Description
+0 Deletion.
+ Arguments 3-n are ints and ranges.
+ A range is a 2 element array, start and end inclusive.
+ You must have at least one range or int.
+\end_layout
+
+\begin_layout Description
+1 Insertion.
+ Third argument is the position in the parent node, fourth argument is the
+ immutable child value.
 \end_layout
 
 \begin_layout Section
@@ -1737,19 +1806,7 @@ era
 \begin_inset Quotes erd
 \end_inset
 
-2/39e2125b
-\begin_inset Quotes erd
-\end_inset
-
-:{
-\end_layout
-
-\begin_deeper
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-text
+address
 \begin_inset Quotes erd
 \end_inset
 
@@ -1757,7 +1814,30 @@ text
 \begin_inset Quotes erd
 \end_inset
 
-labama
+#773420
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+value
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+I feel dis
 \begin_inset Quotes erd
 \end_inset
 
@@ -1765,92 +1845,113 @@ labama
 \end_layout
 
 \begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-deletions
-\begin_inset Quotes erd
-\end_inset
-
-:[0,5,6,7],
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes erd
-\end_inset
-
-children
-\begin_inset Quotes erd
-\end_inset
-
-:{4:{
+[
 \end_layout
 
 \begin_deeper
 \begin_layout Quote
+[
 \begin_inset Quotes eld
 \end_inset
 
-5821ce93
+tres
 \begin_inset Quotes erd
 \end_inset
 
-:{ ...
- }
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-93bef739
-\begin_inset Quotes erd
-\end_inset
-
-:{ ...
- }
+, []]
 \end_layout
 
 \end_deeper
 \begin_layout Quote
-}},
+],
 \end_layout
 
 \begin_layout Quote
 \begin_inset Quotes eld
 \end_inset
 
-markers
+sed.
 \begin_inset Quotes erd
 \end_inset
 
-:{1:{
+,
 \end_layout
 
-\begin_deeper
 \begin_layout Quote
+[[0, 6]]
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+]
+\end_layout
+
+\begin_layout Quotation
+
+\emph on
+This example describes a node at location #773420 that has immutable value
+ 
 \begin_inset Quotes eld
 \end_inset
 
-style/italic
+
+\emph default
+I feel dissed.
+\emph on
+
 \begin_inset Quotes erd
 \end_inset
 
-:true;
+, and then through a child node and a deletion over the range [0,6], is
+ transformed into 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph default
+distressed.
+\emph on
+
+\begin_inset Quotes erd
+\end_inset
+
+
 \end_layout
 
-\end_deeper
-\begin_layout Quote
-}}
+\begin_layout Standard
+The tree is described as an array, or an object containing an address property
+ and an optional value property that holds the tree array.
 \end_layout
 
-\begin_layout Quote
-}
+\begin_layout Standard
+The tree array can contain strings and childsets, always ending with a deletions
+et made of ints, and ranges.
+ The ints and ranges represent exactly what they do in deletion instructions.
 \end_layout
 
-\end_deeper
-\begin_layout Quote
-}
+\begin_layout Standard
+The strings represent pieces of the tree's immutable string.
+ Each tree array string is a contiguous piece of the tree uninterrupted
+ by children.
+ At positions where there are children, the strings must be interrupted
+ with childset.
+\end_layout
+
+\begin_layout Standard
+A childset is an array of trees, which can either be in array form, or object
+ form.
+ The object form is useful for omitting the 
+\begin_inset Quotes eld
+\end_inset
+
+value
+\begin_inset Quotes erd
+\end_inset
+
+ property and using it location-only as a reference to a shortcut address
+ beyond the current era.
+ This makes it useful for defining a full era as a single, compact tree
+ in JSON, complete with reference hooks into the next era.
 \end_layout
 
 \begin_layout Part
