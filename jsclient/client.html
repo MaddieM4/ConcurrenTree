@@ -136,9 +136,20 @@ to see inside the program.</p>
 		wssend(ws,JSON.parse(str))
 	}
 
+	function get_url_variable(name, def){
+		query = window.location.href.split('?')[1];
+		params = query.split("&");
+		for (i in params) {
+			split = params[i].split("=");
+			if (split[0] == name) return split[1];
+		}
+		return def;
+	}
+
+	wsport = get_url_variable("ws",9091);
 	var hostws = null;
 	function connect_WS(){
-		hostws = new WebSocket("ws://localhost:9091/"); // TODO: un-hard-code this
+		hostws = new WebSocket("ws://localhost:"+wsport+"/"); // TODO: un-hard-code this
 
 		hostws.onopen = function(e) {log("SOCKET", "opened")}
 		hostws.onmessage = function(e) {log("SERVER", e.data)}

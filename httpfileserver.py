@@ -6,6 +6,7 @@ class BaseFileHandler(BaseHTTPRequestHandler):
 		try:
 			#print self.path
 			#print files[self.path]
+			self.path = self.path.split("?")[0]
 			ctype = path = None
 
 			if type(files[self.path])==tuple:
