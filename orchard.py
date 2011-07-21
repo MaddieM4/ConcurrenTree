@@ -14,12 +14,12 @@ start branching out to support more DHT algorithms.
 import optparse
 
 defaults = {
-	1:{
+	"1":{
 		"peers":9090,
 		"wsport":9091,
 		"http":8080
 	},
-	2:{
+	"2":{
 		"peers":9092,
 		"wsport":9093,
 		"http":8081
@@ -34,22 +34,34 @@ a reference implementation of the ConcurrenTree
 concurrent text model.
 ''', version="Orchard v0.3")
 
-parser.add_option("-p", "--peers", dest="peers", default=defaults[1]['peers'],
+parser.add_option("-p", "--peers", dest="peers", default=0,
 	help="The port you want to host on for peers")
-parser.add_option("-w", "--websocket", dest="wsport", default=defaults[1]['wsport'],
+parser.add_option("-w", "--websocket", dest="wsport", default=0,
 	help="The port you want to host for websocket clients")
-parser.add_option("-H", "--http", dest="http", default=defaults[1]['http'],
+parser.add_option("-H", "--http", dest="http", default=0,
 	help="HTTP host port")
 parser.add_option("-b", "--browserless", dest="browser", action="store_true",
 	help="Open orchard with no browser")
 parser.add_option("-v", action="store_true", help="Print version")
-#parser.add_option("-2", "--browserless", dest="browser", action="store_true",
-#	help="Open orchard with no browser")
+parser.add_option("-1", dest="portset", const="1", action="store_const", default="1",
+	help="Use default port set")
+parser.add_option("-2", dest="portset", const="2", action="store_const",
+	help="Use secondary port set")
 args, startpeers = parser.parse_args()
+
+#print args
 
 if args.v:
 	parser.print_version()
 	quit()
+
+if args.portset:
+	def default(argname):
+		if getattr(args, argname)==0:
+			setattr(args, argname, defaults[args.portset][argname])
+	default("peers")
+	default("wsport")
+	default("http")
 
 import webbrowser
 
