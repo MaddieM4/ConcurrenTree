@@ -125,9 +125,16 @@ class Connection:
 		elif obt=='getop':
 			if not self.check_selected():
 				return
-			if self.require("hash", obj): return
-			op = self.docs[self.there.selected].operations[obj['hash']]
-			self.push(str(op))
+			if not self.require("hash", obj): return
+			try:
+				op = self.docs[self.there.selected].operations[obj['hash']]
+				self.push(str(op))
+			except KeyError:
+				self.error(502, data={
+					"type":"operation",
+					"docname":self.there.selected,
+					"operation":obj['hash']
+				}) # Resource not found
 		elif obt=='check':
 			pass
 		elif obt=='thash':
