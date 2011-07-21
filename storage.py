@@ -1,8 +1,14 @@
 import os.path
-import simplejson as json
+import json
 
 from tree import Tree
-from encryption import LocalStorageCipher
+try:
+	import Crypto.Cipher.AES
+        import Crypto.Hash.SHA256
+        import Crypto.Random
+        import Crypto.PublicKey.RSA
+except ImportError:
+	raise ImportError("You don't have PyCrypto++ installed. Storage won't work.")
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
 
@@ -18,6 +24,12 @@ class Storage(object):
             return True
         except NameError:
             return False
+
+    def __getitem__(self, name):
+        return self.get(name)
+
+    def __setitem__(self, name, tree):
+        self._cache[name] = tree
             
     def get(self, x):
         if x in self._cache:

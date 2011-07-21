@@ -1,11 +1,25 @@
 <html>
 <head>
-	<title>JS CTree/Textile Example</title>
+	<title>Orchard Test Platform</title>
 
 	<script src="jquery-1.4.2.min.js"></script>
 	<script src="textile-editor.min.js"></script>
 	<script src="ctree.js"></script>
 	<script src="chainer.js"></script>
+	<style>
+		textarea#writebcp {
+			width: 800px;
+			background-color: #FAA;
+		}
+
+		textarea#writebcp.valid {
+			background-color: #AFA;
+		}
+
+		input#submitbcp {
+			display:block;
+		}
+	</style>
 </head>
 
 <body>
@@ -19,19 +33,35 @@
 
 <p><canvas id="editor" width="800" height="300"></canvas></p>
 
+<p>
+BCP log:
+<ul id="bcplog">
+</ul>
+<textarea id="writebcp"></textarea>
+<input type="submit" id="submitbcp"/>
+<input type="button", value="Reconnect" id="reconnectbutton"/>
+</p>
 <footer>
-This is an example of how to use ConcurrenTree technology in
+<p>This is an example of how to use ConcurrenTree technology in
 JavaScript/HTML. We're using Textile, a canvas-based text
 editor, for its ability to intercept keystrokes - basically
 it already has all the generic requirements for a concurrent
-text display built in.
+text display built in.</p>
+
+<p>Also we have a live feed of the communications between client
+and server, which you can inject into with the red textbox.
+This really is a testing ground right now, with rough edges
+and hastily-built walls, so expect undocumented functionality
+and a proneness toward errors. This is what the developers use
+to see inside the program.</p>
 
 <h4>To Do:</h4>
 <ul>
-	<li>Work out the protocol</li>
-	<li>Make a server</li>
-	<li>Write an exop processor</li>
-	<li><s>Write a better inop processor that chains commands.</s></li>
+	<li><s>Work out the protocol</s></li>
+	<li><s>Make a server</s></li>
+	<li>Finish and test BCP processor in Python library</li>
+	<li>Write a BCP processor for the JS end</li>
+	<li>Hook up the JS BCP system to the websocket</li>
 	<li>Use a DOM-based editor instead of a canvas solution</li>
 </ul>
 </footer>
@@ -97,6 +127,80 @@ text display built in.
 	}
 
 	setInterval(readcommands, 200)
+
+	function wssend(ws, obj) {
+		ws.send(JSON.stringify(obj)+"\x00");
+	}
+
+	function wssendstr(ws, str) {
+		wssend(ws,JSON.parse(str))
+	}
+
+	function get_url_variable(name, def){
+		query = window.location.href.split('?')[1];
+		params = query.split("&");
+		for (i in params) {
+			split = params[i].split("=");
+			if (split[0] == name) return split[1];
+		}
+		return def;
+	}
+
+	wsport = get_url_variable("ws",9091);
+	var hostws = null;
+	function connect_WS(){
+		hostws = new WebSocket("ws://localhost:"+wsport+"/"); // TODO: un-hard-code this
+
+		hostws.onopen = function(e) {log("SOCKET", "opened")}
+		hostws.onmessage = function(e) {log("SERVER", e.data)}
+		hostws.onerror = function(e) {log("ERROR", e.data)}
+		hostws.onclose = function(e) {log("SOCKET", "closed")}
+	}
+	connect_WS()
+	var wbcp = $('#writebcp')
+
+	function isJSON(str){
+		try {
+			JSON.parse(str)
+			return true;
+		} catch(exception){
+			return false;
+		}
+	}
+
+	function checkJSON(){
+		//console.log("checking JSON: "+wbcp.val())
+		if (isJSON(wbcp.val())) {
+			wbcp.addClass("valid")
+		} else {
+			wbcp.removeClass("valid")
+		}
+	}
+
+	writetimer = null;
+	wbcp.keypress(function(){
+		if (writetimer!=null) {
+			clearTimeout(writetimer);
+		}
+		writetimer = setTimeout(checkJSON, 300);
+	})
+
+	function log(source, msg) {
+		$('#bcplog').append("<li><b>"+source+": </b>"+msg+"</li>")
+	}
+
+	$('#submitbcp').click(function(){
+		log("CLIENT", wbcp.val())
+		wssendstr(hostws, wbcp.val());
+		wbcp.val("");
+		wbcp.removeClass("valid");
+	})
+
+	$('#reconnectbutton').click(function(){
+		hostws.close()
+		connect_WS()
+	});
+
 </script>
 
 </body>

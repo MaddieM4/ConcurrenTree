@@ -22,6 +22,7 @@ class Operation:
 			except Exception as e:
 				tree = backup
 				raise e
+		tree.operations[self.hash] = self
 
 	@property
 	def inserts(self):

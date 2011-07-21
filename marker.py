@@ -12,14 +12,18 @@ Default = {
 	}
 }
 
+def sep(type):
+	return tuple(type.split('/'))
+
 class Marker:
-	def __init__(self, category, subtype):
+	def __init__(self, category, subtype, 
+			queue={}, ignore=[], applied=[], value=None):
 		self.category = category
 		self.stype = subtype
-		self.value = None
-		self.queue   = {}
-		self.ignore  = []
-		self.applied = []
+		self.value = value
+		self.queue   = queue
+		self.ignore  = ignore
+		self.applied = applied
 
 	def a_ignore(self, action):
 		self.ignore.append(action.hash)
@@ -62,6 +66,12 @@ class Marker:
 	def totaltype(self):
 		return self.category +"/"+self.stype
 
+	def action(self, value):
+		if len(applied):
+			return Action(value, applied[-1])
+		else:
+			return Action(value, "")
+
 class Action:
 	def __init__(self, value, parent):
 		self.value = value
@@ -73,3 +83,6 @@ class Action:
 		else:
 			self.value = value
 		'''
+
+	def apply(self, marker):
+		marker.apply(self)

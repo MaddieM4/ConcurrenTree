@@ -1,5 +1,6 @@
 import hasher
 from tree import Tree as TreeBase
+import marker
 
 class CTree(TreeBase):
 	def __init__(self, value):
@@ -7,6 +8,7 @@ class CTree(TreeBase):
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
+		self.operations = {}
 		for i in range(len(self)+1):
 			self._children.append(CTreeChild())
 		self.hash = hasher.make(self._value)
@@ -22,8 +24,8 @@ class CTree(TreeBase):
 	def get(self, pos, hash):
 		return self._children[pos].getTree(hash)
 
-	def mark(self, pos, marker):
-		self._children[pos].insertMarker(marker)
+	def mark(self, pos, type, value):
+		self._children[pos].mark(type, value)
 
 	def markers(self):
 		results = {}
@@ -128,8 +130,12 @@ class CTreeChild:
 	def getTree(self, hash):
 		return self.trees[hash]
 
-	def insertMarker(self, marker):
-		self.markers[marker.totaltype] = marker
+	def insertMarker(self, type):
+		cat, sub = marker.sep(type)
+		self.markers[type] = marker.Marker(cat, sub)
+
+	def mark(self, type, value):
+		
 
 	def getMarker(self, totaltype):
 		return self.markers[totaltype]

@@ -1,0 +1,41 @@
+HTTP Error series (apparent)
+
+	1XX Establishing a Connection*
+	2XX Request fulfillment*
+	3XX Meta/Redirect
+	4XX Foreign Error (You did it)
+	5XX Local Error (I did it)
+
+	*Non-error
+
+BCP Error series
+
+	1XX Connection status meta
+	2XX ???
+	3XX Auth Error / Failure
+	4XX Foreign Error
+	5XX Local Error
+	
+BCP Errors
+
+401-449 = semantic errors
+450-499 = message parsing errors
+
+100 = Connection Broken, No given reason
+
+400 = Bad Message
+401 = Unknown message type
+402 = Document moved temporarily
+403 = Document moved permanently
+404 = Document could not be found
+451 = Could not parse JSON
+452 = Missing argument
+453 = Wrong argument type
+454 = Wrong JSON root type
+
+500 = Unknown Local Error
+501 = Service not supported
+502 = Resource not found
+503 = Service recognized but unavailable
+504 = Request timeout
+505 = BCP version not supported
