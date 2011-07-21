@@ -110,6 +110,7 @@ class Connection:
 		'''
 		obt = obj['type']
 		if obt=='select':
+			if not self.require("docname", obj): return
 			self.there.selected = obj['docname']
 		elif obt=='op':
 			if not self.check_selected():
@@ -117,14 +118,14 @@ class Connection:
 			op = operation.Operation(protostring=objstring)
 			op.apply(self.docs[self.there.selected])
 		elif obt=='ad':
-			if not 'hash' in obj:
-				self.error(452, 'Missing required argument: "hash"')
+			if not self.require("hash", obj): return
 			elif not obj['hash'] in self.here.ops:
 				self.select(self.there.selected)
 				self.push("getop", hash=obj['hash'])
 		elif obt=='getop':
 			if not self.check_selected():
 				return
+			if self.require("hash", obj): return
 			op = self.docs[self.there.selected].operations[obj['hash']]
 			self.push(str(op))
 		elif obt=='check':
@@ -165,10 +166,19 @@ class Connection:
 			return self.error(404) # Document not found
 		return True
 
-	def error(self, num=500, details=""):
+	def require(self, arg, obj):
+		if not arg in obj:
+			self.error(452, 'Missing required argument: "%s"' % arg, arg)
+			return False
+		return True
+
+	def error(self, num=500, details="", data=None):
 		if num in errors and not details:
 			details = errors[num]
-		self.push("error", code=num, details=details)
+		if data != None:
+			self.push("error", code=num, details=details, data=data)
+		else:
+			self.push("error", code=num, details=details)
 
 	def close(self, error=0):
 		self.closed = True
