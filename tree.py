@@ -2,19 +2,19 @@ import hasher
 import marker
 
 class Tree:
-	def __init__(self, value):
+	def __init__(self, value=""):
 		self._value = value
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
 		self.operations = {}
 		for i in range(len(self)+1):
-			self._children.append(CTreeChild())
+			self._children.append(TreeChild())
 		self.hash = hasher.make(self._value)
 
 	def insert(self, pos, value):
 		''' Insert a child to the tree with string "value" at position "pos" '''
-		result = CTree(value)
+		result = Tree(value)
 		self._children[pos].insertTree(result)
 		return result
 
@@ -87,7 +87,7 @@ class Tree:
 				# check whether to include character at this position
 				if not self._deletions[i]:
 					rstring += self._value[i]
-		return CTree(rstring)
+		return Tree(rstring)
 
 	def trace(self, pos):
 		''' 
@@ -122,7 +122,7 @@ class Tree:
 				rstring += self._value[i]
 		return rstring
 
-class CTreeChild:
+class TreeChild:
 	def __init__(self, trees = [], markers = []):
 		self.trees = {}
 		self.markers = {}
@@ -148,7 +148,7 @@ class CTreeChild:
 		self.markers[type] = marker.Marker(cat, sub)
 
 	def mark(self, type, value):
-		
+		pass
 
 	def getMarker(self, totaltype):
 		return self.markers[totaltype]
