@@ -86,7 +86,7 @@ pool.start(http.HTTP, port=args.http)
 pool.start(ws.WebSocketServer, port=args.wsport)
 # Start browser
 if not args.browser:
-	webbrowser.open("localhost:"+str(args.http))
+	webbrowser.open("http://localhost:%d/?ws=%d" % (args.http, args.wsport))
 # start notification icon
 pass
 
