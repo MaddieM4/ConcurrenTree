@@ -55,6 +55,7 @@ parser.add_option("-2", dest="portset", const="2", action="store_const",
 parser.add_option("-3", dest="portset", const="3", action="store_const",
 	help="Use third port set")
 args, startpeers = parser.parse_args()
+parser.destroy()
 
 #print args
 
@@ -90,9 +91,14 @@ if not args.browser:
 pass
 
 # start background servers
-pool.start(peers.Peers, port=args.peers)
+peerserver = pool.start(peers.Peers, port=args.peers)
 #pool.start(orchardserver.HALP)
 #pool.start(orchardserver.DHT)
+
+# Connect to cmdline peers
+for peer in startpeers:
+	peerserver.connect(peer)
+
 try:
 	pool.run()
 except KeyboardInterrupt:

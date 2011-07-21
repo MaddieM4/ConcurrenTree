@@ -36,13 +36,14 @@ class PeerSocket:
 class Peers(PoolServer):
 	def __init__(self, port=9090):
 		self.lock = Lock()
-		self.socket = socket.socket() # defaults to needed properties
-	        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.socket.bind(('',port))
-		self.closed = False
-		self.peers = {}
-		self.unread = []
-		self._policy = Policy()
+		with self.lock:
+			self.socket = socket.socket() # defaults to needed properties
+		        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.socket.bind(('',port))
+			self.closed = False
+			self.peers = {}
+			self.unread = []
+			self._policy = Policy()
 
 	def run(self):
 		orchardserver.startmessage('Peer', self.socket.getsockname()[1])
@@ -67,6 +68,10 @@ class Peers(PoolServer):
 					print "Peer host socket broke"
 					self.close()
 		print "Peer Server shutting down"
+
+	def connect(self, address):
+		with self.lock:
+			print "Connecting to peer:", address
 
 	def starting(self):
 		with self.lock:

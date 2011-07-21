@@ -25,6 +25,7 @@ class ServerPool:
 		with self.lock:
 			self.check_closed()
 			self.servers.append((server, thread, []))
+			return server
 
 	def run(self):
 		''' Run the pool, allowing interserver communication '''
