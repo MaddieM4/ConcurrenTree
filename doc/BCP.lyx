@@ -1035,5 +1035,75 @@ very
  reading to see how things work under the hood.
 \end_layout
 
+\begin_layout Section
+Documents
+\end_layout
+
+\begin_layout Standard
+A document is a tree 0 characters long and with a name.
+ Names are arbitrary strings, so any name scheme is possible, though anything
+ more specific is yet to be determined.
+\end_layout
+
+\begin_layout Standard
+Because each document is, alone, identical in its simplicity, a remote end
+ can safely assume a blank document when you select an unknown docname from
+ them, allowing you to add children to the document.
+ If you give it any ops with dependencies it doesn't have, it will start
+ trying to synchronize tree state with you, and find other peers to sync
+ with.
+\end_layout
+
+\begin_layout Standard
+Care should be taken with docnames.
+ The network is your namespace, and unless you've added some sort of collision
+ prevention in your name scheme (like another layer of namespacing or two),
+ you will probably eventually find the problems involved with two separate,
+ unrelated documents by the same name.
+ When the machines with these two documents realize they can sync with each
+ other, they will, resulting in an amalgamated result document which will
+ usually be the contents of one document followed by the contents of the
+ other, with the order determined by the hashes of the low-level trees.
+\end_layout
+
+\begin_layout Standard
+So, you might be wondering why a 404 error would even still be relevant
+ to this system? Well, BCP is designed to be flexible, universally usable
+ for any CTree model concurrency software.
+ And in some scenarios, a 404 error might be preferable to our idea of 
+\begin_inset Quotes eld
+\end_inset
+
+standard behavior.
+\begin_inset Quotes erd
+\end_inset
+
+ So it stays in for 3rd party use, but we don't use it.
+\end_layout
+
+\begin_layout Section
+Peer State
+\end_layout
+
+\begin_layout Standard
+Maintaining a connection in BCP does require tracking a minimalist set of
+ state for each end of the connection.
+ For each end of the connection, you need to store the selected docname,
+ any operations you advertise to the remote, a little authorization state,
+ and optionally, the op hashes you know have been applied at that end.
+\end_layout
+
+\begin_layout Standard
+The auth state is surprisingly simple to store.
+ You simply need a dictionary keyed on docname, containing random strings,
+ generated as needed during auth dances.
+ Store entries when you need to remember the random source of an MEL, free
+ the memory after you check the appropriate 
+\emph on
+authmd
+\emph default
+ response for your original source (whether it validates or not).
+\end_layout
+
 \end_body
 \end_document

@@ -1553,6 +1553,9 @@ Ideally, you should run a BCP stream inside an encrypted connection (preferably
 When there is a key for each end, the sender always encrypts with their
  private key first, then with the recipient's public key (the recipient
  decrypts this in reverse order).
+ If the docname selected by the sending end refers to an encrypted document,
+ they must add a layer of encryption with the document's symettric key beneath
+ the endpoint encryption layers.
 \end_layout
 
 \begin_layout Quote
