@@ -16,7 +16,7 @@ import webbrowser
 
 from BCP.serverpool import ServerPool
 from orchardserver import http, ws, peers
-#import storage
+import storage
 
 parser = optparse.OptionParser()
 parser.add_option("-p", "--peers", dest="peers", default=9090,
@@ -29,7 +29,7 @@ parser.add_option("-b", "--browserless", dest="browser", action="store_true",
 	help="Open orchard with no browser")
 args, startpeers = parser.parse_args()
 
-doc = None #storage.Storage()
+doc = storage.Storage()
 auth = None
 pool = ServerPool(doc, auth)
 
