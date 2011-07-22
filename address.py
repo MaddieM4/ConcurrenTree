@@ -12,6 +12,8 @@ class Address:
 				raise ValueError(target+" is not a valid address of form index:hash")
 		elif type(target) == Address:
 			self.layers = target.layers
+		else:
+			raise TypeError("Expected str, unicode, or address.Address, got "+type(target))
 
 	def process(self, string):
 		if len(string) == 0:
