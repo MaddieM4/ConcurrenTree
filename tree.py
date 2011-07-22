@@ -116,6 +116,24 @@ class Tree:
 				togo -=1
 		return togo
 
+	def proto(self):
+		''' Return a protocol representation '''
+		runningstring = ""
+		deletions = []
+		result = []
+		for i in range(len(self)+1):
+			for child in self._children[i].children():
+				if runningstring:
+					result.append(runningstring)
+					runningstring = ""
+				result.append(child.proto())
+			if i < len(self):
+				runningstring += self._value[i]
+				if self._deletions[i]: deletions.append(i)
+		if runningstring: result.append(runningstring)
+		result.append(deletions)
+		return result
+
 	def __str__(self):
 		rstring = ""
 		for i in range(len(self)):

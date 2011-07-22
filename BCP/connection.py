@@ -124,7 +124,7 @@ class Connection:
 				return self.error(453)
 			# TODO: authorize
 			try:
-				op.apply(self.docs[self.there.selected])
+				op.apply(self.fdoc)
 			except operation.OpApplyError:
 				self.error(500) # General Local Error
 		elif obt=='ad':
@@ -137,7 +137,7 @@ class Connection:
 				return
 			if not self.require("hash", obj): return
 			try:
-				op = self.docs[self.there.selected].operations[obj['hash']]
+				op = self.fdoc.operations[obj['hash']]
 				self.push(str(op))
 			except KeyError:
 				self.error(502, data={
@@ -150,7 +150,11 @@ class Connection:
 		elif obt=='thash':
 			pass
 		elif obt=='get':
-			pass
+			if not self.check_selected():return
+			if "tree" in obj:
+				self.push("era",
+					docname = self.there.selected,
+					tree = self.fdoc.proto())
 		elif obt=='era':
 			pass
 		elif obt=='subscribe':
@@ -196,6 +200,16 @@ class Connection:
 			self.push("error", code=num, details=details, data=data)
 		else:
 			self.push("error", code=num, details=details)
+
+	@property
+	def fdoc(self):
+		''' Foreign selected document '''
+		return self.docs[self.there.selected]
+
+	@property
+	def ldoc(self):
+		''' Locally selected document '''
+		return self.docs[self.here.selected]
 
 	def close(self, error=0):
 		self.closed = True
