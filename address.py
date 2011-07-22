@@ -5,6 +5,8 @@ class Address:
 
 	def __init__(self, target):
 		self.layers = []
+		if type(target)==unicode:
+			target = str(target)
 		if type(target)==str:
 			if not self.process(target):
 				raise ValueError(target+" is not a valid address of form index:hash")
