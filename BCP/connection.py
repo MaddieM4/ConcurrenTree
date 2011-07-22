@@ -80,7 +80,7 @@ class Connection:
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
-		self.queue.server_push(json.dumps(kwargs))
+		self.queue.server_push(json.dumps(kwargs)+"\x00")
 
 	def select(self, docname):
 		if self.here.selected != docname:

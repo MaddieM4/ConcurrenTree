@@ -1,0 +1,37 @@
+<html>
+<head>
+	<title>Beta replacement client</title>
+
+	<script src="head.js"></script>
+	<script>
+		var ted;
+		head.js(
+			"jquery.js",
+			"textile.js",
+			"stream.js",
+			"bcp.js",
+			function(){
+
+			// Start websocket
+			hostws = new ws_stream("ws://localhost:9091/");
+			console.log(hostws);
+
+			// Start BCP processor
+			docs = {}
+			bcp = new BCP(docs, hostws, null)
+		});
+
+		head.ready("textile.js",function(){
+			ted = new Textile.Editor('editor');
+		})
+	</script>
+</head>
+<body>
+<p>
+<img src="OrchardBigLogo.svg" alt="Orchard Logo"/>
+</p>
+
+<p><canvas id="editor" width="800" height="300"></canvas></p>
+
+</body>
+</html>

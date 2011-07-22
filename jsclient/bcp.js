@@ -8,20 +8,23 @@ function BCP(docs, stream, auth){
 
 	this.cycle = function() {
 		// Read network input
-		var netin = this.stream.read_all();
-		for (i in netin) this.buffer += netin[i];
+		this.buffer += this.stream.bcp_pull();
 
 		// Debuffer and apply messages
 		var messages = this.buffer.split("\x00");
-		this.buffer = message.pop()
+		this.buffer = messages.pop()
 		for (i in messages) {
 			this.apply(messages[i]);
 		}
+
+		// flush the stream buffer
+		self.stream.onpush()
 	}
 
 	this.apply = function(message) {
 		// Parse JSON
 		var msg;
+		console.log(message)
 		try {
 			msg = JSON.parse(message)
 		} catch (e) {
@@ -30,8 +33,13 @@ function BCP(docs, stream, auth){
 		}
 	}
 
+	this.send = function(obj) {
+		this.stream.bcp_push(JSON.stringify(obj)+"\x00")
+	}
+
 	this.error = function(code) {
 		//TODO
 	}
-	this.thread = setInterval(this.cycle, 100);
+	self = this;
+	this.thread = setInterval(function(){self.cycle()}, 100);
 }

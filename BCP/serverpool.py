@@ -78,6 +78,7 @@ class ServerPool:
 				self.crash(e)
 
 	def connect(self, server, queue, extensions = {}):
+		print "New connection:",server
 		conn = Connection(self.doc, self.auth, queue, extensions=extensions, log="*")
 		self.servers[server][2].append(conn)
 

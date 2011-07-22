@@ -36,6 +36,15 @@ function Buffer() {
 		this.readlock = false;
 		return result;
 	}
+
+	this.read_all = function() {
+		var result = "";
+		while (true){
+			var value = this.read();
+			if (value==undefined) return result;
+			result += value;
+		}
+	}
 }
 
 function ctree_stream(self) {
@@ -44,7 +53,7 @@ function ctree_stream(self) {
 	self.outbuffer = new Buffer();
 
 	self.bcp_pull = function() {
-		return this.inbuffer.read();
+		return this.inbuffer.read_all();
 	}
 
 	self.bcp_push = function(text) {
@@ -83,6 +92,8 @@ function ws_stream(url){
 
 	this.socket.onconnect = function(){this.onconnect()};
 	this.socket.onclose = function(){this.onclose()};
-	this.socket.onmessage = function(e){stream_push(e.data)};
+	this.socket.onmessage = function(e){
+		stream_push(e.data)
+	};
 	this.socket.error = function(e){alert(e)};
 }
