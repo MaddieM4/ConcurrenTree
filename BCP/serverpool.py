@@ -42,6 +42,11 @@ class ServerPool:
 							self.crash(e)
 						s += 1
 
+	def run_threaded(self):
+		t = Thread(target=self.run)
+		t.start()
+		return t
+
 	def process_server(self, i):
 		policy = self.server(i).policy()
 		# Accept new connections
