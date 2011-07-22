@@ -4,26 +4,33 @@
 
 	<script src="head.js"></script>
 	<script>
-		var ted;
+		var ted, hostws, docs, bcp;
+
 		head.js(
 			"jquery.js",
 			"textile.js",
+			"util.js",
 			"stream.js",
-			"bcp.js",
-			function(){
+			"bcp.js")
 
+		head.ready("textile.js",function(){
+			ted = new Textile.Editor('editor');
+		})
+
+		head.ready("stream.js",function(){
+			// Find port
+			wsport = get_url_variable("ws",9091)
 			// Start websocket
-			hostws = new ws_stream("ws://localhost:9091/");
+			hostws = new ws_stream("ws://localhost:"+wsport+"/");
 			console.log(hostws);
+		});
 
+		head.ready("bcp.js",function(){
 			// Start BCP processor
 			docs = {}
 			bcp = new BCP(docs, hostws, null)
 		});
 
-		head.ready("textile.js",function(){
-			ted = new Textile.Editor('editor');
-		})
 	</script>
 </head>
 <body>
