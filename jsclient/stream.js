@@ -45,7 +45,21 @@ function ctree_stream(self) {
 
 function ws_stream(url){
 	ctree_stream(this);
-	this.socket = new WebSocket(url);
+	var self = this;
+	this.url = url;
+
+	this.connect = function(url){
+		this.socket = new WebSocket(url);
+
+		this.socket.onopen = function(e){self.onconnect()};
+		this.socket.onclose = function(e){self.onclose()};
+		this.socket.onmessage = function(e){self.stream_push(e.data)};
+		this.socket.error = function(e){alert(e)};
+	};
+
+	this.reconnect = function(){this.connect(this.url)};
+	this.reconnect()
+
 	this.onpush = function() {
 		value = this.stream_pull()
 		if (value != undefined) {
@@ -53,13 +67,4 @@ function ws_stream(url){
 		}
 	}
 
-	var stream_push = this.stream_push;
-
-	var self = this;
-	this.socket.onopen = function(e){self.onconnect()};
-	this.socket.onclose = function(e){self.onclose()};
-	this.socket.onmessage = function(e){
-		stream_push(e.data)
-	};
-	this.socket.error = function(e){alert(e)};
 }

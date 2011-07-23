@@ -5,6 +5,7 @@ function BCP(docs, stream, auth){
 	this.stream = stream;
 	this.auth = auth;
 	this.buffer = ""
+	var self = this;
 
 	this.cycle = function() {
 		// Read network input
@@ -59,6 +60,7 @@ function BCP(docs, stream, auth){
 	this.error = function(code) {
 		this.send({"type":"error", "code":code})
 	}
-	self = this;
+
+	this.reconnect = function(){this.stream.reconnect()}
 	this.thread = setInterval(function(){self.cycle()}, 100);
 }

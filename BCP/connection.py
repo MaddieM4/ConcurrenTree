@@ -177,6 +177,8 @@ class Connection:
 					del self.there.subscriptions[name]
 			else:
 				self.there.subscriptions.clear()
+		elif obt=='error':
+			print obj
 		else:
 			self.error(401) # Unknown Message Type
 
