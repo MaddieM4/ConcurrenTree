@@ -37,6 +37,7 @@ function BCP(docs, stream, auth){
 	this.handle = function (msg){
 		func = this.handlers[msg.type];
 		if (func==undefined) {
+			console.log("error: unknown message type")
 			this.error(401)
 		} else {
 			func(msg)
@@ -46,6 +47,8 @@ function BCP(docs, stream, auth){
 	this.handlers = {
 		"hashvalue":function(msg){
 			md5table[msg.value] = msg.hashvalue;
+		}, "error":function(msg) {
+			console.log("Server error: "+JSON.stringify(msg))
 		}
 	}
 

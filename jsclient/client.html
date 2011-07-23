@@ -150,7 +150,7 @@ to see inside the program.</p>
 	wsport = get_url_variable("ws",9091);
 	var hostws = null;
 	function connect_WS(){
-		hostws = new WebSocket("ws://localhost:"+wsport+"/"); // TODO: un-hard-code this
+		hostws = new WebSocket("ws://localhost:"+wsport+"/");
 
 		hostws.onopen = function(e) {log("SOCKET", "opened")}
 		hostws.onmessage = function(e) {log("SERVER", e.data)}

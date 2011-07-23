@@ -22,6 +22,7 @@ BCP Errors
 450-499 = message parsing errors
 
 100 = Connection Broken, No given reason
+101 = Connection Established
 
 400 = Bad Message
 401 = Unknown message type

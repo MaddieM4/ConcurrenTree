@@ -36,10 +36,10 @@ function ctree_stream(self) {
 
 	self.onpush = function(){}
 	self.onconnect = function(){
-		// Use 1XX Connection notice
+		self.stream_push('{"type":"error", "code":101}\x00')
 	}
 	self.onclose = function(){
-		// Use 1XX Connection notice
+		self.stream_push('{"type":"error", "code":100}\x00')
 	}
 }
 
@@ -55,8 +55,9 @@ function ws_stream(url){
 
 	var stream_push = this.stream_push;
 
-	this.socket.onconnect = function(){this.onconnect()};
-	this.socket.onclose = function(){this.onclose()};
+	var self = this;
+	this.socket.onopen = function(e){self.onconnect()};
+	this.socket.onclose = function(e){self.onclose()};
 	this.socket.onmessage = function(e){
 		stream_push(e.data)
 	};
