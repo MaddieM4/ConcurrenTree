@@ -32,7 +32,7 @@ class WebSocketServer(PoolServer):
 		self._policy = Policy()
 		def hash(msg, conn, broadcast):
 			if not conn.require("value", msg): return
-			conn.push("hashvalue", value=hasher.make(msg['value']))
+			conn.push("hashvalue", value=msg['value'], hashvalue=hasher.make(msg['value']))
 		self._policy.extensions['hash'] = hash
 
 	def run(self):

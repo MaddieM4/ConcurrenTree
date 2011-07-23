@@ -14,22 +14,38 @@ function BCP(docs, stream, auth){
 		var messages = this.buffer.split("\x00");
 		this.buffer = messages.pop()
 		for (i in messages) {
-			this.apply(messages[i]);
+			this.receive(messages[i]);
 		}
 
 		// flush the stream buffer
 		self.stream.onpush()
 	}
 
-	this.apply = function(message) {
+	this.receive = function(message) {
 		// Parse JSON
 		var msg;
 		console.log(message)
 		try {
 			msg = JSON.parse(message)
+			this.handle(msg)
 		} catch (e) {
 			// Bad JSON
 			return
+		}
+	}
+
+	this.handle = function (msg){
+		func = this.handlers[msg.type];
+		if (func==undefined) {
+			this.error(401)
+		} else {
+			func(msg)
+		}
+	}
+
+	this.handlers = {
+		"hashvalue":function(msg){
+			md5table[msg.value] = msg.hashvalue;
 		}
 	}
 
@@ -38,7 +54,7 @@ function BCP(docs, stream, auth){
 	}
 
 	this.error = function(code) {
-		//TODO
+		this.send({"type":"error", "code":code})
 	}
 	self = this;
 	this.thread = setInterval(function(){self.cycle()}, 100);

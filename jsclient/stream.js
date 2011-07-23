@@ -12,48 +12,13 @@
 	than that, implementation is up to them.
 */
 
-function Buffer() {
-	this.readposition = 0;
-	this.writeposition = 0;
-	this._contents = {};
-	this.readlock = false;
-
-	this.write = function(value) {
-		var pos = ++this.writeposition;
-		this._contents[pos-1] = value;
-	}
-
-	this.read = function() {
-		if (this.readlock) return undefined;
-		this.readlock = true;
-		var read = this.readposition;
-		var write = this.writeposition;
-		var result = undefined;
-		if (read<write) {
-			result = this._contents[read]
-			this.readposition++;
-		}
-		this.readlock = false;
-		return result;
-	}
-
-	this.read_all = function() {
-		var result = "";
-		while (true){
-			var value = this.read();
-			if (value==undefined) return result;
-			result += value;
-		}
-	}
-}
-
 function ctree_stream(self) {
 	if (self==undefined) self = this;
 	self.inbuffer = new Buffer();
 	self.outbuffer = new Buffer();
 
 	self.bcp_pull = function() {
-		return this.inbuffer.read_all();
+		return this.inbuffer.read_all().join("");
 	}
 
 	self.bcp_push = function(text) {

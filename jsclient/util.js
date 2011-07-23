@@ -17,3 +17,14 @@ function isJSON(str){
 		return false;
 	}
 }
+
+md5table = {};
+
+function md5(text, bcp) {
+	if (md5table[text] != undefined) {
+		return md5table[text];
+	} else {
+		bcp.send({"type":"hash", "value":text})
+		return undefined;
+	}
+}
