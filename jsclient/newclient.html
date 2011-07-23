@@ -12,6 +12,7 @@
 			"util.js",
 			"buffer.js",
 			"stream.js",
+			"ctree.js",
 			"bcp.js")
 
 		head.ready("textile.js",function(){
@@ -27,7 +28,7 @@
 
 		head.ready("bcp.js",function(){
 			// Start BCP processor
-			docs = {}
+			docs = new DocumentHandler();
 			bcp = new BCP(docs, hostws, null)
 		});
 

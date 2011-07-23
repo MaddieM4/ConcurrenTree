@@ -1,12 +1,4 @@
-// ctree.js
-
-// NETWORK --------------------------------------------------------------------------------------------------------------------------------------
-
-function net_get(obj) {
-	
-}
-
-// UTILITY --------------------------------------------------------------------------------------------------------------------------------------
+// ctree.js :: CTree object and DocumentHandler object
 
 function arrayfill(array, value, count) {
 	for (var i=0;i<count;i++) {array.push(value(i))}
@@ -16,54 +8,6 @@ function af_obj(id) {
 	return {};
 }
 
-md5table = {};
-
-function md5(text) {
-	if (md5table[text] != undefined) {
-		return md5table[text];
-	} else {
-		// temporary solution
-		return text;
-	}
-}
-
-function textdiff(olds, news) {
-	// simplistic algorithm that assumes a pattern of same|different|same where any section could be length 0
-	// returns a replacement object ({'start':int, 'end':int, 'new':string})
-	// replacement objects ALWAYS use coordinates in old string space
-
-	if (olds==news) return undefined;
-	var min = Math.min(olds.length, news.length);
-	// find start
-	console.log("start")
-	var start=0, end=olds.length-1;
-	for(var i=0; i<min; i++) {
-		console.log(olds[i]+news[i])
-		start = i;
-		if (olds[i]!=news[i]) break;
-	}
-	// find end
-	console.log("end")
-	for(var i=1; i<min; i++) {
-		end = olds.length-i;
-		console.log(olds[end]+news[news.length-i])
-		console.log("end="+end+" start="+start+" i="+i);
-		if (olds[end]!=news[news.length-i] || end == start || news.length-i == start) break;
-	}
-	var newend = news.length-(olds.length-end);
-	return {'start':start, 'end':end, 'new':news.substr(start, newend-start)}
-}
-
-function read(f,g,i) {
-	// Every i milliseconds, calls f, which should return either undefined or a replacement object.
-	// Function g should accept replacement objects.
-	return setInterval(function() {
-		x=f();
-		if (x!=undefined) g(x);
-	}, i)
-}
-
-// CTREE ----------------------------------------------------------------------------------------------------------------------------------------
 
 function CTree(value) {
 	this.value = value;
@@ -187,5 +131,26 @@ function CTree(value) {
 		if (start>end) return undefined;
 		for (var i=end; i>=start; i--) this.flatdelete(i);
 		return this.flatinsert(start, value);
+	}
+}
+
+function DocumentHandler(){
+	this.contents = {};
+
+	this.get = function(name) {
+		if (!this.contains(name)) this.set(name, CTree(""));
+		return this.contents[name]
+	}
+
+	this.set = function(name, value) {
+		this.contents[name] = value;
+	}
+
+	this.drop = function(name) {
+		delete this.contents[name]
+	}
+
+	this.contains = function(name){
+		return this.contents[name]!=undefined;
 	}
 }
