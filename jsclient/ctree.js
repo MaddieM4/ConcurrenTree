@@ -1,22 +1,19 @@
 // ctree.js :: CTree object and DocumentHandler object
 
-// Dependencies: Buffer, MD5(util, bcp)
-
-function arrayfill(array, value, count) {
-	for (var i=0;i<count;i++) {array.push(value(i))}
-}
-
-function af_obj(id) {
-	return {};
-}
-
+// Dependencies: Buffer, Util, MD5(util, bcp)
 
 function CTree(value) {
 	this.value = value;
-	this.hash = md5(value);
+	this.ops = new Buffer();
+	this.hash = function() {return md5(this.value, bcp);}
+	this.hash();
 	this.deletions = []; arrayfill(this.deletions, function(){return false}, value.length);
 	this.markers = []; arrayfill(this.markers, af_obj, value.length+1);
 	this.children = []; arrayfill(this.children, af_obj, value.length+1);
+
+	this.bcp_push = function(op){
+		
+	}
 
 	this.insert = function(pos, childtext) {
 		var child = new CTree(childtext);
@@ -154,5 +151,11 @@ function DocumentHandler(){
 
 	this.contains = function(name){
 		return this.contents[name]!=undefined;
+	}
+
+	this.names = function() {
+		result = [];
+		for (i in self.contents) result.push(i)
+		return result;
 	}
 }

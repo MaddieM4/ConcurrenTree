@@ -20,6 +20,17 @@ function BCP(docs, stream, auth){
 			this.receive(messages[i]);
 		}
 
+		// Read and send client edits from docs
+		names = docs.names();
+		for (i in names) {
+			var doc = docs.get(names[i]);
+			var ops = doc.ops.read_all();
+			for (o in ops){
+				var op = ops[o];
+				this.send(op.proto())
+			}
+		}
+
 		// flush the stream buffer
 		self.stream.onpush()
 	}
