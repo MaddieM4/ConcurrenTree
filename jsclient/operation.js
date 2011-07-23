@@ -1,4 +1,6 @@
-// operation.js
+// operation.js :: Operation class and Instruction processing
+
+// Dependencies: none
 
 // Instruction format:
 // {'type':'insert', 'address':string, 'pos':int, 'value':string}

@@ -1,5 +1,7 @@
 // chainer.js
 
+// Dependencies: none
+
 function Chainer(tree) {
 	// A chaining wrapper for the tree. Call functions on it like a regular tree.
 	// For properties, use mychain.tree.propertyname

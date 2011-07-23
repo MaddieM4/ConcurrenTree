@@ -1,5 +1,7 @@
 // stream.js :: Stream functional protocol
 
+// Dependencies: Buffer
+
 /*
 	Stream objects of any type connect an internet
 	stream to the BCP parser in a predictable and

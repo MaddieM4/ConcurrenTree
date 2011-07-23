@@ -1,5 +1,7 @@
 // buffer.js :: Analagous to Python Queue
 
+// Dependencies: none
+
 function Buffer() {
 	this.readposition = 0;
 	this.writeposition = 0;

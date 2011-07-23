@@ -1,5 +1,7 @@
 // ctree.js :: CTree object and DocumentHandler object
 
+// Dependencies: Buffer, MD5(util, bcp)
+
 function arrayfill(array, value, count) {
 	for (var i=0;i<count;i++) {array.push(value(i))}
 }

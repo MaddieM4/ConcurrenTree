@@ -1,5 +1,7 @@
 // bcp.js :: BCP parsing hub
 
+// Dependencies: CTree, Stream
+
 function BCP(docs, stream, auth){
 	this.docs = docs;
 	this.stream = stream;

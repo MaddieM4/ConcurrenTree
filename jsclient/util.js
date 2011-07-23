@@ -1,3 +1,7 @@
+// util.js :: Utilities
+
+// dependencies: A BCP object must be available to handle md5 requests
+
 function get_url_variable(name, def){
 	query = window.location.href.split('?')[1];
 	if (query==undefined) return def;
