@@ -23,7 +23,6 @@
 			wsport = get_url_variable("ws",9091)
 			// Start websocket
 			hostws = new ws_stream("ws://localhost:"+wsport+"/");
-			console.log(hostws);
 		});
 
 		head.ready("bcp.js",function(){

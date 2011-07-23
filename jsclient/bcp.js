@@ -25,7 +25,7 @@ function BCP(docs, stream, auth){
 	this.receive = function(message) {
 		// Parse JSON
 		var msg;
-		console.log(message)
+		console.log("Incoming message: "+message)
 		try {
 			msg = JSON.parse(message)
 			this.handle(msg)
@@ -36,20 +36,37 @@ function BCP(docs, stream, auth){
 	}
 
 	this.handle = function (msg){
-		func = this.handlers[msg.type];
-		if (func==undefined) {
-			console.log("error: unknown message type")
-			this.error(401)
-		} else {
-			func(msg)
-		}
+		this._handle(msg, msg.type, this.handlers);
+	}
+
+	this.errorhandle = function (msg){
+		this._handle(msg, msg.code, this.ehandlers);
+	}
+
+	this._handle = function(msg, type, hset) {
+		func = hset[type];
+		if (func==undefined) func = hset[0];
+		func(msg)
 	}
 
 	this.handlers = {
 		"hashvalue":function(msg){
 			md5table[msg.value] = msg.hashvalue;
 		}, "error":function(msg) {
-			console.log("Server error: "+JSON.stringify(msg))
+			self.errorhandle(msg)
+		}, 0:function(msg){
+			console.log("error: unknown message type")
+			self.error(401)
+		}
+	}
+
+	this.ehandlers = {
+		100:function(msg) {
+			console.error("Connection broken")
+		}, 101:function(msg){
+			console.log("Connection started")
+		}, 0:function(msg){
+			console.error("Server error: "+JSON.stringify(msg))
 		}
 	}
 
