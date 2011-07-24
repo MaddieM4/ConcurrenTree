@@ -47,6 +47,7 @@ function BCP(docs, stream, auth){
 	}
 
 	this.select = function(name) {
+		if (name==undefined){console.error("Cannot select docname of undefined"); return}
 		self.send({"type":"select", "docname":name})
 	}
 

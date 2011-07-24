@@ -26,12 +26,12 @@ function Operation() {
 
 	this.pushflatinsert = function(pos, value, tree) {
 		var trace = tree.trace(pos);
-		this.pushinsert(trace.address, trace.pos, value)
+		this.pushinsert(trace.address, trace.position, value)
 	}
 
 	this.pushflatdelete = function(pos, tree) {
 		var trace = tree.trace(pos);
-		this.pushdelete(trace.address, [trace.pos])
+		this.pushdelete(trace.address, [trace.position])
 	}
 
 	this.apply = function(tree) {
@@ -66,6 +66,15 @@ function Operation() {
 
 	this.serialize = function() {
 		// return protocol string
-		return "";
+		return JSON.stringify(this.proto());
+	}
+
+	this.proto = function(){
+		// return protocol object
+		instructions = this.instructions;
+		for (i in instructions){
+			instructions[i][1] = address_bcp(instructions[i][1]);
+		}
+		return {"type":"op","instructions":instructions}
 	}
 }

@@ -13,7 +13,7 @@ class Address:
 		elif type(target) == Address:
 			self.layers = target.layers
 		else:
-			raise TypeError("Expected str, unicode, or address.Address, got "+type(target))
+			raise TypeError("Expected str, unicode, or address.Address, got "+str(type(target)))
 
 	def process(self, string):
 		if len(string) == 0:

@@ -153,7 +153,7 @@ class TreeChild:
 	def insertTree(self, tree):
 		hash = tree.hash
 		if hash in self.trees:
-			if tree.value != self.trees[hash].value:
+			if tree._value != self.trees[hash]._value:
 				raise IndexError("Hash collision")
 			# if not, ignore duplicate operation
 		else:

@@ -15,21 +15,25 @@ function View(tree, name, display){
 	// flat functions for display convenience (TODO: chaining)
 
 	this.delete = function(start, end) {
+		if (end==undefined) end = start;
+		var op = new Operation()
 		for (var pos=start; start<=end; start++){
-			var op = new Operation()
 			op.pushflatdelete(pos,this.tree)
-			op.apply(tree)
-			bcp.local(op, this.name);
 		}
+		console.log(op)
+		op.apply(tree)
+		bcp.local(op, this.name);
 	}
 
 	this.insert = function(pos, value) {
 		var op = new Operation()
 		op.pushflatinsert(pos,value,this.tree)
-		console.log("1")
 		op.apply(tree)
-		console.log("2")
 		bcp.local(op, this.name);
+	}
+
+	this.value = function(){
+		return this.tree.flatten()
 	}
 
 	this.update = function(){

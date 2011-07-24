@@ -190,8 +190,8 @@ function DocumentHandler(){
 	var self = this;
 	this.contents = {};
 
-	this.get = function(name) {
-		if (!this.contains(name)) this.set(name, [new View(new CTree(""))]);
+	this.get = function(name, display) {
+		if (!this.contains(name)) this.set(name, [new View(new CTree(""), name, display)]);
 		return this.contents[name]
 	}
 
