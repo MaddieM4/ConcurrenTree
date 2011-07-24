@@ -38,7 +38,7 @@ function View(tree, name, display){
 
 	this.update = function(){
 		if (this.display==undefined) {
-			console.log("No display")
+			// console.log("No display")
 			return this.update_displayless();
 		}
 		this.display.lock()
@@ -57,6 +57,8 @@ function View(tree, name, display){
 
 	this.update_displayless = function() {
 		var netops = this.netbuffer.read_all();
-		for (var i in netops) netops[i].apply(this.tree)
+		for (var i in netops) {
+			netops[i].apply(this.tree);
+		}
 	}
 }

@@ -77,11 +77,12 @@ function Operation() {
 
 	this.proto = function(){
 		// return protocol object
-		instructions = this.instructions;
-		for (i in instructions){
-			instructions[i][1] = address_bcp(instructions[i][1]);
+		var instr = [];
+		for (i in this.instructions){
+			instr[i] = this.instructions[i].concat(); // deep copy
+			instr[i][1] = address_bcp(instr[i][1]);
 		}
-		return {"type":"op","instructions":instructions}
+		return {"type":"op","instructions":instr}
 	}
 }
 

@@ -220,4 +220,17 @@ function DocumentHandler(){
 		}
 	}
 
+	this.cycle = function(){
+		var names = this.names();
+		for (i in names) {
+			var views = this.get(names[i])
+			for (view in views) {
+				views[view].update();
+			}
+		}
+	}
+
+	this.value = function(name) {
+		return this.get(name)[0].value();
+	}
 }

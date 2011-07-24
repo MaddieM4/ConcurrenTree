@@ -21,6 +21,7 @@ function Buffer() {
 		var result = undefined;
 		if (read<write) {
 			result = this._contents[read]
+			delete this._contents[read]
 			this.readposition++;
 		}
 		this.readlock = false;

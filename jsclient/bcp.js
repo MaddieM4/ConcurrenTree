@@ -20,6 +20,9 @@ function BCP(docs, stream, auth){
 			this.receive(messages[i]);
 		}
 
+		// Update displays
+		docs.cycle()
+
 		// flush the stream buffer
 		self.stream.onpush()
 	}
@@ -51,6 +54,18 @@ function BCP(docs, stream, auth){
 		self.send({"type":"select", "docname":name})
 	}
 
+	this.getcached = {}
+	this.get = function(name) {
+		// returns a prototree
+		if (this.getcached[name]==undefined){
+			self.select(name);
+			self.send({"type":"get", "tree":0})
+		} else {
+			self.send(this.getcached[name])
+			return this.getcached[name]
+		}
+	}
+
 	this.handle = function (msg){
 		this._handle(msg, msg.type, this.handlers);
 	}
@@ -70,6 +85,8 @@ function BCP(docs, stream, auth){
 			md5table[msg.value] = msg.hashvalue;
 		}, "error":function(msg) {
 			self.errorhandle(msg)
+		}, "era":function(msg) {
+			this.docs.send(msg.docname, opfromprototree(msg.tree))
 		}, 0:function(msg){
 			console.log("error: unknown message type")
 			self.error(401)
