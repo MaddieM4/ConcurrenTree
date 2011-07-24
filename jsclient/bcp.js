@@ -20,17 +20,6 @@ function BCP(docs, stream, auth){
 			this.receive(messages[i]);
 		}
 
-		// Read and send client edits from docs
-		names = docs.names();
-		for (i in names) {
-			var doc = docs.get(names[i]);
-			var ops = doc.ops.read_all();
-			for (o in ops){
-				var op = ops[o];
-				this.send(op.proto())
-			}
-		}
-
 		// flush the stream buffer
 		self.stream.onpush()
 	}
@@ -46,6 +35,16 @@ function BCP(docs, stream, auth){
 			// Bad JSON
 			return
 		}
+	}
+
+	this.local = function(op, name) {
+		self.select(name);
+		this.docs.send(name, op);
+		self.send(op.proto())
+	}
+
+	this.select = function(name) {
+		self.send({"type":"select", "docname":name})
 	}
 
 	this.handle = function (msg){

@@ -20,6 +20,7 @@ class HTTP(PoolServer):
 			'/ctree.js':(derel("ctree.js"),'text/javascript'),
 			'/operation.js':(derel("operation.js"),'text/javascript'),
 			'/bcp.js':(derel("bcp.js"),'text/javascript'),
+			'/view.js':(derel("view.js"),'text/javascript'),
 			'/stream.js':(derel("stream.js"),'text/javascript'),
 			'/jquery.js':(derel("jquery-1.4.2.min.js"),'text/javascript'),
 			'/jquery-1.4.2.min.js':(derel("jquery-1.4.2.min.js"),'text/javascript'),

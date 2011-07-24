@@ -1,6 +1,6 @@
 // ctree.js :: CTree object and DocumentHandler object
 
-// Dependencies: Buffer, Util, MD5(util, bcp)
+// Dependencies: Buffer, Util, MD5(util, bcp), View
 
 function CTree(value) {
 	this.value = value;
@@ -134,10 +134,12 @@ function CTree(value) {
 }
 
 function DocumentHandler(){
+	// Stores lists of Views
+	var self = this;
 	this.contents = {};
 
 	this.get = function(name) {
-		if (!this.contains(name)) this.set(name, CTree(""));
+		if (!this.contains(name)) this.set(name, [new View(new CTree(""))]);
 		return this.contents[name]
 	}
 
@@ -155,7 +157,15 @@ function DocumentHandler(){
 
 	this.names = function() {
 		result = [];
-		for (i in self.contents) result.push(i)
+		for (i in self.contents) result.push(i);
 		return result;
 	}
+
+	this.send = function(name, op){
+		var views = self.get(name);
+		for (var i in views) {
+			views[i].netinput(op);
+		}
+	}
+
 }

@@ -14,7 +14,8 @@
 			"stream.js",
 			"ctree.js",
 			"operation.js",
-			"bcp.js")
+			"bcp.js",
+			"view.js")
 
 		head.ready("textile.js",function(){
 			ted = new Textile.Editor('editor');
@@ -33,6 +34,10 @@
 			bcp = new BCP(docs, hostws, null)
 		});
 
+		var rootview;
+		head.ready("view.js",function(){
+			rootview = docs.get("hello")
+		});
 	</script>
 </head>
 <body>

@@ -24,6 +24,10 @@ function Operation() {
 		this.push([0,address].concat(victims))
 	}
 
+	this.pushflatinsert = function(pos, value) {
+		// pass
+	}
+
 	this.apply = function(tree, display) {
 		display.lock();
 		this.display(this.apply_tree(), display);
