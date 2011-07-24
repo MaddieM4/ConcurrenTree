@@ -3,6 +3,8 @@
 // Dependencies: Buffer, Util, MD5(util, bcp), View
 
 function CTree(value) {
+	// Action functions should return trees
+
 	this.value = value;
 	this.ops = new Buffer();
 	this.hash = function() {return md5(this.value, bcp);}
@@ -11,13 +13,9 @@ function CTree(value) {
 	this.markers = []; arrayfill(this.markers, af_obj, value.length+1);
 	this.children = []; arrayfill(this.children, af_obj, value.length+1);
 
-	this.bcp_push = function(op){
-		
-	}
-
 	this.insert = function(pos, childtext) {
 		var child = new CTree(childtext);
-		this.children[pos][child.hash] = child;
+		this.children[pos][child.hash()] = child;
 		return child;
 	}
 

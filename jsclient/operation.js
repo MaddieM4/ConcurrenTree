@@ -24,32 +24,27 @@ function Operation() {
 		this.push([0,address].concat(victims))
 	}
 
-	this.pushflatinsert = function(pos, value) {
-		// pass
+	this.pushflatinsert = function(pos, value, tree) {
+		var trace = tree.trace(pos);
+		this.pushinsert(trace.address, trace.pos, value)
 	}
 
-	this.apply = function(tree, display) {
-		display.lock();
-		this.display(this.apply_tree(), display);
-		display.unlock();
+	this.pushflatdelete = function(pos, tree) {
+		var trace = tree.trace(pos);
+		this.pushdelete(trace.address, [trace.pos])
 	}
 
-	this.apply_tree = function(tree) {
-		// returns an array of replacements
-		var replacements = [];
+	this.apply = function(tree) {
 		for (var i in this.instructions) {
 			i = this.instructions[i];
 			if (i[0] == 1) {
 				// insertion
-				var pos = tree.untrace(i[1], i[2]);
-				replacements.push(pos, pos, i[3]);
 				tree.resolve(i[1]).insert(i[2], i[3]);
 			} else {
 				// deletion
 				var victims = i.slice(2);
 				strike = function(del){
 					var pos = tree.untrace(i[1], del);
-					replacements.push(pos, pos+1,"");
 					tree.resolve(i.address).delete(i.pos);
 				}
 				for (del in victims) {
@@ -61,7 +56,6 @@ function Operation() {
 				}
 			}
 		}
-		return replacements;
 	}
 
 	this.display = function(replacements, display) {

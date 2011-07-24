@@ -38,8 +38,11 @@ function BCP(docs, stream, auth){
 	}
 
 	this.local = function(op, name) {
+		console.log("selecting")
 		self.select(name);
+		console.log("sending local")
 		this.docs.send(name, op);
+		console.log("sending proto")
 		self.send(op.proto())
 	}
 

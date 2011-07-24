@@ -16,16 +16,27 @@ function View(tree, name, display){
 
 	this.delete = function(start, end) {
 		for (var pos=start; start<=end; start++){
-			bcp.local(this.tree.flatdelete(pos), this.name);
+			var op = new Operation()
+			op.pushflatdelete(pos,this.tree)
+			op.apply(tree)
+			bcp.local(op, this.name);
 		}
 	}
 
 	this.insert = function(pos, value) {
-		bcp.local(this.tree.flatinsert(pos, value), this.name);
+		var op = new Operation()
+		op.pushflatinsert(pos,value,this.tree)
+		console.log("1")
+		op.apply(tree)
+		console.log("2")
+		bcp.local(op, this.name);
 	}
 
 	this.update = function(){
-		if (this.display==undefined) return this.update_displayless();
+		if (this.display==undefined) {
+			console.log("No display")
+			return this.update_displayless();
+		}
 		this.display.lock()
 		var netops = this.netbuffer.read_all();
 		for (var i in netops){
