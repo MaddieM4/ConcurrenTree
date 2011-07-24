@@ -84,3 +84,7 @@ function address_bcp(addr){
 	}
 	return result.join("/");
 }
+
+function int(num){
+	return (num-1+1)
+}

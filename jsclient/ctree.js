@@ -6,6 +6,7 @@ function CTree(value) {
 	// Action functions should return trees
 
 	this.value = value;
+	this.length = this.value.length
 	this.hash = function() {return md5(this.value, bcp);}
 	this.hash();
 	this.deletions = []; arrayfill(this.deletions, function(){return false}, value.length);
@@ -13,12 +14,16 @@ function CTree(value) {
 	this.children = []; arrayfill(this.children, af_obj, value.length+1);
 
 	this.insert = function(pos, childtext) {
+		// Insert and return a child tree
+
 		var child = new CTree(childtext);
 		this.children[pos][child.value] = child;
 		return child;
 	}
 
 	this.delete = function(pos) {
+		// Mark a character in this tree as deleted
+
 		this.deletions[pos] = true;
 		return this;
 	}
@@ -42,6 +47,8 @@ function CTree(value) {
 	}
 
 	this.trace = function(pos) {
+		// Find an address/position pair for a textual position
+
 		// returns {'address':address_js, 'position':int}
 		// 'address' will == "overflow" if pos > len, 'position' will == overflow amount
 		togo = pos;
@@ -66,9 +73,20 @@ function CTree(value) {
 	}
 
 	this.untrace = function(addr, pos) {
+		// Find textual position of an address/position pair.
+
 		var resolved = this.resolve(addr);
-		if (resolved==undefined) return undefined;
-		return this._ut(resolved, pos)[0];
+		if (resolved==undefined) {
+			console.warn("untrace: Could not resolve address")
+			return undefined;
+		}
+		result = this._ut(resolved, pos);
+		if (result[1]) {
+			return result[0];
+		} else {
+			console.warn("untrace: Position not found")
+			return undefined;
+		}
 	}
 
 	this._ut = function(targtree, pos) {
@@ -125,6 +143,45 @@ function CTree(value) {
 		if (start>end) return undefined;
 		for (var i=end; i>=start; i--) this.flatdelete(i);
 		return this.flatinsert(start, value);
+	}
+
+	this.proto = function() {
+		// return a protocol representation of the tree
+
+		var runstr = "";
+		var rundel = -1;
+		var deletions = [];
+		var result = [];
+		for (var pos in this.children){
+			for (var c in this.children[pos]){
+				if (runstr!="") {
+					result.push(runstr);
+					runstr = "";
+				}
+				result.push(this.children[pos][c].proto());
+			}
+			if (pos<this.length) {
+				if (this.deletions[pos]) {
+					if (rundel == -1) {
+						rundel = int(pos);
+					}
+				} else {
+					if (rundel != -1) {
+						if (rundel == pos-1) deletions.push(rundel)
+						else deletions.push([rundel, pos-1])
+						rundel = -1;
+					}
+				}
+				runstr += this.value[pos]
+			}
+		}
+		if (runstr!="") result.push(runstr)
+		if (rundel!=-1) {
+			if (rundel == pos-1) deletions.push(rundel)
+			else deletions.push([rundel, pos-1])
+		}
+		result.push(deletions);
+		return result;
 	}
 }
 
