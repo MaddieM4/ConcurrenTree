@@ -62,6 +62,7 @@ function address_js(addr){
 	var parts = addr.split("/")
 	result = []
 	for (i in parts){
+		if (parts[i]=="") break;
 		var targets = parts[i].split(":");
 		var index = targets[0];
 		var hash = targets[1];

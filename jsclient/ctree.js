@@ -1,12 +1,11 @@
 // ctree.js :: CTree object and DocumentHandler object
 
-// Dependencies: Buffer, Util, MD5(util, bcp), View
+// Dependencies: Util, MD5(util, bcp), View
 
 function CTree(value) {
 	// Action functions should return trees
 
 	this.value = value;
-	this.ops = new Buffer();
 	this.hash = function() {return md5(this.value, bcp);}
 	this.hash();
 	this.deletions = []; arrayfill(this.deletions, function(){return false}, value.length);
@@ -15,7 +14,7 @@ function CTree(value) {
 
 	this.insert = function(pos, childtext) {
 		var child = new CTree(childtext);
-		this.children[pos][child.hash()] = child;
+		this.children[pos][child.value] = child;
 		return child;
 	}
 
@@ -24,8 +23,8 @@ function CTree(value) {
 		return this;
 	}
 
-	this.get = function(pos, hash) {
-		return this.children[pos][hash];
+	this.get = function(pos, value) {
+		return this.children[pos][value];
 	}
 
 	this.flatten = function() {
@@ -43,7 +42,7 @@ function CTree(value) {
 	}
 
 	this.trace = function(pos) {
-		// returns {'address':string, 'position':int}
+		// returns {'address':address_js, 'position':int}
 		// 'address' will == "overflow" if pos > len, 'position' will == overflow amount
 		togo = pos;
 		for (var i=0;i<this.value.length+1;i++) {
@@ -51,14 +50,13 @@ function CTree(value) {
 				r = this.children[i][c].trace(togo);
 				if (r['address'] == 'overflow') {
 					togo -= r['position'];
-				} else if (r['address'] == "") {
-					return {'address':''+i+':'+c, 'position':r['position']};
 				} else {
-					return {'address':''+i+':'+c+'/'+r['address'], 'position':r['position']};
+					addr = [[i,c]].concat(r['address']);
+					return {'address':addr, 'position':r['position']};
 				}
 			}
 			if (togo == 0 && !this.deletions[i]) {
-				return {'address':'', 'position':i};
+				return {'address':[], 'position':i};
 			}
 			if (i<this.value.length && !this.deletions[i]) {
 				togo -= 1;
@@ -91,12 +89,11 @@ function CTree(value) {
 		return [result, false];
 	}
 
-	this.resolve = function(addrstring) {
-		if (addrstring == "") return this;
-		parts = addrstring.split("/");
+	this.resolve = function(addr) {
+		if (addr == []) return this;
 		tree = this;
-		for (i in parts) {
-			split = parts[i].split(":");
+		for (i in addr) {
+			split = addr[i]
 			tree = tree.get(split[0], split[1]);
 		}
 		return tree;
