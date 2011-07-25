@@ -61,7 +61,7 @@ function BCP(docs, stream, auth){
 			self.select(name);
 			self.send({"type":"get", "tree":0})
 		} else {
-			self.send(this.getcached[name])
+			self.docs.send(this.getcached[name])
 			return this.getcached[name]
 		}
 	}

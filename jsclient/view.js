@@ -18,7 +18,7 @@ function View(tree, name, display){
 	this.delete = function(start, end) {
 		if (end==undefined) end = start;
 		var op = new Operation()
-		for (var pos=start; start<=end; start++){
+		for (var pos=start; pos<=end; pos++){
 			op.pushflatdelete(pos,this.tree)
 		}
 		console.log(op)
