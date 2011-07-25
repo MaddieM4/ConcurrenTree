@@ -6,6 +6,7 @@ function View(tree, name, display){
 	this.tree = tree;
 	this.name = name;
 	this.display = display;
+	bcp.get(this.name);
 
 	this.netbuffer = new Buffer(); // Input from BCP
 	// Input from user is either applied immediately or buffered by display
@@ -50,7 +51,7 @@ function View(tree, name, display){
 				console.log(reps)
 				for (var i in reps) {
 					var rep = reps[i]
-					display.replace(rep[0],rep[1],rep[2]);
+					this.display.replace(rep[0],rep[1],rep[2]);
 				}
 				op.apply(this.tree)
 			}

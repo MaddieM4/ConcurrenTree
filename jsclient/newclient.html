@@ -66,9 +66,9 @@
 		}
 
 		function easy_delete(){
-			var start = $('.deleter .start').val();
-			var end = $('.deleter .end').val();
-			rootdisplay.replace(start,end,"");
+			var start = int($('.deleter .start').val());
+			var end = int($('.deleter .end').val());
+			rootdisplay.replace(start,end+1,"");
 			rootview.delete(start, end);
 		}
 	</script>

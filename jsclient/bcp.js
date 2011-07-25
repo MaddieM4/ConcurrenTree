@@ -86,7 +86,8 @@ function BCP(docs, stream, auth){
 		}, "error":function(msg) {
 			self.errorhandle(msg)
 		}, "era":function(msg) {
-			this.docs.send(msg.docname, opfromprototree(msg.tree))
+			self.getcached[msg.docname] = msg.tree;
+			self.docs.send(msg.docname, opfromprototree(msg.tree))
 		}, 0:function(msg){
 			console.log("error: unknown message type")
 			self.error(401)
