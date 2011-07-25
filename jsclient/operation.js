@@ -14,6 +14,9 @@ function Operation() {
 
 	this.push = function(i) {
 		this.instructions.push(i);
+			if (i[0]==1){
+				md5(i[3], bcp) // precache hash of insertion value
+			}
 	}
 
 	this.push_list = function(array){
@@ -62,6 +65,47 @@ function Operation() {
 				}
 			}
 		}
+	}
+
+	this.replacements = function(tree) {
+		// returns a series of replacements on the plaintext
+		// represented by the tree.
+		var temptree = tree.valueOf()
+		results = []
+		for (var i in this.instructions){
+			var instr = this.instructions[i];
+			if (instr[0]==1) {
+				// Insertion
+				var subaddr = instr[1].concat([[instr[2], instr[3]]])
+				var resolved = temptree.resolve(subaddr)
+				if (resolved==undefined){
+					var pos = temptree.untrace(instr[1],instr[2]);
+					results.push([pos,pos,instr[3]]);
+					temptree.flatinsert(pos, instr[3])
+				}
+			} else {
+				// Deletion
+				var addr = instr[1]
+				var target = temptree.resolve(addr)
+				var victims = instr.concat().slice(2)
+				for (v in victims){
+					if (!isArray(victims[v])){
+						victims[v] = [victims[v]]
+					} else {
+						victims[v] = range(victims[v][0],victims[v][1]+1);
+					}
+					for (x in victims[v]){
+						x = victims[v][x];
+						if (!target.deletions[x]) {
+							var pos = temptree.untrace(addr,x)
+							results.push([pos,pos+1, ""])
+							target.delete(x)
+						}
+					}
+				}
+			}
+		}
+		return results
 	}
 
 	this.display = function(replacements, display) {

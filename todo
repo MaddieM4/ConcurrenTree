@@ -1,6 +1,7 @@
 
 [X] Modify BCP.Connection to use nullbyte separators.
 [X] BCP Errors
+[ ] Fix JS competition bugs (Two trees at the same position will only order themselves by hash coincidentally)
 
 [ ] Write BCP recieving code
 	[X] select
@@ -24,5 +25,28 @@
 	[ ] encrypted
 	[ ] key
 	[ ] error
+
+[ ] Write JS recieving code
+	[ ] select
+	[ ] op
+	[ ] ad
+	[ ] getop
+	[ ] check
+	[ ] thash
+	[ ] get
+	[X] era
+	[ ] subscribe
+	[ ] unsubscribe
+	[ ] login
+	[ ] auth
+	[ ] authmel
+	[ ] authmd
+	[ ] authok
+	[ ] lookup
+	[ ] metadata
+	[ ] part
+	[ ] encrypted
+	[ ] key
+	[X] error
 
 

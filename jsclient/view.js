@@ -41,18 +41,21 @@ function View(tree, name, display){
 			// console.log("No display")
 			return this.update_displayless();
 		}
-		this.display.lock()
 		var netops = this.netbuffer.read_all();
-		for (var i in netops){
-			var op = netops[i];
-			var reps = op.replacements(this.tree);
-			for (var i in reps) {
-				var rep = reps[i]
-				display.replace(rep[0],rep[1],rep[2]);
+		if (netops.length>0){
+			this.display.lock()
+			for (var i in netops){
+				var op = netops[i];
+				var reps = op.replacements(this.tree);
+				console.log(reps)
+				for (var i in reps) {
+					var rep = reps[i]
+					display.replace(rep[0],rep[1],rep[2]);
+				}
+				op.apply(this.tree)
 			}
-			op.apply(this.tree)
+			this.display.unlock()
 		}
-		this.display.unlock()
 	}
 
 	this.update_displayless = function() {

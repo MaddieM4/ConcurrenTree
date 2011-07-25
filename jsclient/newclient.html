@@ -18,7 +18,7 @@
 			"view.js")
 
 		head.ready("textile.js",function(){
-			ted = new Textile.Editor('editor');
+			//ted = new Textile.Editor('editor');
 		})
 
 		head.ready("stream.js",function(){
@@ -34,18 +34,73 @@
 			bcp = new BCP(docs, hostws, null)
 		});
 
+		function my_display(){
+			this.text = "";
+			this.display = $("#display #screen");
+			this.buttons = $("#display input:button");
+			this.lock = function(){
+				this.buttons.attr("disabled", true);
+			}
+			this.unlock = function(){
+				this.buttons.attr("disabled", false);
+			}
+			this.replace = function(start, end, value){
+				this.text = this.text.slice(0,start)+value+this.text.slice(end);
+				this.display.html(this.text) // TODO: escape html literals
+			}
+		}
+
 		var rootview;
+		var rootdisplay;
 		head.ready("view.js",function(){
-			rootview = docs.get("hello")
+			rootview = docs.get("hello")[0]
+			rootdisplay = new my_display();
+			rootview.display = rootdisplay;
 		});
+
+		function easy_insert(){
+			var pos = $('.inserter .pos').val();
+			var value = $('.inserter .value').val();
+			rootdisplay.replace(pos,pos,value);
+			rootview.insert(pos, value);
+		}
+
+		function easy_delete(){
+			var start = $('.deleter .start').val();
+			var end = $('.deleter .end').val();
+			rootdisplay.replace(start,end,"");
+			rootview.delete(start, end);
+		}
 	</script>
+	<style>
+		pre {
+			border: 2px solid #DDD;
+			min-height:5em;
+		}
+	</style>
 </head>
 <body>
 <p>
 <img src="OrchardBigLogo.svg" alt="Orchard Logo"/>
 </p>
 
-<p><canvas id="editor" width="800" height="300"></canvas></p>
+<!-- <p><canvas id="editor" width="800" height="300"></canvas></p> -->
+
+<div id="display">
+	<h1>Docname: "hello"</h1>
+	<pre id="screen"></pre>
+	<form class="inserter">
+		<input type="button" value="Insert" onclick="easy_insert()"/>
+		<input type="text" class="pos" value="pos">
+		<br/><textarea class="value">Value</textarea>
+	</form>
+	<hr/>
+	<form class="deleter">
+		<input type="button" value="Delete" onclick="easy_delete()"/>
+		<input type="text" class="start" value="start">
+		<input type="text" class="end" value="end">
+	</form>
+</div>
 
 </body>
 </html>
