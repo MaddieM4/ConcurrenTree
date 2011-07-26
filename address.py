@@ -5,29 +5,12 @@ class Address:
 
 	def __init__(self, target):
 		self.layers = []
-		if type(target)==unicode:
-			target = str(target)
-		if type(target)==str:
-			if not self.process(target):
-				raise ValueError(target+" is not a valid address of form index:hash")
+		if type(target)==list:
+			self.layers = target
 		elif type(target) == Address:
 			self.layers = target.layers
 		else:
-			raise TypeError("Expected str, unicode, or address.Address, got "+str(type(target)))
-
-	def process(self, string):
-		if len(string) == 0:
-			# Root tree
-			return True
-		pieces = string.split("/")
-		for i in pieces:
-			match = re.match("^(\d+):([0-9a-fA-F]+)$", i)
-			if match:
-				groups = match.groups()
-				self.layers.append((int(groups[0]), groups[1]))
-			else:
-				return False
-		return True
+			raise TypeError("Expected list or address.Address, got "+str(type(target)))
 
 	def resolve(self, tree):
 		x = tree
@@ -36,4 +19,4 @@ class Address:
 		return x
 
 	def __str__(self):
-		return "/".join(["%d:%s" % i for i in self.layers])
+		return '[%s]' % ",".join(["[%d,%s]" % i for i in self.layers])
