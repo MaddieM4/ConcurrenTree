@@ -1,6 +1,13 @@
 import hasher
 import marker
 
+from hasher import key
+
+def sort(d):
+	k = d.keys()
+	k.sort()
+	return k
+
 class Tree:
 	def __init__(self, value="", name=''):
 		self.name = name
@@ -10,53 +17,39 @@ class Tree:
 		self._children = []
 		self.operations = {}
 		for i in range(len(self)+1):
-			self._children.append(TreeChild())
-		self.hash = hasher.make(self._value)
+			self._children.append(dict())
 
 	def insert(self, pos, value):
 		''' Insert a child to the tree with string "value" at position "pos" '''
 		result = Tree(value)
-		self._children[pos].insertTree(result)
+		self._children[pos][result.key] = result
 		return result
 
 	def delete(self, pos):
 		''' Mark a character in a tree as deleted '''
 		del self[pos]
 
-	def get(self, pos, hash):
-		''' Return the subtree with hash "hash" from position "pos" '''
-		return self._children[pos].getTree(hash)
+	def get(self, pos, key):
+		''' Return the subtree with key "key" from position "pos" '''
+		return self._children[pos][key]
 
-	def mark(self, pos, type, value):
-		''' Set a marker on a position '''
-		self._children[pos].mark(type, value)
-
-	def markers(self):
-		''' 
-		Returns a dict (keyed on position) of dict[totaltype] = marker.
-		'''
-		results = {}
-		for i in range(self._length+1):
-			markers = self._children[i].markers
-			if markers:
-				#for x in markers:
-				#	markers[x] = markers[x].value
-				results[i] = markers
-		return results
-
-	def children(self):
+	def all_children(self):
 		''' 
 		Returns a dict (keyed on position) of sorted child hash lists.
 		'''
 		results = {}
 		for i in range(self._length+1):
-			hashes = self._children[i].sorted()
+			hashes = self.children(i)
 			if hashes:
 				results[i] = hashes
 		return results
 
+	def children(self, i):
+		''' A sorted list of all children at position i. '''
+		return [self.get(i, child) for child in sort(self._children[i])]
+
 	def __getitem__(self, i):
-		return (self._value[i],not self._deletions[i], self._children[i].markers)
+		return (self._value[i], not self._deletions[i])
 
 	def __getslice__(self, i, j):
 		if j > len(self): j = len(self)
@@ -74,21 +67,16 @@ class Tree:
 		return self._length
 
 	def flatten(self):
-		''' Returns a single-level tree that summarizes all descendants. Not backwards-compatible for applying ops. '''
-		# This function does not yet support markers.
+		''' Returns a string that summarizes self and all descendants. Not backwards-compatible for applying ops. '''
 		rstring = ""
-		rmarkerboxes = []
 		for i in range(self._length+1):
-			# Set up markerbox
-			rmarkerboxes.append({})
-			# keep working on this function after talking to Nathaniel
-			for c in self._children[i].flat_children():
-				rstring += c._value
+			for c in self.children(i):
+				rstring += c.flatten()
 			if i < self._length:
 				# check whether to include character at this position
 				if not self._deletions[i]:
 					rstring += self._value[i]
-		return Tree(rstring)
+		return rstring
 
 	def trace(self, pos):
 		''' 
@@ -103,15 +91,15 @@ class Tree:
 	def _trace(self, pos):
 		togo = pos
 		for i in range(len(self)+1):
-			for child in self._children[i].children():
+			for child in self.children(i):
 				x = child._trace(togo)
 				print "///",x
 				if type(x) == tuple:
-					return ("%d:%s/%s" % (i,child.hash,x[0]),x[1])
+					return [[i, child.key]]+x[0], x[1]
 				else:
 					togo -= x
 			if togo == 0:
-				return ("",i)
+				return ([],i)
 			if i < len(self) and not self._deletions[i]:
 				togo -=1
 		return togo
@@ -122,7 +110,7 @@ class Tree:
 		deletions = []
 		result = []
 		for i in range(len(self)+1):
-			for child in self._children[i].children():
+			for child in self.children(i):
 				if runningstring:
 					result.append(runningstring)
 					runningstring = ""
@@ -134,54 +122,14 @@ class Tree:
 		result.append(deletions)
 		return result
 
+	@property
+	def key(self):
+		return hasher.key(self._value)
+
+	@property
+	def hash(self):
+		return hasher.checksum(self.proto())
+
 	def __str__(self):
-		rstring = ""
-		for i in range(len(self)):
-			if not self._deletions[i]:
-				rstring += self._value[i]
-		return rstring
-
-class TreeChild:
-	def __init__(self, trees = [], markers = []):
-		self.trees = {}
-		self.markers = {}
-		for i in trees:
-			self.insertTree(i)
-		for i in markers:
-			self.insertMarker(i)
-
-	def insertTree(self, tree):
-		hash = tree.hash
-		if hash in self.trees:
-			if tree._value != self.trees[hash]._value:
-				raise IndexError("Hash collision")
-			# if not, ignore duplicate operation
-		else:
-			self.trees[hash] = tree
-
-	def getTree(self, hash):
-		return self.trees[hash]
-
-	def insertMarker(self, type):
-		cat, sub = marker.sep(type)
-		self.markers[type] = marker.Marker(cat, sub)
-
-	def mark(self, type, value):
-		pass
-
-	def getMarker(self, totaltype):
-		return self.markers[totaltype]
-
-	def sorted(self):
-		''' Return a sorted list of all child hashes'''
-		keys = self.trees.keys()
-		keys.sort()
-		return keys
-
-	def children(self):
-		''' Return a sorted array of children '''
-		return [self.getTree(x) for x in self.sorted()]
-
-	def flat_children(self):
-		''' Return a sorted list of flattened children '''
-		return [x.flatten() for x in self.children()]
+		''' Protostring '''
+		return hasher.strict(self.proto())
