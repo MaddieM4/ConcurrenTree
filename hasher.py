@@ -12,16 +12,18 @@ def make6(string):
 def maken(string, n):
 	return make(string)[:n]
 
-modulo = 2**16
+modulo = 2**32
 
 def sum(string, verbose = False):
+	''' Create a semi-hash of the string '''
 	s = 0
 	for i in string:
 		if verbose: print s
 		s = (s*s + ord(i)) % modulo
-	return s
+	return int(s)
 
 def strict(obj):
+	''' Convert an object into a strict JSON string '''
 	t = type(obj)
 	if t==bool or obj==None or t==str or t==int or t==unicode:
 		return json.dumps(obj)
@@ -38,9 +40,11 @@ def strict(obj):
 		raise TypeError("Not JSONable: "+str(t))
 
 def strictify(jsonstring):
+	''' Make a JSON string strict '''
 	return strict(json.loads(jsonstring))
 
 def checksum(obj):
+	''' Get the checksum of the strict of an object '''
 	return sum(strict(obj))
 
 def key(string):

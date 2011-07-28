@@ -57,13 +57,21 @@ class Operation:
 				return False
 		return True
 
+	def compress(self):
+		# Todo - op compression (combining deletion instructions together)
+		pass
+
 	@property
 	def hash(self):
-		return hasher.make(str(self))
+		return hasher.sum(str(self))
+
+	def proto(self):
+		''' Returns a protocol operation object '''
+		return {"type":op,"instructions":[i.proto() for i in self.instructions]}
 
 	def __str__(self):
-		''' Returns a protocol operation object '''
-		return ""
+		''' Returns a protocol operation strict string '''
+		return hasher.strict(self.proto())
 
 class ParseError(SyntaxError): pass
 class OpApplyError(SyntaxError): pass

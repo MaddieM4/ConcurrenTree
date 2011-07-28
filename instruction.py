@@ -1,4 +1,5 @@
 from address import Address
+import hasher
 
 def validpos(tree, pos):
 	if not (pos <= len(tree) and pos >= 0):
@@ -24,14 +25,23 @@ class Instruction:
 		''' Override this function in subclasses with code to operate on a tree. '''
 		raise NotImplementedError("Subclasses of Instruction must define self._apply(tree)")
 
+	def proto(self):
+		''' Override this function in subclasses. '''
+		raise NotImplementedError("Subclasses of Instruction must define self.proto()")
+
 	@property
 	def address_object(self):
 		if hasattr(self, "address"):
 			return Address(self.address)
 		else:
-			return Address("")
+			return Address([])
 
-	# TODO - __str__ function that converts to a protocol op substring
+	@property
+	def hash(self):
+		return hasher.sum(str(self))
+
+	def __str__(self):
+		return hasher.strict(self.proto())
 
 class Insertion(Instruction):
 	''' Insert text into a tree. '''
@@ -46,6 +56,9 @@ class Insertion(Instruction):
 
 	def _apply(self, tree):
 		tree.insert(self.position, self.value)
+
+	def proto(self):
+		return [1, self.address.proto(), self.position, self.value]
 
 class Deletion(Instruction):
 	''' Delete text from a tree. '''
@@ -66,6 +79,12 @@ class Deletion(Instruction):
 	def _apply(self, tree):
 		for i in range(self.range[0], self.range[1]+1):
 			tree.delete(i)
+
+	def proto(self):
+		if self.range[0]==self.range[1]:
+			return [0, self.address.proto(), self.range[0]]
+		else:
+			return [0, self.address.proto(), self.range]
 
 def set(array):
 	result = []
