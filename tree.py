@@ -155,18 +155,52 @@ def tree_from_proto(obj):
 			tree.insert_tree(pos, child)
 	return tree
 
-class TreeReference:
+
+def validate_shortcut(shortcut):
+	try:
+		assert(type(shortcut)==list or type(shortcut)==tuple)
+		assert(len(shortcut)==2)
+		assert(type(shortcut[0])==int and shortcut[0]>=0)
+		assert(type(shortcut[1]) in (str, unicode))
+	except AssertionError:
+		raise BadShortcutError(shortcut)
+	return shortcut
+
+class TreeReference(dict):
+	''' 
+		An object that acts as a proxy for an actual tree,
+		using an era to request the tree on the fly. Treat it
+		like a regular old Tree object, but be forewarned that
+		those functions may raise ShortcutUnresolvedErrors if
+		the era can't resolve the shortcut to a Tree.
+	'''
 	def __init__(self, era, shortcut, tree=None):
+		super(TreeReference, self).__init__()
 		self.era = era
-		self.shortcut = shortcut
+		self.shortcut = validate_shortcut(shortcut)
 		if tree!=None:
 			self.set(tree)
 
 	def __getattr__(self, attr):
-		return self.tree.__getattr__(attr)
+		if attr in dir(Tree):
+			return getattr(self.tree, attr)
+		else:
+			if attr in self:
+				return self[attr]
+			else:
+				raise AttributeError(attr)
 
 	def __setattr__(self, attr, value):
-		self.tree.__setattr__(attr, value)
+		if attr in dir(Tree):
+			setattr(self.tree, attr, value)
+		else:
+			self[attr] = value
+
+	def __repr__(self):
+		return "<tree.TreeReference instance: %s>" % str(self.shortcut)
+
+	def proto(self):
+		return {"address":["#"+str(self.shortcut[0]), self.shortcut[1]]}
 
 	@property
 	def tree(self):
@@ -176,7 +210,7 @@ class TreeReference:
 		self.era.insert(self.shortcut, tree)
 
 class Era:
-	def __init__(self, num, trees={}):
+	def __init__(self, num=0, trees={}):
 		self.num = num
 		self.trees = trees
 		self.head = None
@@ -209,38 +243,45 @@ class Era:
 			return tree_from_proto(self.flatten(headtree))
 		else:
 			if type(tree)==TreeReference:
-				return [tree]
+				return [tree.proto()]
 			runningstring = ""
 			result = []
-			def collapse():
+			def collapse(runningstring, result):
 				if runningstring:
 					result.append(runningstring)
 					runningstring = ""
 
 			for i in range(len(tree)+1):
 				for child in tree.children(i):
-					collapse()
-					result += self.flatten(child)
+					collapse(runningstring, result)
+					result += self.flatten(child)[:-1] # deletions will always be []
 				if i<len(tree):
 					if not tree._deletions[i]:
 						runningstring += tree[i]
-			collapse()
-			return result
+			collapse(runningstring, result)
+			return result+[[]]
 
 	def resolve(self, shortcut):
 		num, sum = shortcut
-		if num == self.num:
-			return self.trees[shortcut]
-		elif num<self.num:
-			return self.head.resolve(shortcut)
-		elif num>self.num:
-			return self.tail.resolve(shortcut)
+		try:
+			if num == self.num:
+				return self.trees[sum]
+			elif num<self.num:
+				return self.head.resolve(shortcut)
+			elif num>self.num:
+				return self.tail.resolve(shortcut)
+		except (AttributeError, KeyError):
+			raise ShortcutUnresolvedError(shortcut)
 
 	def insert(self, shortcut, tree):
-		num, sum = shortcut
+		num, sum = validate_shortcut(shortcut)
 		if num == self.num:
 			self.trees[sum] = tree
 		elif num<self.num:
 			return self.head.resolve(shortcut)
 		elif num>self.num:
 			return self.tail.resolve(shortcut)
+
+class ShortcutError(Exception): pass
+class BadShortcutError(ShortcutError): pass
+class ShortcutUnresolvedError(ShortcutError): pass
