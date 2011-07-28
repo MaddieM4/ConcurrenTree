@@ -22,12 +22,15 @@ class Tree:
 	def insert(self, pos, value):
 		''' Insert a child to the tree with string "value" at position "pos" '''
 		result = Tree(value)
-		self._children[pos][result.key] = result
+		self.insert_tree(pos, result)
 		return result
 
 	def delete(self, pos):
 		''' Mark a character in a tree as deleted '''
 		del self[pos]
+
+	def insert_tree(self, pos, obj):
+		self._children[pos][obj.key] = obj		
 
 	def get(self, pos, key):
 		''' Return the subtree with key "key" from position "pos" '''
@@ -49,7 +52,7 @@ class Tree:
 		return [self.get(i, child) for child in sort(self._children[i])]
 
 	def __getitem__(self, i):
-		return (self._value[i], not self._deletions[i])
+		return self._value[i]
 
 	def __getslice__(self, i, j):
 		if j > len(self): j = len(self)
@@ -133,3 +136,111 @@ class Tree:
 	def __str__(self):
 		''' Protostring '''
 		return hasher.strict(self.proto())
+
+def tree_from_proto(obj):
+	children = {}
+	value =""
+	deletions = obj.pop()
+	for x in obj:
+		if type(x)==str:
+			value+=x
+		else:
+			pos = len(value)
+			if not pos in children:
+				children[pos]=[]
+			children[pos].append(tree_from_proto(x))
+	tree = Tree(value)
+	for pos in children:
+		for child in children[pos]:
+			tree.insert_tree(pos, child)
+	return tree
+
+class TreeReference:
+	def __init__(self, era, shortcut, tree=None):
+		self.era = era
+		self.shortcut = shortcut
+		if tree!=None:
+			self.set(tree)
+
+	def __getattr__(self, attr):
+		return self.tree.__getattr__(attr)
+
+	def __setattr__(self, attr, value):
+		self.tree.__setattr__(attr, value)
+
+	@property
+	def tree(self):
+		return self.era.resolve(self.shortcut)
+
+	def set(self, tree):
+		self.era.insert(self.shortcut, tree)
+
+class Era:
+	def __init__(self, num, trees={}):
+		self.num = num
+		self.trees = trees
+		self.head = None
+		self.tail = None
+
+	def precede(self, other):
+		''' Plug another era in before this one '''
+		other.tail = self
+		self.head = other
+
+	def extend(self, other):
+		''' Extend this era out farther '''
+		other.precede(self)
+
+	def forgetbefore(self):
+		''' Flatten previous era '''
+		#self.head = self.head.flatten()
+
+	def flatten(self, tree=None):
+		''' Return a tree '''
+		if tree==None:
+			if self.num>0:
+				headtree = self.head.flatten()
+			else:
+				headtree = Tree()
+				# insert all children
+				for shortcut in self.trees:
+					stree = self.trees[shortcut]
+					headtree.insert_tree(0, TreeReference(self, [self.num, shortcut], stree))
+			return tree_from_proto(self.flatten(headtree))
+		else:
+			if type(tree)==TreeReference:
+				return [tree]
+			runningstring = ""
+			result = []
+			def collapse():
+				if runningstring:
+					result.append(runningstring)
+					runningstring = ""
+
+			for i in range(len(tree)+1):
+				for child in tree.children(i):
+					collapse()
+					result += self.flatten(child)
+				if i<len(tree):
+					if not tree._deletions[i]:
+						runningstring += tree[i]
+			collapse()
+			return result
+
+	def resolve(self, shortcut):
+		num, sum = shortcut
+		if num == self.num:
+			return self.trees[shortcut]
+		elif num<self.num:
+			return self.head.resolve(shortcut)
+		elif num>self.num:
+			return self.tail.resolve(shortcut)
+
+	def insert(self, shortcut, tree):
+		num, sum = shortcut
+		if num == self.num:
+			self.trees[sum] = tree
+		elif num<self.num:
+			return self.head.resolve(shortcut)
+		elif num>self.num:
+			return self.tail.resolve(shortcut)
