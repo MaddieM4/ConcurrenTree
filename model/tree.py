@@ -1,7 +1,5 @@
-import hasher
-import marker
-
-from hasher import key
+import ConcurrenTree.util.hasher as hasher
+from ConcurrenTree.util.hasher import key
 
 def sort(d):
 	k = d.keys()

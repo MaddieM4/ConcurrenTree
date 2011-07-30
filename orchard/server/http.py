@@ -1,42 +1,46 @@
-from BCP.serverpool import PoolServer, Policy
-import orchardserver
-
-import httpfileserver
+from server import *
+from ConcurrenTree.util.server import httpfileserver
 import os.path
+
+import ConcurrenTree
 
 class HTTP(PoolServer):
 	def __init__(self, port=8080):
 		self.closed = False
 		self.port = port
-		def derel(path):
-			return os.path.join(os.path.curdir,"./jsclient/", path)
+		self.rootpath = ConcurrenTree.__path__[0]
+		print "HTTP server root path:",self.rootpath
+		def jsclient(path):
+			return os.path.join(self.rootpath,"orchard/jsclient/", path)
+		def img(path):
+			return os.path.join(self.rootpath,"img/", path)
 		self.server = httpfileserver.Server(('',port), {
-			'/':(derel("client.html"),'text/html'),
-			'/index.htm':(derel("client.html"),'text/html'),
-			'/index.html':(derel("client.html"),'text/html'),
-			'/newclient':(derel("newclient.html"),'text/html'),
-			'/util.js':(derel("util.js"),'text/javascript'),
-			'/buffer.js':(derel("buffer.js"),'text/javascript'),
-			'/ctree.js':(derel("ctree.js"),'text/javascript'),
-			'/operation.js':(derel("operation.js"),'text/javascript'),
-			'/bcp.js':(derel("bcp.js"),'text/javascript'),
-			'/view.js':(derel("view.js"),'text/javascript'),
-			'/stream.js':(derel("stream.js"),'text/javascript'),
-			'/jquery.js':(derel("jquery-1.4.2.min.js"),'text/javascript'),
-			'/jquery-1.4.2.min.js':(derel("jquery-1.4.2.min.js"),'text/javascript'),
-			'/textile.js':(derel("textile-editor.min.js"),'text/javascript'),
-			'/textile-editor.min.js':(derel("textile-editor.min.js"),'text/javascript'),
-			'/head.js':(derel("head.min.js"),'text/javascript'),
-			'/img/logo.svg':(derel("OrchardLogo.svg"),'image/svg+xml'),
-			'/OrchardLogo.svg':(derel("OrchardLogo.svg"),'image/svg+xml'),
-			'/img/biglogo.svg':(derel("OrchardBigLogo.svg"),'image/svg+xml'),
-			'/OrchardBigLogo.svg':(derel("OrchardBigLogo.svg"),'image/svg+xml'),
-			'/favicon.ico':(derel("../img/logos/Orchard32.ico"),'image/svg+xml') #find mime type for ico
+			'/':(jsclient("client.html"),'text/html'),
+			'/index.htm':(jsclient("client.html"),'text/html'),
+			'/index.html':(jsclient("client.html"),'text/html'),
+			'/newclient':(jsclient("newclient.html"),'text/html'),
+			'/util.js':(jsclient("util.js"),'text/javascript'),
+			'/buffer.js':(jsclient("buffer.js"),'text/javascript'),
+			'/ctree.js':(jsclient("ctree.js"),'text/javascript'),
+			'/operation.js':(jsclient("operation.js"),'text/javascript'),
+			'/bcp.js':(jsclient("bcp.js"),'text/javascript'),
+			'/view.js':(jsclient("view.js"),'text/javascript'),
+			'/stream.js':(jsclient("stream.js"),'text/javascript'),
+			'/jquery.js':(jsclient("jquery-1.4.2.min.js"),'text/javascript'),
+			'/jquery-1.4.2.min.js':(jsclient("jquery-1.4.2.min.js"),'text/javascript'),
+			'/textile.js':(jsclient("textile-editor.min.js"),'text/javascript'),
+			'/textile-editor.min.js':(jsclient("textile-editor.min.js"),'text/javascript'),
+			'/head.js':(jsclient("head.min.js"),'text/javascript'),
+			'/img/logo.svg':(img("logos/OrchardLogo.svg"),'image/svg+xml'),
+			'/OrchardLogo.svg':(img("logos/OrchardLogo.svg"),'image/svg+xml'),
+			'/img/biglogo.svg':(img("logos/OrchardBigLogo.svg"),'image/svg+xml'),
+			'/OrchardBigLogo.svg':(img("logos/OrchardBigLogo.svg"),'image/svg+xml'),
+			'/favicon.ico':(img("logos/Orchard32.ico"),'image/svg+xml') #find mime type for ico
 		})
 		self._policy = Policy()
 
 	def run(self):
-		orchardserver.startmessage('HTTP',self.port)
+		startmessage('HTTP',self.port)
 		self.server.start()
 
 	def starting(self):

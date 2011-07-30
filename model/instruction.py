@@ -1,5 +1,5 @@
 from address import Address
-import hasher
+import ConcurrenTree.util.hasher as hasher
 
 def validpos(tree, pos):
 	if not (pos <= len(tree) and pos >= 0):

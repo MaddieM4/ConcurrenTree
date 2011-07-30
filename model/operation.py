@@ -1,5 +1,5 @@
+import ConcurrenTree.util.hasher as hasher
 import instruction
-import hasher
 from address import Address
 from copy import deepcopy
 import traceback

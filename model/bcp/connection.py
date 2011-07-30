@@ -2,9 +2,9 @@ import Queue
 import json
 import traceback
 
-from BCP.peer import Peer
-from BCP.errors import errors
-import operation
+from peer import Peer
+from errors import errors
+#import operation
 
 nullbyte = "\x00"
 

@@ -1,9 +1,7 @@
-from BCP.serverpool import PoolServer, Policy
-import BCP.doublequeue as dq
-import orchardserver
-import hasher
+import ConcurrenTree.util.hasher as hasher
+import ConcurrenTree.util.server.websocket as websocket
 
-import websocket
+from server import *
 
 class WSConnection(websocket.WebSocket):
 	def __init__(self, client, server):
@@ -36,7 +34,7 @@ class WebSocketServer(PoolServer):
 		self._policy.extensions['hash'] = hash
 
 	def run(self):
-		orchardserver.startmessage("WebSocket", self.port)
+		startmessage("WebSocket", self.port)
 		#print "WebSocket server starting on port %d" % self.port
 		self.server.listen(5)
 		print "WebSocket server terminating"

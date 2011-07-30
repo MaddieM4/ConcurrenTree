@@ -1,7 +1,7 @@
 import os.path
 import json
 
-from tree import Tree
+from ConcurrenTree.model.tree import Tree
 from encryption import LocalStorageCipher
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')

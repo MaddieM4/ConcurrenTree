@@ -1,4 +1,4 @@
-from BCP.serverpool import PoolServer
+from server import *
 
 class DHT(PoolServer):
 	''' By default, the Kademlia CTree hosting cloud. '''

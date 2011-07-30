@@ -73,9 +73,9 @@ if args.portset:
 
 import webbrowser
 
-from BCP.serverpool import ServerPool
-from orchardserver import http, ws, peers
-import storage
+from ConcurrenTree.model.bcp.serverpool import ServerPool
+from server import http, ws, peers
+from ConcurrenTree.util import storage
 
 doc = storage.Storage()
 auth = None

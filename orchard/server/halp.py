@@ -1,4 +1,5 @@
-from BCP.serverpool import PoolServer
+from server import *
+
 
 class HALP(PoolServer):
 	def __init__(self):
