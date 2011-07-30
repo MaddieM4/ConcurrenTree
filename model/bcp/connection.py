@@ -54,6 +54,7 @@ class Connection:
 		if nullbyte in self.buffer:
 			length = self.buffer.index(nullbyte)
 			msg, self.buffer = self.buffer[:length], self.buffer[length+1:]
+			print "recving message:",msg
 			try:
 				obj = json.loads(msg)
 			except ValueError:
@@ -80,6 +81,7 @@ class Connection:
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
+		print "sending message:",kwargs
 		self.queue.server_push(json.dumps(kwargs)+"\x00 ")
 
 	def select(self, docname):

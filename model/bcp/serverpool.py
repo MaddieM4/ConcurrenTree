@@ -30,6 +30,7 @@ class ServerPool:
 	def run(self):
 		''' Run the pool, allowing interserver communication '''
 		while not self.closed:
+			self.buffer_flip()
 			with self.lock:
 				s = 0
 				while s < len(self.servers):
@@ -64,7 +65,7 @@ class ServerPool:
 				while True:
 					try:
 						msg = conn.log.get_nowait()
-						print "receiving message:  ", i, c, msg
+						#print "receiving message:  ", i, c, msg
 						policy.output(msg, conn, broadcast)
 					except Empty:
 						break
