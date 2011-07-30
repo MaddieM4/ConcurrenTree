@@ -30,6 +30,7 @@ function BCP(docs, stream, auth){
 	this.receive = function(message) {
 		// Parse JSON
 		var msg;
+		self.log("recieving", message)
 		console.log("Incoming message: "+message)
 		try {
 			msg = JSON.parse(message)
@@ -96,20 +97,29 @@ function BCP(docs, stream, auth){
 
 	this.ehandlers = {
 		100:function(msg) {
+			self.log("connection", "broken")
 			console.error("Connection broken")
 		}, 101:function(msg){
+			self.log("connection", "started")
 			console.log("Connection started")
 		}, 0:function(msg){
-			console.error("Server error: "+JSON.stringify(msg))
+			var str = JSON.stringify(msg)
+			self.log("server error", str)
+			console.error("Server error: "+str)
 		}
 	}
 
 	this.send = function(obj) {
-		this.stream.bcp_push(JSON.stringify(obj)+"\x00")
+		var str = JSON.stringify(obj)
+		self.log("sending", str)
+		this.stream.bcp_push(str+"\x00")
 	}
 
 	this.error = function(code) {
 		this.send({"type":"error", "code":code})
+	}
+
+	this.log = function(headline, detail){
 	}
 
 	this.reconnect = function(){this.stream.reconnect()}

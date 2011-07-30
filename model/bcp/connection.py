@@ -4,7 +4,6 @@ import traceback
 
 from peer import Peer
 from errors import errors
-#import operation
 
 nullbyte = "\x00"
 

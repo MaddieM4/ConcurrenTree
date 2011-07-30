@@ -4,7 +4,7 @@
 
 	<script src="head.js"></script>
 	<script>
-		var ted, hostws, docs, bcp;
+		var ted, hostws, docs, bcp, wbcp;
 
 		head.js(
 			"jquery.js",
@@ -19,6 +19,7 @@
 
 		head.ready("textile.js",function(){
 			//ted = new Textile.Editor('editor');
+			wbcp = $("#writebcp");
 		})
 
 		head.ready("stream.js",function(){
@@ -29,9 +30,34 @@
 		});
 
 		head.ready("bcp.js",function(){
+			function log(source, msg) {
+				$('#bcplog').append("<li><b>"+source+": </b>"+msg+"</li>")
+			}
+
 			// Start BCP processor
 			docs = new DocumentHandler();
+
 			bcp = new BCP(docs, hostws, null)
+			bcp.log = log;
+
+			function checkJSON(){
+				if (isJSON(wbcp.val())) {
+					wbcp.addClass("valid")
+				} else {
+					wbcp.removeClass("valid")
+				}
+			}
+			wbcp.keyup(checkJSON)
+
+			$('#submitbcp').click(function(){
+				bcp.send(JSON.parse(wbcp.val()));
+				wbcp.val("");
+				wbcp.removeClass("valid");
+			})
+
+			$('#reconnectbutton').click(function(){
+				bcp.reconnect()
+			})
 		});
 
 		function my_display(){
@@ -73,6 +99,19 @@
 		}
 	</script>
 	<style>
+		textarea#writebcp {
+			width: 800px;
+			background-color: #FAA;
+		}
+
+		textarea#writebcp.valid {
+			background-color: #AFA;
+		}
+
+		input#submitbcp {
+			display:block;
+		}
+
 		pre {
 			border: 2px solid #DDD;
 			min-height:5em;
@@ -100,6 +139,14 @@
 		<input type="text" class="start" value="start">
 		<input type="text" class="end" value="end">
 	</form>
+</div>
+<div>
+BCP log:
+<ul id="bcplog">
+</ul>
+<textarea id="writebcp"></textarea>
+<input type="submit" id="submitbcp"/>
+<input type="button", value="Reconnect" id="reconnectbutton"/>
 </div>
 
 </body>

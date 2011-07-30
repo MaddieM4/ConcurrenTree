@@ -28,10 +28,10 @@ class WebSocketServer(PoolServer):
 		self.port = port
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
 		self._policy = Policy()
-		def hash(msg, conn, broadcast):
-			if not conn.require("value", msg): return
-			conn.push("hashvalue", value=msg['value'], hashvalue=hasher.make(msg['value']))
-		self._policy.extensions['hash'] = hash
+		#def hash(msg, conn, broadcast):
+		#	if not conn.require("value", msg): return
+		#	conn.push("hashvalue", value=msg['value'], hashvalue=hasher.make(msg['value']))
+		#self._policy.extensions['hash'] = hash
 
 	def run(self):
 		startmessage("WebSocket", self.port)
