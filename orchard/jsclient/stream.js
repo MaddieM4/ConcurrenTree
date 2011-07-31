@@ -41,7 +41,8 @@ function ctree_stream(self) {
 		return self.outbuffer.read()
 	}
 
-	self.started = function(){return self.state==CTREE_STREAM_STARTED}
+	self.started = function(){return self.state>CTREE_STREAM_UNSTARTED}
+	self.running = function(){return self.state==CTREE_STREAM_STARTED}
 	self.closed = function(){return self.state==CTREE_STREAM_CLOSED}
 
 	self.onpush = function(){}
@@ -77,6 +78,7 @@ function ws_stream(url){
 	this.connect(this.url)
 
 	this.onpush = function() {
+		if (!self.running()) return;
 		value = this.stream_pull()
 		if (value != undefined) {
 			this.socket.send(value)
