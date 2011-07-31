@@ -20,6 +20,7 @@
 		head.ready("textile.js",function(){
 			//ted = new Textile.Editor('editor');
 			wbcp = $("#writebcp");
+			$(".docname_input").val("hello")
 		})
 
 		head.ready("stream.js",function(){
@@ -82,10 +83,19 @@
 
 		var rootview;
 		var rootdisplay;
-		head.ready("view.js",function(){
-			rootview = docs.get("hello")[0]
+		function load_document(name){
+			$("#docname").html('Docname: "'+name+'"')
+			rootview = docs.get(name)[0]
 			rootdisplay = new my_display();
 			rootview.display = rootdisplay;
+		}
+
+		function load_from_dni(){
+			load_document($('.docname_input').val())
+		}
+
+		head.ready("view.js",function(){
+			load_from_dni()
 		});
 
 		function easy_insert(){
@@ -130,7 +140,9 @@
 <!-- <p><canvas id="editor" width="800" height="300"></canvas></p> -->
 
 <div id="display">
-	<h1>Docname: "hello"</h1>
+	<h1 id="docname">No document loaded</h1>
+	<input type="button" onclick="load_from_dni()">
+	<input type="text" class="docname_input">
 	<pre id="screen"></pre>
 	<form class="inserter">
 		<input type="button" value="Insert" onclick="easy_insert()"/>
