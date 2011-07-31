@@ -157,6 +157,18 @@ should
 \emph default
  straight-broadcast ops that originate from them, and advertise ops from
  other sources.
+ 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Be advised that this, like all references to hashing in this document, refers
+ to the checksum() function described in the general BCP documentation.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Quote
@@ -188,7 +200,7 @@ hash
 \begin_inset Quotes erd
 \end_inset
 
-89a7344
+7344
 \begin_inset Quotes erd
 \end_inset
 
@@ -241,7 +253,7 @@ hash
 \begin_inset Quotes erd
 \end_inset
 
-89a7344
+7344
 \begin_inset Quotes erd
 \end_inset
 
@@ -266,11 +278,16 @@ eras
 \begin_inset Quotes erd
 \end_inset
 
- property should be an array of ints and/or strings.
- Strings denote ranges, possibly including X, which represents the current
- top era.
- Strings that do not follow the /[0-9xX]?-[0-9xX]?/ should be rejected and
- invalidate the message and trigger an error.
+ property may be an int or a range (2-element array).
+ -1 is a special value that means 
+\begin_inset Quotes eld
+\end_inset
+
+the highest era you know is in the document
+\begin_inset Quotes erd
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Quote
@@ -290,19 +307,31 @@ check
 \begin_inset Quotes erd
 \end_inset
 
-,
-\begin_inset Quotes erd
+, 
+\begin_inset Quotes eld
 \end_inset
 
 eras
 \begin_inset Quotes erd
 \end_inset
 
-:[1,3,5,
+:5}
+\end_layout
+
+\begin_layout Quote
+{
 \begin_inset Quotes erd
 \end_inset
 
-9-11
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+check
 \begin_inset Quotes erd
 \end_inset
 
@@ -310,11 +339,11 @@ eras
 \begin_inset Quotes eld
 \end_inset
 
-13-X
+eras
 \begin_inset Quotes erd
 \end_inset
 
-]}
+:[1,2]}
 \end_layout
 
 \begin_layout Section
@@ -346,9 +375,10 @@ eras
 \begin_inset Quotes erd
 \end_inset
 
- will always be a dictionary with era numbers (integers) for keys and string
- hashes for values.
+ will always be a dictionary with era numbers for keys and int checksums
+ for values.
  Any ranges will be expanded by the server into individual era numbers.
+ The checksums are of Era objects, as described in Part IV of this document.
 \end_layout
 
 \begin_layout Quote
@@ -376,15 +406,15 @@ eras
 \begin_inset Quotes erd
 \end_inset
 
-:{1:
+:{
 \begin_inset Quotes erd
 \end_inset
 
-7a844263
+1
 \begin_inset Quotes erd
 \end_inset
 
-...}}
+:44263...}}
 \end_layout
 
 \begin_layout Section
@@ -509,15 +539,7 @@ tree
 \begin_inset Quotes erd
 \end_inset
 
-:[
-\begin_inset Quotes eld
-\end_inset
-
-9-X
-\begin_inset Quotes erd
-\end_inset
-
-]}
+:[9,-1]}
 \end_layout
 
 \begin_layout Quote
@@ -557,15 +579,7 @@ tree
 \begin_inset Quotes erd
 \end_inset
 
-:[
-\begin_inset Quotes eld
-\end_inset
-
-9-X
-\begin_inset Quotes erd
-\end_inset
-
-]}
+:[9,-1]}
 \end_layout
 
 \begin_layout Section
@@ -649,11 +663,11 @@ layer
 \begin_inset Quotes erd
 \end_inset
 
-objects
+flat
 \begin_inset Quotes erd
 \end_inset
 
-:{...}}
+:[...]}
 \end_layout
 
 \begin_layout Quote
@@ -701,7 +715,7 @@ layer
 \begin_inset Quotes erd
 \end_inset
 
-objects
+era
 \begin_inset Quotes erd
 \end_inset
 
@@ -1485,6 +1499,27 @@ Multipart messages are a simple way to send large messages without clogging
  be ommitted in any non-final piece).
 \end_layout
 
+\begin_layout Standard
+While it supports the hashalgorithm property used for the 
+\begin_inset Quotes eld
+\end_inset
+
+encrypted
+\begin_inset Quotes erd
+\end_inset
+
+ message type, such precautions are much less likely to be necessary for
+ the 
+\begin_inset Quotes eld
+\end_inset
+
+part
+\begin_inset Quotes erd
+\end_inset
+
+ message type.
+\end_layout
+
 \begin_layout Quote
 {
 \begin_inset Quotes erd
@@ -1514,7 +1549,7 @@ hash
 \begin_inset Quotes erd
 \end_inset
 
-ac44f385
+44385
 \begin_inset Quotes erd
 \end_inset
 
@@ -1558,6 +1593,35 @@ When there is a key for each end, the sender always encrypts with their
  the endpoint encryption layers.
 \end_layout
 
+\begin_layout Standard
+If you're using cryptography on your connection, you probably have support
+ for advanced hashing algorithms on both ends, too.
+ Not only that, but this is one of the few cases where the hashes actually
+ need to be cryptographically secure.
+ Therefore we give you a 
+\begin_inset Quotes eld
+\end_inset
+
+hashalgorithm
+\begin_inset Quotes erd
+\end_inset
+
+ property to indicate what you're encoding in, which the remote end can
+ accept, or respond with an error that contains a list of all supported
+ algorithms.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+default
+\begin_inset Quotes erd
+\end_inset
+
+ is the BCP sum() function and should not be used for this.
+ However, it is what will be assumed if you do not specify the algorithm
+ (hashalgorithm is an optional property).
+\end_layout
+
 \begin_layout Quote
 {
 \begin_inset Quotes erd
@@ -1575,7 +1639,10 @@ encrypted
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
+\end_layout
+
+\begin_layout Quote
 \begin_inset Quotes erd
 \end_inset
 
@@ -1591,7 +1658,29 @@ hash
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+hashalgorithm
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+md5
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
 \begin_inset Quotes eld
 \end_inset
 
@@ -1699,6 +1788,98 @@ Objects
 \end_layout
 
 \begin_layout Section
+Address
+\end_layout
+
+\begin_layout Standard
+Addresses are 
+\emph on
+the
+\emph default
+ way to specify which tree in a document you're talking about.
+ Addresses are arrays, with an optional shortcut as the first element.
+\end_layout
+
+\begin_layout Quote
+[
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+2#5235
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+[4,"carbide ma46456"]
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+]
+\end_layout
+
+\begin_layout Quotation
+
+\emph on
+A 2-element address starting at shortcut 
+\begin_inset Quotes eld
+\end_inset
+
+2#5235
+\begin_inset Quotes erd
+\end_inset
+
+ and progressing to a subtree in 5235 (position 4, key 
+\begin_inset Quotes eld
+\end_inset
+
+carbide ma46456
+\begin_inset Quotes erd
+\end_inset
+
+, which happens to have a value of 
+\begin_inset Quotes eld
+\end_inset
+
+carbide manufacturing
+\begin_inset Quotes erd
+\end_inset
+
+.)
+\end_layout
+
+\begin_layout Standard
+When no shortcut address is given, special address 
+\begin_inset Quotes eld
+\end_inset
+
+0#root
+\begin_inset Quotes erd
+\end_inset
+
+ is assumed.
+ This refers to the single root element (which has value 
+\begin_inset Quotes eld
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+) every BCP document has.
+ So in these cases, the very first element progresses down the tree from
+ the root node.
+ Regular elements are in the form of 2-element arrays of [pos, key].
+\end_layout
+
+\begin_layout Section
 Instruction
 \end_layout
 
@@ -1710,27 +1891,27 @@ ly) thousands of instructions.
 \end_layout
 
 \begin_layout Quote
-[0, 
-\begin_inset Quotes eld
-\end_inset
-
-0:89aff6b
+[0, [[0,
 \begin_inset Quotes erd
 \end_inset
 
-, 3, [5,7] ]
+Have you e5168
+\begin_inset Quotes erd
+\end_inset
+
+]], 3, [5,7] ]
 \end_layout
 
 \begin_layout Quote
-[1, 
-\begin_inset Quotes eld
-\end_inset
-
-0:89aff6b
+[1, [[0,
 \begin_inset Quotes erd
 \end_inset
 
-, 4, 
+Have you e5168
+\begin_inset Quotes erd
+\end_inset
+
+]], 4, 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1791,45 +1972,12 @@ era
 \begin_inset Quotes erd
 \end_inset
 
- messages, tree structures use both direct containment in the data structure
- and references to objects outside them (simply use an array of child hashes
- rather than a dictionary matching hashes to values).
- It's used to describe flats as well, which pack rather succinctly in this
- structure.
+ messages, tree structures describe a tree and its descendents in a structurally
+ minimalist way.
 \end_layout
 
 \begin_layout Quote
-{
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes erd
-\end_inset
-
-address
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-#773420
-\begin_inset Quotes erd
-\end_inset
-
-
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-value
-\begin_inset Quotes erd
-\end_inset
-
-:[
+[
 \end_layout
 
 \begin_deeper
@@ -1841,14 +1989,9 @@ I feel dis
 \begin_inset Quotes erd
 \end_inset
 
-,
+, 
 \end_layout
 
-\begin_layout Quote
-[
-\end_layout
-
-\begin_deeper
 \begin_layout Quote
 [
 \begin_inset Quotes eld
@@ -1858,12 +2001,7 @@ tres
 \begin_inset Quotes erd
 \end_inset
 
-, []]
-\end_layout
-
-\end_deeper
-\begin_layout Quote
-],
+, [] ],
 \end_layout
 
 \begin_layout Quote
@@ -1889,8 +2027,7 @@ sed.
 \begin_layout Quotation
 
 \emph on
-This example describes a node at location #773420 that has immutable value
- 
+This example describes a node that has immutable value 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1919,12 +2056,8 @@ distressed.
 \end_layout
 
 \begin_layout Standard
-The tree is described as an array, or an object containing an address property
- and an optional value property that holds the tree array.
-\end_layout
-
-\begin_layout Standard
-The tree array can contain strings and childsets, always ending with a deletions
+The tree is described as an array.
+ The tree array can contain strings and children, always ending with a deletions
 et made of ints, and ranges.
  The ints and ranges represent exactly what they do in deletion instructions.
 \end_layout
@@ -1934,24 +2067,98 @@ The strings represent pieces of the tree's immutable string.
  Each tree array string is a contiguous piece of the tree uninterrupted
  by children.
  At positions where there are children, the strings must be interrupted
- with childset.
+ with those children, in any order (order is inferred by the child's value).
+\end_layout
+
+\begin_layout Section
+Era
 \end_layout
 
 \begin_layout Standard
-A childset is an array of trees, which can either be in array form, or object
- form.
- The object form is useful for omitting the 
-\begin_inset Quotes eld
-\end_inset
+An era is a container for trees.
+ It's nothing more than a dict keyed on shortcut address, with Tree arrays
+ as values (see above).
+\end_layout
 
-value
+\begin_layout Quote
+{
 \begin_inset Quotes erd
 \end_inset
 
- property and using it location-only as a reference to a shortcut address
- beyond the current era.
- This makes it useful for defining a full era as a single, compact tree
- in JSON, complete with reference hooks into the next era.
+1288
+\begin_inset Quotes erd
+\end_inset
+
+:[ 
+\emph on
+...tree data...
+
+\emph default
+ ]}
+\end_layout
+
+\begin_layout Standard
+Era messages use these to relate trees that are on the same layer, but with
+ no other guarantees of being related.
+\end_layout
+
+\begin_layout Section
+Flat
+\end_layout
+
+\begin_layout Standard
+A flat gives an era its context, usually for rendering more than correctness.
+ An era is a set of trees on the same layer, but without a basic tree describing
+ all previous layers and how they connect to the era, it's kinda useless
+ information.
+\end_layout
+
+\begin_layout Standard
+A flat is a compressed description of zero or more eras that you can plug
+ an era into, without having to actually know what's in those eras.
+\end_layout
+
+\begin_layout Quote
+[
+\begin_inset Quotes eld
+\end_inset
+
+A
+\begin_inset Quotes erd
+\end_inset
+
+, 45899,
+\begin_inset Quotes erd
+\end_inset
+
+ example of a 
+\begin_inset Quotes erd
+\end_inset
+
+, 112,
+\begin_inset Quotes eld
+\end_inset
+
+flat.
+\begin_inset Quotes erd
+\end_inset
+
+]
+\end_layout
+
+\begin_layout Quotation
+
+\emph on
+All the tree data in era 0 has been flattened into a compact representation
+ that includes shortcut references in the correct order and positions.
+\end_layout
+
+\begin_layout Standard
+The Flat is very similar to the tree, except instead of child trees, it
+ has integer references to shortcuts.
+ The main part of the shortcut is always an int, so we just express shortcut
+ refs as ints, and use the type to imply that they're not part of the Flat's
+ value.
 \end_layout
 
 \begin_layout Part
