@@ -70,9 +70,13 @@
 			this.unlock = function(){
 				this.buttons.attr("disabled", false);
 			}
-			this.replace = function(start, end, value){
+			/*this.replace = function(start, end, value){
 				this.text = this.text.slice(0,start)+value+this.text.slice(end);
 				this.display.html(this.text) // TODO: escape html literals
+			}*/
+			this.rewrite = function(value){
+				this.text = value;
+				this.display.html(this.text);
 			}
 		}
 
@@ -87,14 +91,14 @@
 		function easy_insert(){
 			var pos = $('.inserter .pos').val();
 			var value = $('.inserter .value').val();
-			rootdisplay.replace(pos,pos,value);
+			//rootdisplay.replace(pos,pos,value);
 			rootview.insert(pos, value);
 		}
 
 		function easy_delete(){
 			var start = int($('.deleter .start').val());
 			var end = int($('.deleter .end').val());
-			rootdisplay.replace(start,end+1,"");
+			//rootdisplay.replace(start,end+1,"");
 			rootview.delete(start, end);
 		}
 	</script>

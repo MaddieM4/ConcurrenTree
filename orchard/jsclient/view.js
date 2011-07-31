@@ -48,13 +48,18 @@ function View(tree, name, display){
 			for (var i in netops){
 				var op = netops[i];
 				console.log(op);
-				var reps = op.replacements(this.tree);
-				console.log(reps)
-				for (var i in reps) {
-					var rep = reps[i]
-					this.display.replace(rep[0],rep[1],rep[2]);
+				if ("replace" in this.display) {
+					var reps = op.replacements(this.tree);
+					console.log(reps)
+					for (var i in reps) {
+						var rep = reps[i]
+						this.display.replace(rep[0],rep[1],rep[2]);
+					}
 				}
 				op.apply(this.tree)
+			}
+			if ("rewrite" in this.display) {
+				this.display.rewrite(this.value())
 			}
 			this.display.unlock()
 		}
