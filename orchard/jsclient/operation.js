@@ -1,6 +1,6 @@
 // operation.js :: Operation class and Instruction processing
 
-// Dependencies: none
+// Dependencies: Util
 
 /*
 	Instruction format:
@@ -42,24 +42,27 @@ function Operation() {
 
 	this.apply = function(tree) {
 		for (var i in this.instructions) {
-			i = this.instructions[i];
-			if (i[0] == 1) {
-				// insertion
-				tree.resolve(i[1]).insert(i[2], i[3]);
-			} else {
-				// deletion
-				var victims = i.slice(2);
-				strike = function(del){
-					tree.resolve(i[1]).delete(del);
-				}
-				for (del in victims) {
-					del = victims[del]
+			this.apply_instruction(tree, this.instructions[i])
+		}
+	}
+
+	this.apply_instruction = function(tree,i) {
+		if (i[0] == 1) {
+			// insertion
+			tree.resolve(i[1]).insert(i[2], i[3]);
+		} else {
+			// deletion
+			var victims = i.slice(2);
+			strike = function(del){
+				tree.resolve(i[1]).delete(del);
+			}
+			for (del in victims) {
+				del = victims[del]
 					if (isArray(del)) {
 						for (var deli=del[0];deli<del[1];deli++) strike(deli);
 					} else {
 						strike(del);
 					}
-				}
 			}
 		}
 	}
@@ -73,17 +76,20 @@ function Operation() {
 			var instr = this.instructions[i];
 			if (instr[0]==1) {
 				// Insertion
-				var subaddr = instr[1].concat([[instr[2], instr[3]]])
+				var subaddr = instr[1].concat([[instr[2], serial.key(instr[3])]])
 				var resolved = temptree.resolve(subaddr)
 				if (resolved==undefined){
 					var pos = temptree.untrace(instr[1],instr[2]);
 					results.push([pos,pos,instr[3]]);
-					temptree.flatinsert(pos, instr[3])
 				}
 			} else {
 				// Deletion
 				var addr = instr[1]
 				var target = temptree.resolve(addr)
+				if (target==undefined){
+					console.error("Bad addr in instr "+i+":"+JSON.stringify(addr));
+					return [];
+				}
 				var victims = instr.concat().slice(2)
 				for (v in victims){
 					if (!isArray(victims[v])){
@@ -96,11 +102,11 @@ function Operation() {
 						if (!target.deletions[x]) {
 							var pos = temptree.untrace(addr,x)
 							results.push([pos,pos+1, ""])
-							target.delete(x)
 						}
 					}
 				}
 			}
+			this.apply_instruction(temptree,instr)
 		}
 		return results
 	}
@@ -134,10 +140,12 @@ function opfromprototree(proto, addr){
 	for (pos in tree.children){
 		for (c in tree.children[pos]){
 			var child = tree.children[pos][c]
-			var childaddr = addr.concat([[pos, child.value]]);
+			var childaddr = addr.concat([[pos, serial.key(child.value)]]);
 
 			op.pushinsert(addr, pos, child.value);
-			op.pushdelete(childaddr, child.deletions);
+			if (child.deletions.length>0){
+				op.pushdelete(childaddr, child.deletions);
+			}
 
 			subop = opfromprototree(child, childaddr)
 			op.push_list(subop.instructions)	

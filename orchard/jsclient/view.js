@@ -47,6 +47,7 @@ function View(tree, name, display){
 			this.display.lock()
 			for (var i in netops){
 				var op = netops[i];
+				console.log(op);
 				var reps = op.replacements(this.tree);
 				console.log(reps)
 				for (var i in reps) {

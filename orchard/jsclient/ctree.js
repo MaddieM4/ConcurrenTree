@@ -9,7 +9,6 @@ function CTree(value) {
 	this.length = this.value.length
 	this.key = serial.key(this.value)
 	this.deletions = []; arrayfill(this.deletions, function(){return false}, value.length);
-	this.markers = []; arrayfill(this.markers, af_obj, value.length+1);
 	this.children = []; arrayfill(this.children, af_obj, value.length+1);
 
 	this.insert = function(pos, childtext) {
@@ -32,13 +31,12 @@ function CTree(value) {
 	}
 
 	this.flatten = function() {
-		// Do only plaintext for now
 		result = "";
-		for (var i=0; i<this.value.length+1; i++) {
+		for (var i=0; i<this.length+1; i++) {
 			for (c in this.children[i]) {
 				result += this.children[i][c].flatten();
 			}
-			if (i<this.value.length && !this.deletions[i]) {
+			if (i<this.length && !this.deletions[i]) {
 				result += this.value[i];
 			}
 		}
