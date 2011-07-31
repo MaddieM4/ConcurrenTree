@@ -10,8 +10,27 @@ function af_obj(id) {
 	return {};
 }
 
+
+// Really. REALLY. Hacky. JavaScript, why you no have type() function?
+
 function isArray(obj){
 	return JSON.stringify(obj)[0]=="["
+}
+
+function isObject(obj){
+	return JSON.stringify(obj)[0]=="{"
+}
+
+function isString(obj){
+	return JSON.stringify(obj)[0]=='"'
+}
+
+function isInt(obj){
+	return obj === int(obj);
+}
+
+function int(num){
+	return (num-1+1)
 }
 
 function range(start, end) {
@@ -38,10 +57,6 @@ function isJSON(str){
 	} catch(exception){
 		return false;
 	}
-}
-
-function int(num){
-	return (num-1+1)
 }
 
 serial = {
