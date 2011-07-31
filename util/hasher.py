@@ -12,7 +12,7 @@ def make6(string):
 def maken(string, n):
 	return make(string)[:n]
 
-modulo = 2**32
+modulo = 2**16
 
 def sum(string, verbose = False):
 	''' Create a semi-hash of the string '''

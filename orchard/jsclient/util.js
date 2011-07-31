@@ -40,51 +40,27 @@ function isJSON(str){
 	}
 }
 
-md5table = {};
-
-function md5(text, bcp) {
-	if (md5table[text] != undefined) {
-		return md5table[text];
-	} else {
-		bcp.send({"type":"hash", "value":text})
-		return undefined;
-	}
-}
-
-function unmd5(hash){
-	for (var key in md5table) {
-		if (md5table[key]==hash) return key;
-	}
-}
-
-function address_js(addr){
-	// convert a BCP address into a JS address
-	var parts = addr.split("/")
-	result = []
-	for (i in parts){
-		if (parts[i]=="") break;
-		var targets = parts[i].split(":");
-		var index = targets[0];
-		var hash = targets[1];
-		var value = unmd5(hash);
-		if (value==undefined) return undefined;
-		result.push([index, value]);
-	}
-	return result;
-}
-
-function address_bcp(addr){
-	// convert a JS address into a BCP address
-	result = [];
-	for (i in addr){
-		var part = addr[i];
-		var hash = md5(part[1]);
-		if (hash==undefined) return undefined;
-		result.push(""+part[0]+":"+hash)
-	}
-	return result.join("/");
-}
-
 function int(num){
 	return (num-1+1)
 }
+
+serial = {
+	"key": function(str){
+		if (str.length>10){
+			return str.slice(0,10)+serial.sum(str.slice(10))
+		}else{
+			return str;
+		}
+	},
+	"modulo":65536, // 2^8
+	"sum": function(str){
+		var s = 0;
+		for (var i=0; i<str.length;i++){
+			s = (s*s + str.charCodeAt(i)) % serial.modulo;
+		}
+		return s;
+	},
+	"strict": function(obj){
+	}
+}
+
