@@ -1,14 +1,13 @@
 // ctree.js :: CTree object and DocumentHandler object
 
-// Dependencies: Util, MD5(util, bcp), View
+// Dependencies: Util, View
 
 function CTree(value) {
 	// Action functions should return trees
 
 	this.value = value;
 	this.length = this.value.length
-	this.hash = function() {return md5(this.value, bcp);}
-	this.hash();
+	this.key = serial.key(this.value)
 	this.deletions = []; arrayfill(this.deletions, function(){return false}, value.length);
 	this.markers = []; arrayfill(this.markers, af_obj, value.length+1);
 	this.children = []; arrayfill(this.children, af_obj, value.length+1);
@@ -17,7 +16,7 @@ function CTree(value) {
 		// Insert and return a child tree
 
 		var child = new CTree(childtext);
-		this.children[pos][child.value] = child;
+		this.children[pos][child.key] = child;
 		return child;
 	}
 
@@ -28,8 +27,8 @@ function CTree(value) {
 		return this;
 	}
 
-	this.get = function(pos, value) {
-		return this.children[pos][value];
+	this.get = function(pos, key) {
+		return this.children[pos][key];
 	}
 
 	this.flatten = function() {
