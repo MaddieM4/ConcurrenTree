@@ -14,9 +14,6 @@ function Operation() {
 
 	this.push = function(i) {
 		this.instructions.push(i);
-			if (i[0]==1){
-				md5(i[3], bcp) // precache hash of insertion value
-			}
 	}
 
 	this.push_list = function(array){
@@ -121,12 +118,7 @@ function Operation() {
 
 	this.proto = function(){
 		// return protocol object
-		var instr = [];
-		for (i in this.instructions){
-			instr[i] = this.instructions[i].concat(); // deep copy
-			instr[i][1] = address_bcp(instr[i][1]);
-		}
-		return {"type":"op","instructions":instr}
+		return {"type":"op","instructions":this.instructions}
 	}
 }
 

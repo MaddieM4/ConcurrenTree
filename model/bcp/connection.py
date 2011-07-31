@@ -2,6 +2,7 @@ import Queue
 import json
 import traceback
 
+from ConcurrenTree.model import operation
 from peer import Peer
 from errors import errors
 

@@ -1,4 +1,4 @@
-import ConcurrenTree.util.hasher as hasher
+from ConcurrenTree.model import ModelBase
 from ConcurrenTree.util.hasher import key
 
 def sort(d):
@@ -6,7 +6,7 @@ def sort(d):
 	k.sort()
 	return k
 
-class Tree:
+class Tree(ModelBase):
 	def __init__(self, value="", name=''):
 		self.name = name
 		self._value = value
@@ -125,15 +125,7 @@ class Tree:
 
 	@property
 	def key(self):
-		return hasher.key(self._value)
-
-	@property
-	def hash(self):
-		return hasher.checksum(self.proto())
-
-	def __str__(self):
-		''' Protostring '''
-		return hasher.strict(self.proto())
+		return key(self._value)
 
 def from_proto(obj, era=None):
 	if type(obj)==dict:

@@ -1,11 +1,11 @@
+from ConcurrenTree.model import ModelBase
 from address import Address
-import ConcurrenTree.util.hasher as hasher
 
 def validpos(tree, pos):
 	if not (pos <= len(tree) and pos >= 0):
 		raise IndexError(pos, len(tree), "0 <= %d <= %d not true!" % (pos, len(tree)))
 
-class Instruction:
+class Instruction(ModelBase):
 	''' Base class for instructions. '''
 
 	def apply(self, tree, address = None):
@@ -35,13 +35,6 @@ class Instruction:
 			return Address(self.address)
 		else:
 			return Address([])
-
-	@property
-	def hash(self):
-		return hasher.sum(str(self))
-
-	def __str__(self):
-		return hasher.strict(self.proto())
 
 class Insertion(Instruction):
 	''' Insert text into a tree. '''
@@ -96,12 +89,10 @@ def deproto(instr):
 	''' Returns a list of Instruction objects '''
 	if isinstance(instr, Instruction):
 		return [instr]
-	address = instr[1]
+	address = Address(instr[1])
 	if instr[0]==0:
 		# Deletion
 		return [Deletion(address, i) for i in instr[2:]]
 	else:
 		# Insertion
 		return [Insertion(address, instr[2], instr[3])]
-
-# TODO - Marker instruction(s)

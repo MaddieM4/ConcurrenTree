@@ -1,10 +1,11 @@
+from ConcurrenTree.model import ModelBase
 import ConcurrenTree.util.hasher as hasher
 import instruction
 from address import Address
 from copy import deepcopy
 import traceback
 
-class Operation:
+class Operation(ModelBase):
 	''' A collection of instructions '''
 
 	def __init__(self, instructions = [], protostring = None):
@@ -40,7 +41,7 @@ class Operation:
 	@property
 	def dep_provides(self):
 		''' The dependencies that this operation provides to the tree '''
-		return set([str(i.address_object)+str(i.position)+":"+hasher.make(i.value) for i in self.inserts])
+		return set([str(i.address_object.proto()+[[i.position, i.value]]) for i in self.inserts])
 
 	@property
 	def dep_requires(self):
@@ -53,7 +54,7 @@ class Operation:
 			try:
 				Address(i).resolve(tree)
 			except Exception as e:
-				print e
+				traceback.print_exc()
 				return False
 		return True
 
@@ -61,17 +62,9 @@ class Operation:
 		# Todo - op compression (combining deletion instructions together)
 		pass
 
-	@property
-	def hash(self):
-		return hasher.sum(str(self))
-
 	def proto(self):
 		''' Returns a protocol operation object '''
-		return {"type":op,"instructions":[i.proto() for i in self.instructions]}
-
-	def __str__(self):
-		''' Returns a protocol operation strict string '''
-		return hasher.strict(self.proto())
+		return {"type":"op","instructions":[i.proto() for i in self.instructions]}
 
 class ParseError(SyntaxError): pass
 class OpApplyError(SyntaxError): pass

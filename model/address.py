@@ -1,14 +1,18 @@
+from ConcurrenTree.model import ModelBase
 import re
+import json
 
-class Address:
+class Address(ModelBase):
 	''' Address format: index:hash/index:hash '''
 
 	def __init__(self, target):
 		self.layers = []
 		if type(target)==list:
 			self.layers = target
-		elif type(target) == Address:
+		elif isinstance(target, Address):
 			self.layers = target.layers
+		elif type(target)==str:
+			self.layers = json.loads(target)
 		else:
 			raise TypeError("Expected list or address.Address, got "+str(type(target)))
 
@@ -18,5 +22,5 @@ class Address:
 			x = x.get(i[0],i[1])
 		return x
 
-	def __str__(self):
-		return '[%s]' % ",".join(["[%d,%s]" % i for i in self.layers])
+	def proto(self):
+		return self.layers
