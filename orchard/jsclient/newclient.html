@@ -31,7 +31,7 @@
 
 		head.ready("bcp.js",function(){
 			function log(source, msg) {
-				$('#bcplog').append("<li><b>"+source+": </b>"+msg+"</li>")
+				$('#bcplog').append("<li><b>"+source.toUpperCase()+": </b>"+msg+"</li>")
 			}
 
 			// Start BCP processor
