@@ -481,7 +481,7 @@ forgetting
 \end_layout
 
 \begin_layout Part
-Algorithms
+Tree Algorithms
 \end_layout
 
 \begin_layout Standard
@@ -1106,5 +1106,337 @@ authmd
  response for your original source (whether it validates or not).
 \end_layout
 
+\begin_layout Part
+Hash algorithms
+\end_layout
+
+\begin_layout Standard
+The following are the hashing algorithms used in BCP.
+ They're designed for simplicity, not perfection, so that anyone can convert
+ them into another programming language in a mere 20 minutes.
+ The examples are written in Python.
+\end_layout
+
+\begin_layout Section
+sum
+\end_layout
+
+\begin_layout Standard
+A barely-cryptographic super-simple hash algorithm that turns a string into
+ a number using the ascii values of the characters.
+\end_layout
+
+\begin_layout Quote
+def sum(string):
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+s = 0
+\end_layout
+
+\begin_layout Quote
+modulo = 2**16
+\end_layout
+
+\begin_layout Quote
+for (i in string):
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+s = (s*s + ord(i)) % modulo
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+return s
+\end_layout
+
+\end_deeper
+\begin_layout Section
+key
+\end_layout
+
+\begin_layout Standard
+A function that takes tree values and returns the key you should use to
+ store them as children.
+ For less than or equal to 10 characters, it's equal to the original string,
+ for more than 10 the excess is run through the sum function, converted
+ to a string, and appended to the first 10 characters.
+\end_layout
+
+\begin_layout Quote
+def key(string):
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+if len(string)>10:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return string[:10]+str(sum(string[10:]))
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+else:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return string
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Section
+strict
+\end_layout
+
+\begin_layout Standard
+JSON is great.
+ It can store just about anything, and in a logical way.
+ However, if we want to make sure that 2 JSON objects are equal without
+ sending a full copy over the wire, we have to have a checksum algorithm,
+ and to do that, we need to make sure 2 equivalent objects can ONLY be expressed
+ the same way.
+\end_layout
+
+\begin_layout Standard
+So arbitrary whitespace and key order are the devil, as they allow equivalent
+ objects to be serialized differently without being different.
+ The following code converts Python objects to JSON in a consistent way
+ according to the following rules: no whitespace, and keys ordered by the
+ standard string-sorting algorithm (you know, that superset of alphabetization
+ available for string comparison in every platform and language).
+\end_layout
+
+\begin_layout Standard
+The example below does not rely on the Python json module at all, unlike
+ the util.hasher.strict implementation in the ConcurrenTree library.
+ While it is not strictly necessary to have a JSON library to strict a JSON
+ object, it can save a few lines of code.
+\end_layout
+
+\begin_layout Quote
+def strict(obj):
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+if obj==True:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return 
+\begin_inset Quotes eld
+\end_inset
+
+true
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+if obj==False:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return 
+\begin_inset Quotes eld
+\end_inset
+
+false
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+if obj==None:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return 
+\begin_inset Quotes eld
+\end_inset
+
+null
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+if type(obj)==int:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return str(int)
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+if type(obj)==str:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return '
+\begin_inset Quotes erd
+\end_inset
+
+'+obj+'
+\begin_inset Quotes erd
+\end_inset
+
+'
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+if type(obj)==list:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+elements= [strict(x) for x in list]
+\end_layout
+
+\begin_layout Quote
+return 
+\begin_inset Quotes eld
+\end_inset
+
+[%s]
+\begin_inset Quotes erd
+\end_inset
+
+ % 
+\begin_inset Quotes eld
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+.join[elements]
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+if type(obj)==dict:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+strdict = {}
+\end_layout
+
+\begin_layout Quote
+for k in obj.keys():
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+strdict[str(k)] = obj[k]
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+keys = strdict.keys()
+\end_layout
+
+\begin_layout Quote
+keys.sort()
+\end_layout
+
+\begin_layout Quote
+def element(k,d):
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return strict(k)+
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
++strict(d[k])
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+elements = 
+\begin_inset Quotes eld
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+.join[element(k, strdict) for k in keys]
+\end_layout
+
+\begin_layout Quote
+return 
+\begin_inset Quotes eld
+\end_inset
+
+{%s}
+\begin_inset Quotes erd
+\end_inset
+
+ % elements
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+else:
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+raise TypeError(obj)
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Section
+checksum
+\end_layout
+
+\begin_layout Standard
+A convenience function that turns an object into a verification sum.
+ It's by far the simplest one in the BCP hashing toolbox.
+\end_layout
+
+\begin_layout Quote
+def checksum(obj):
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+return sum(strict(obj))
+\end_layout
+
+\end_deeper
 \end_body
 \end_document
