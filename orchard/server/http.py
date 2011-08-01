@@ -1,5 +1,5 @@
 from server import *
-from ConcurrenTree.util.server import httpfileserver
+from ConcurrenTree.util.server import httpfileserver as hfs
 import os.path
 
 import ConcurrenTree
@@ -10,33 +10,27 @@ class HTTP(PoolServer):
 		self.port = port
 		self.rootpath = ConcurrenTree.__path__[0]
 		print "HTTP server root path:",self.rootpath
-		def jsclient(path):
-			return os.path.join(self.rootpath,"orchard/jsclient/", path)
-		def img(path):
-			return os.path.join(self.rootpath,"img/", path)
-		self.server = httpfileserver.Server(('',port), {
-			'/':(jsclient("client.html"),'text/html'),
-			'/index.htm':(jsclient("client.html"),'text/html'),
-			'/index.html':(jsclient("client.html"),'text/html'),
-			'/newclient':(jsclient("newclient.html"),'text/html'),
-			'/util.js':(jsclient("util.js"),'text/javascript'),
-			'/buffer.js':(jsclient("buffer.js"),'text/javascript'),
-			'/ctree.js':(jsclient("ctree.js"),'text/javascript'),
-			'/operation.js':(jsclient("operation.js"),'text/javascript'),
-			'/bcp.js':(jsclient("bcp.js"),'text/javascript'),
-			'/view.js':(jsclient("view.js"),'text/javascript'),
-			'/stream.js':(jsclient("stream.js"),'text/javascript'),
-			'/jquery.js':(jsclient("jquery-1.4.2.min.js"),'text/javascript'),
-			'/jquery-1.4.2.min.js':(jsclient("jquery-1.4.2.min.js"),'text/javascript'),
-			'/textile.js':(jsclient("textile-editor.min.js"),'text/javascript'),
-			'/textile-editor.min.js':(jsclient("textile-editor.min.js"),'text/javascript'),
-			'/head.js':(jsclient("head.min.js"),'text/javascript'),
-			'/img/logo.svg':(img("logos/OrchardLogo.svg"),'image/svg+xml'),
-			'/OrchardLogo.svg':(img("logos/OrchardLogo.svg"),'image/svg+xml'),
-			'/img/biglogo.svg':(img("logos/OrchardBigLogo.svg"),'image/svg+xml'),
-			'/OrchardBigLogo.svg':(img("logos/OrchardBigLogo.svg"),'image/svg+xml'),
-			'/favicon.ico':(img("logos/Orchard32.ico"),'image/svg+xml') #find mime type for ico
-		})
+
+		jsclient = os.path.join(self.rootpath,"orchard/jsclient/")
+		img = os.path.join(self.rootpath,"img/")
+
+		self.server = hfs.Server(('',port), [
+			hfs.File(jsclient,"client.html",["/","/index.htm","/index.html"],'text/html'),
+			hfs.File(jsclient,"newclient.html", "/newclient", "text/html"),
+			hfs.File(jsclient,"util.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"buffer.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"ctree.js", mimetype="text/javascript", preload=True),
+			hfs.File(jsclient,"operation.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"bcp.js", mimetype="text/javascript", preload=True),
+			hfs.File(jsclient,"view.js", mimetype="text/javascript", preload=True),
+			hfs.File(jsclient,"stream.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),
+			hfs.File(jsclient,"textile-editor.min.js", ["/textile.js", "/textile-editor.js"],"text/javascript"),
+			hfs.File(jsclient,"head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
+			hfs.File(img,"logos/OrchardLogo.svg", ["/img/logo.svg", "/OrchardLogo.svg"],"image/svg+xml", browsercache=True),
+			hfs.File(img,"logos/OrchardBigLogo.svg", ["/img/biglogo.svg", "/OrchardBigLogo.svg"],"image/svg+xml", browsercache=True),
+			hfs.File(img,"logos/Orchard32.ico", "/favicon.ico","image", browsercache=True)
+		])
 		self._policy = Policy()
 
 	def run(self):
