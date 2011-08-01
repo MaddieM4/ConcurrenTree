@@ -59,8 +59,8 @@ parser.destroy()
 
 #print args
 
+parser.print_version()
 if args.v:
-	parser.print_version()
 	quit()
 
 if args.portset:
