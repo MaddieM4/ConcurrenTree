@@ -1,9 +1,8 @@
-1.0  Python BCP
-1.0  JS BCP
-0.5  JS Facelift
-1.0  Python Share
-1.0  Authentication
-0.5  Storage
-2.0  Kademlia/Tonika
-
-7
+0.3  **Current
+0.4  Python BCP
+0.5  JS BCP
+0.6  JS Facelift
+0.6  Python Federation
+0.7  Authentication
+0.8  Storage
+1.0  Kademlia/Tonika
