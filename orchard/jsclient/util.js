@@ -79,3 +79,11 @@ serial = {
 	}
 }
 
+function assert(condition, message){
+	if (message){
+		message = "Assertion error: \""+message+"\"";
+	} else {
+		message = "Assertion error";
+	}
+	if (!condition) throw message;
+}

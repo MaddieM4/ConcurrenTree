@@ -6,7 +6,13 @@ function BCP(docs, stream, auth){
 	this.docs = docs;
 	this.stream = stream;
 	this.auth = auth;
-	this.buffer = ""
+	this.buffer = "";
+	this.selected = "";
+	this.subscriptions = {}
+	this.other = {
+		"selected":"",
+		"subscriptions":{}
+	}
 	var self = this;
 
 	this.cycle = function() {
@@ -51,20 +57,30 @@ function BCP(docs, stream, auth){
 	}
 
 	this.select = function(name) {
-		if (name==undefined){console.error("Cannot select docname of undefined"); return}
+		assert(isString(name), "Docnames must be a string.")
+		if (name==self.selected) return;
 		self.send({"type":"select", "docname":name})
+		self.selected = name;
 	}
 
 	this.getcached = {}
 	this.get = function(name) {
+		if (name==undefined) name = self.selected;
+		assert(isString(name), "Docnames must be a string.")
 		// returns a prototree
 		if (this.getcached[name]==undefined){
 			self.select(name);
 			self.send({"type":"get", "tree":0})
 		} else {
-			self.docs.send(this.getcached[name])
+			self.docs.send(name, opfromprototree(this.getcached[name]));
+			self.sync(name);
 			return this.getcached[name]
 		}
+	}
+
+	this.sync = function(name){
+		if (name==undefined) name = self.selected;
+		self.send({"type":"check","eras":0})
 	}
 
 	this.handle = function (msg){
