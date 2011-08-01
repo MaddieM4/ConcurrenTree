@@ -65,6 +65,8 @@
 			this.text = "";
 			this.display = $("#display #screen");
 			this.buttons = $("#display input:button");
+			this.display.removeClass("loaded");
+
 			this.lock = function(){
 				this.buttons.attr("disabled", true);
 			}
@@ -75,10 +77,18 @@
 				this.text = this.text.slice(0,start)+value+this.text.slice(end);
 				this.display.html(this.text) // TODO: escape html literals
 			}*/
-			this.rewrite = function(value){
+			this.write = function(value){
 				this.text = value;
 				this.display.html(this.text);
 			}
+			this.rewrite = function(value){
+				this.write(value);
+				this.display.addClass("loaded");
+			}
+			this.clear = function(){
+				this.write("");
+			}
+			this.clear();
 		}
 
 		var rootview;
@@ -88,6 +98,7 @@
 			rootview = docs.get(name)[0]
 			rootdisplay = new my_display();
 			rootview.display = rootdisplay;
+			bcp.get(name)
 		}
 
 		function load_from_dni(){
@@ -126,9 +137,14 @@
 			display:block;
 		}
 
-		pre {
+		#screen {
 			border: 2px solid #DDD;
 			min-height:5em;
+			background-color: #AAA;			
+		}
+
+		#screen.loaded {
+			background-color: #FFF;
 		}
 	</style>
 </head>
