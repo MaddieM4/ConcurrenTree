@@ -4,6 +4,7 @@
 '''
 
 from Queue import Queue, Empty
+from thread import error as threaderror
 
 class DQ:
 	''' 
@@ -17,11 +18,15 @@ class DQ:
 	def __init__(self):
 		self.server = Queue()
 		self.client = Queue()
+		self._servernotify = None
+		self._clientnotify = None
 
 	def client_push(self, obj, timeout=None):
+		self.notify(self._servernotify)
 		self.server.put(obj, timeout=timeout)
 
 	def server_push(self, obj, timeout=None):
+		self.notify(self._clientnotify)
 		self.client.put(obj, timeout=timeout)
 
 	def client_pull(self, timeout=None):
@@ -29,3 +34,13 @@ class DQ:
 
 	def server_pull(self, timeout=None):
 		return self.server.get(timeout=timeout)
+
+	def client_notify(self, function):
+		self.clientnotify = function
+
+	def server_notify(self, function):
+		self.servernotify = function
+
+	def notify(self, function):
+		if function:
+			return function()

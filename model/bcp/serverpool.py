@@ -1,4 +1,4 @@
-from threading import Lock, Thread
+from threading import Lock, Thread, Event
 from Queue import Queue, Empty
 import traceback
 
@@ -14,6 +14,7 @@ class ServerPool:
 
 		self.servers = []
 		self.lock = Lock()
+		self.inputevent = Event()
 		self.closed = False
 		self.env = [[],[]]
 
@@ -30,7 +31,11 @@ class ServerPool:
 	def run(self):
 		''' Run the pool, allowing interserver communication '''
 		while not self.closed:
+			#print "cycling"
 			self.buffer_flip()
+			if not self.buffer:
+				# wait for new inputs
+				self.inputevent.wait(timeout=1)
 			with self.lock:
 				s = 0
 				while s < len(self.servers):
@@ -42,6 +47,7 @@ class ServerPool:
 						except Exception as e:
 							self.crash(e)
 						s += 1
+			self.inputevent.clear()
 
 	def run_threaded(self):
 		t = Thread(target=self.run)
@@ -80,6 +86,7 @@ class ServerPool:
 
 	def connect(self, server, queue, extensions = {}):
 		print "New connection:",server
+		queue.server_notify(self.inputevent.set)
 		conn = Connection(self.doc, self.auth, queue, extensions=extensions, log="*")
 		self.servers[server][2].append(conn)
 
