@@ -1,7 +1,8 @@
 from server import *
 
 from ConcurrenTree import file
-from gtk import gdk, StatusIcon, main, main_quit
+import gtk
+from gtk import gdk, StatusIcon
 
 class Icon(StatusIcon):
 	def __init__(self, server):
@@ -9,6 +10,26 @@ class Icon(StatusIcon):
 		self.set_from_file(file("img/logos/OrchardLogo.svg"))
 		self.set_tooltip("Orchard Server")
 		self.server = server
+		self.connect("activate", self.leftclick)
+
+	def leftclick(self, icon):
+		self.menu(1, gtk.get_current_event_time(), self.litems())
+
+	def menu(self, event_button, event_time, items):
+		menu = gtk.Menu()
+		for item in items:
+			if type(item)==str:
+				item = gtk.MenuItem(item)
+			menu.append(item)
+			item.show()
+		menu.show()
+		menu.popup(None, None, gtk.status_icon_position_menu, event_button, event_time, self)
+
+	def litems(self):
+		return [
+			"My Documents",
+			"Connection Information"
+		]
 
 class IconServer(PoolServer):
 	def __init__(self):
@@ -18,7 +39,7 @@ class IconServer(PoolServer):
 
 	def run(self):
 		gdk.threads_init()
-		main()
+		gtk.main()
 
 	def starting(self):
 		return []
@@ -28,7 +49,7 @@ class IconServer(PoolServer):
 
 	def close(self):
 		self.closed = True
-		main_quit()
+		gtk.main_quit()
 
 if __name__=="__main__":
 	ike = Icon()

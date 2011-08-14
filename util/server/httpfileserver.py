@@ -17,7 +17,7 @@ class BaseFileHandler(BaseHTTPRequestHandler):
 				self.send_header('Cache-Control',"max-age="+str(farfuture()))
 			self.end_headers()
 			self.wfile.write(f.value)
-		except (IOError, KeyError):
+		except (LookupError, KeyError):
 			self.send_error(404, 'File Not Found: '+self.path)
 
 def make_handler(dbr):
@@ -47,15 +47,21 @@ class File:
 		if self.preload:
 			self.load()
 
+	def _load(self):
+		try:
+			with open(self.path, "r") as f:
+				self._value = f.read()
+				self.mtime = os.fstat(f.fileno()).st_mtime
+		except IOError:
+			raise LookupError
+
 	def load(self):
-		with open(self.path, "r") as f:
-			self._value = f.read()
-			self.mtime = os.fstat(f.fileno()).st_mtime
+		if self._value==None or (not self.cache and self.updated):
+			self._load()
 
 	@property
 	def value(self):
-		if self._value==None or (not self.cache and self.updated):
-			self.load()
+		self.load()
 		return self._value
 
 	@property
@@ -67,14 +73,20 @@ class File:
 		return os.stat(self.path).st_mtime		
 
 class Server:
-	def __init__(self, address=('',80), files=[]):
+	def __init__(self, address=('',80), files=[], supercache=False):
 		self.files = dict_by_reference({})
+		self.supercache = supercache
 		for f in files:
 			self.host(f)
 		self.handler = make_handler(self.files)
 		self.server = HTTPServer(address, self.handler)
 
 	def host(self, fileobj):
+		if self.supercache:
+			fileobj.browsercache = True
+			fileobj.cache = True
+			fileobj.preload = True
+			fileobj.load()
 		for i in fileobj.spath:
 			self.files.dict[i] = fileobj
 
