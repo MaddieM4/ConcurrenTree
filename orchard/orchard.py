@@ -74,7 +74,7 @@ if args.portset:
 import webbrowser
 
 from ConcurrenTree.model.bcp.serverpool import ServerPool
-from server import http, ws, peers
+from server import http, ws, peers, icon
 from ConcurrenTree.util import storage
 
 doc = storage.Storage()
@@ -88,7 +88,7 @@ pool.start(ws.WebSocketServer, port=args.wsport)
 if not args.browser:
 	webbrowser.open("http://localhost:%d/newclient?ws=%d" % (args.http, args.wsport))
 # start notification icon
-pass
+pool.start(icon.IconServer)
 
 # start background servers
 peerserver = pool.start(peers.Peers, port=args.peers)
