@@ -29,8 +29,9 @@ class Icon(StatusIcon):
 		return [
 			"New Window",
 			"My Documents",
-			"Connection Information",
-			self.item("Quit", lambda x: self.server.pool.close_signal())
+			self.item("Connection Information", self.server.info),
+			self.item("About", self.server.about),
+			self.item("Quit", self.server.quit)
 		]
 
 	def item(self, name, function):
@@ -58,6 +59,30 @@ class IconServer(PoolServer):
 	def close(self):
 		self.closed = True
 		gtk.main_quit()
+
+	# functions for internal icon to call
+
+	def quit(self, *args):
+		self.pool.close_signal()
+
+	def info(self, *args):
+		pass
+
+	def about(self, *args):
+		dialog = gtk.AboutDialog()
+		dialog.set_program_name("Orchard")
+		dialog.set_version("0.3")
+		dialog.set_website("http://github.com/campadrenalin/ConcurrenTree")
+		dialog.set_website_label("ConcurrenTree library on Github")
+		dialog.set_comments("""Orchard is an implementation of the evolving concurrent text standard, ConcurrenTree. It's 
+		under active development right now, expect broken pieces and jagged edges.
+		""".replace("\t","").replace('\n', ''))
+		dialog.set_authors(["Philip Horger <campadrenalin@gmail.com>","Nathaniel Abbots"])
+		dialog.set_logo(gtk.gdk.pixbuf_new_from_file(file("img/logos/OrchardBigLogo.svg")))
+		def response(d, gint):
+			d.destroy()
+		dialog.connect("response", response)
+		dialog.show()
 
 if __name__=="__main__":
 	ike = Icon()
