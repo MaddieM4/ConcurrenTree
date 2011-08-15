@@ -21,21 +21,25 @@ class Icon(StatusIcon):
 			if type(item)==str:
 				item = gtk.MenuItem(item)
 			menu.append(item)
-			item.show()
-		menu.show()
+			item.show_all()
+		menu.show_all()
 		menu.popup(None, None, gtk.status_icon_position_menu, event_button, event_time, self)
 
 	def litems(self):
 		return [
-			"New Window",
-			"My Documents",
-			self.item("Connection Information", self.server.info),
-			self.item("About", self.server.about),
-			self.item("Quit", self.server.quit)
+			self.item("New Window", self.server.info, "gtk-add"),
+			self.item("My Documents", self.server.info, "gtk-home"),
+			self.item("Connection Information", self.server.info, "gtk-network"),
+			gtk.SeparatorMenuItem(),
+			self.item("gtk-about", self.server.about),
+			self.item("gtk-quit", self.server.quit)
 		]
 
-	def item(self, name, function):
-		item = gtk.MenuItem(name)
+	def item(self, name, function, image=""):
+		item = gtk.ImageMenuItem(name)
+		item.set_use_stock(True)
+		if image:
+			item.set_image(gtk.image_new_from_stock(image,gtk.ICON_SIZE_MENU))
 		item.connect("activate", function)
 		return item
 
