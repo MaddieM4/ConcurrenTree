@@ -115,6 +115,24 @@ class ServerPool:
 	def buffer_flip(self):
 		self.env = [self.env[1], []]
 
+	def properties(self):
+		with self.lock:
+			result = {}
+			for i in range(len(self.servers)):
+				props = self.server(i).properties
+				basename = ""
+				try:
+					basename = props['name']
+				except KeyError:
+					basename = str(props.__class__)
+				name = basename
+				number = 0
+				while name in result:
+					number += 1
+					name = basename+str(number)
+				result[name] = props
+			return result
+
 	def crash(self, e):
 		''' 
 			Process an error in a way that will not
@@ -182,6 +200,14 @@ class PoolServer:
 	@property
 	def closed(self):
 		raise NotImplementedError()
+
+	@property
+	def properties(self):
+		result = {}
+		for name in dir(self):
+			if name != "properties":
+				result[name] = getattr(self, name)
+		return result
 
 class Policy:
 	''' 

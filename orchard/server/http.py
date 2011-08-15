@@ -46,3 +46,12 @@ class HTTP(PoolServer):
 		self.closed = True
 		self.server.close()
 
+	@property
+	def properties(self):
+		return {
+			"name":"HTTP",
+			"closed":self.closed,
+			"port":self.port,
+			"path":self.rootpath,
+			"internal_server":self.server
+		}

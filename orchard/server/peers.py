@@ -85,6 +85,26 @@ class Peers(PoolServer):
 			self.peers[peer].close()
 		self.closed = True
 
+	@property
+	def address(self):
+		try:
+			return self.socket.getsockname()
+		except:
+			return ('',0)
+
+	@property
+	def port(self):
+		return self.address[1]
+
+	@property
+	def properties(self):
+		return {
+			"name":"PeerServer",
+			"closed":self.closed,
+			"port":self.port,
+			"address":self.address
+		}
+
 	def clean(self):
 		i = 0
 		keys = self.peers.keys()

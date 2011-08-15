@@ -53,3 +53,11 @@ class WebSocketServer(PoolServer):
 
 	def close(self):
 		self.server.running = False
+
+	@property
+	def properties(self):
+		return {
+			"name":"WebSocket",
+			"port":self.port,
+			"closed":self.closed
+		}
