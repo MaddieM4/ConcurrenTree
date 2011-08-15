@@ -27,14 +27,22 @@ class Icon(StatusIcon):
 
 	def litems(self):
 		return [
+			"New Window",
 			"My Documents",
-			"Connection Information"
+			"Connection Information",
+			self.item("Quit", lambda x: self.server.pool.close_signal())
 		]
 
+	def item(self, name, function):
+		item = gtk.MenuItem(name)
+		item.connect("activate", function)
+		return item
+
 class IconServer(PoolServer):
-	def __init__(self):
+	def __init__(self, pool):
 		self.icon = Icon(self)
 		self._policy = Policy()
+		self.pool = pool
 		self.closed = False
 
 	def run(self):

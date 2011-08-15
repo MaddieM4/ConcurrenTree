@@ -16,6 +16,7 @@ class ServerPool:
 		self.lock = Lock()
 		self.inputevent = Event()
 		self.closed = False
+		self._close_signal = False
 		self.env = [[],[]]
 
 	def start(self, cls, *args, **kwargs):
@@ -48,6 +49,8 @@ class ServerPool:
 							self.crash(e)
 						s += 1
 			self.inputevent.clear()
+			if self._close_signal:
+				self.close()
 
 	def run_threaded(self):
 		t = Thread(target=self.run)
@@ -137,6 +140,10 @@ class ServerPool:
 				i[0].close()
 			for i in self.servers:
 				i[1].join()
+
+	def close_signal(self):
+		''' Close pool in a thread-safe way from a server thread '''
+		self._close_signal = True
 
 	def check_closed(self):
 		if self.closed:

@@ -88,7 +88,7 @@ pool.start(ws.WebSocketServer, port=args.wsport)
 if not args.browser:
 	webbrowser.open("http://localhost:%d/newclient?ws=%d" % (args.http, args.wsport))
 # start notification icon
-pool.start(icon.IconServer)
+pool.start(icon.IconServer, pool)
 
 # start background servers
 peerserver = pool.start(peers.Peers, port=args.peers)
