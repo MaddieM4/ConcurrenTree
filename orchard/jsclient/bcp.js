@@ -66,12 +66,13 @@ function BCP(docs, stream, auth){
 
 	this.getcached = {}
 	this.get = function(name) {
-		// Retrieve or update a document
+		// Retrieve or sync a document
 		// Does not broadcast
 		if (name==undefined) name = self.selected;
 		assert(isString(name), "Docnames must be a string.")
 
 		if (this.getcached[name]==undefined){
+			this.getcached[name] = [[]] // blank tree
 			self.load(name);
 		} else {
 			self.sync(name);
@@ -97,6 +98,7 @@ function BCP(docs, stream, auth){
 
 	this.sync = function(name){
 		if (name==undefined) name = self.selected;
+		self.select(name)
 		self.send({"type":"check","eras":0})
 	}
 
