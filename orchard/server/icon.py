@@ -11,9 +11,13 @@ class Icon(StatusIcon):
 		self.set_tooltip("Orchard Server")
 		self.server = server
 		self.connect("activate", self.leftclick)
+		self.connect("popup-menu", self.rightclick)
 
 	def leftclick(self, icon):
 		self.menu(1, gtk.get_current_event_time(), self.litems())
+
+	def rightclick(self, data, event_button, event_time):
+		self.menu(event_button, event_time, self.ritems())
 
 	def menu(self, event_button, event_time, items):
 		menu = gtk.Menu()
@@ -26,11 +30,26 @@ class Icon(StatusIcon):
 		menu.popup(None, None, gtk.status_icon_position_menu, event_button, event_time, self)
 
 	def litems(self):
-		def donothing(*args): pass
+		return [
+			"Future",
+			"feature:",
+			"a list",
+			"of documents",
+			"here.",
+			self.item("New Document", self.server.newwindow, "gtk-add"),
+			gtk.SeparatorMenuItem(),
+			self.item("gtk-about", self.server.about),
+			self.item("gtk-quit", self.server.quit)
+		]
+
+
+	def ritems(self):
 		return [
 			self.item("New Window", self.server.newwindow, "gtk-add"),
-			self.item("My Documents", donothing, "gtk-home"),
+			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
+			gtk.SeparatorMenuItem(),
+			self.item("Configure", self.server.preferences, "gtk-preferences"),
 			gtk.SeparatorMenuItem(),
 			self.item("gtk-about", self.server.about),
 			self.item("gtk-quit", self.server.quit)
@@ -107,10 +126,19 @@ class IconServer(PoolServer):
 		dialog.connect("response", response)
 		dialog.show()
 
-	def newwindow(self, *args):
+	def openwindow(self, url):
 		props = self.pool.properties()
 		wsport = props['WebSocket']['port']
-		props['HTTP']['open']("/newclient#ws="+str(wsport))
+		props['HTTP']['open'](url+"#ws="+str(wsport))
+
+	def newwindow(self, *args):
+		self.openwindow("/newclient")
+
+	def opendocuments(self, *args):
+		self.openwindow("/mydocuments")
+
+	def preferences(self, *args):
+		pass
 
 if __name__=="__main__":
 	ike = Icon()
