@@ -49,7 +49,7 @@ class Icon(StatusIcon):
 			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
 			gtk.SeparatorMenuItem(),
-			self.item("Configure", self.server.preferences, "gtk-preferences"),
+			self.item("Configure", self.server.configure, "gtk-preferences"),
 			gtk.SeparatorMenuItem(),
 			self.item("gtk-about", self.server.about),
 			self.item("gtk-quit", self.server.quit)
@@ -137,7 +137,8 @@ class IconServer(PoolServer):
 	def opendocuments(self, *args):
 		self.openwindow("/mydocuments")
 
-	def preferences(self, *args):
+	def configure(self, *args):
+		# TODO - Make a Configuration dialog.
 		pass
 
 if __name__=="__main__":
