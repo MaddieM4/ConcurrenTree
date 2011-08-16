@@ -159,8 +159,14 @@ def validate_shortcut(shortcut):
 		assert(type(shortcut[0])==int and shortcut[0]>=0)
 		assert(type(shortcut[1]) in (str, unicode))
 	except AssertionError:
-		raise BadShortcutError(shortcut)
+		raise InvalidShortcutError(shortcut)
 	return shortcut
+
+# An older implementation of eras used the classes below.
+# I tore most of the code out but this part was too good
+# and took too much work, so I'm keeping it for now on
+# the remote chance we need it again, so I won't have to
+# recode it again.
 
 class TreeReference(dict):
 	''' 
@@ -206,5 +212,5 @@ class TreeReference(dict):
 		self.era.insert(self.shortcut, tree)
 
 class ShortcutError(Exception): pass
-class BadShortcutError(ShortcutError): pass
+class InvalidShortcutError(ShortcutError): pass
 class ShortcutUnresolvedError(ShortcutError): pass
