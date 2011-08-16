@@ -100,8 +100,8 @@
 			rootview = docs.get(name)[0]
 			rootdisplay = new my_display();
 			rootview.display = rootdisplay;
-			bcp.get(name);
 			bcp.broadcast(name);
+			bcp.get(name);
 		}
 
 		function load_from_dni(){

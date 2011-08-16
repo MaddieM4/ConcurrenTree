@@ -6,7 +6,7 @@ function View(tree, name, display){
 	this.tree = tree;
 	this.name = name;
 	this.display = display;
-	bcp.get(this.name);
+	//bcp.get(this.name);
 
 	this.netbuffer = new Buffer(); // Input from BCP
 	// Input from user is either applied immediately or buffered by display
