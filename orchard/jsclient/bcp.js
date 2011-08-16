@@ -9,6 +9,7 @@ function BCP(docs, stream, auth){
 	this.buffer = "";
 	this.selected = "";
 	this.subscriptions = {}
+	this.bflag = {}
 	this.other = {
 		"selected":"",
 		"subscriptions":{}
@@ -65,16 +66,32 @@ function BCP(docs, stream, auth){
 
 	this.getcached = {}
 	this.get = function(name) {
+		// Retrieve or update a document
+		// Does not broadcast
 		if (name==undefined) name = self.selected;
 		assert(isString(name), "Docnames must be a string.")
-		// returns a prototree
+
 		if (this.getcached[name]==undefined){
-			self.select(name);
-			self.send({"type":"get", "tree":0})
+			self.load(name);
+		} else {
+			self.sync(name);
+		}
+	}
+
+	this.load = function(name){
+		self.select(name);
+		self.send({"type":"get", "tree":0})
+	}
+
+	this.broadcast = function(name){
+		// Send a loaded document to docs as an operation, or flag for it to happen when get returns
+		if (name==undefined) name = self.selected;
+		assert(isString(name), "Docnames must be a string.")
+
+		if (this.getcached[name]==undefined){
+			self.bflag[name] = true;
 		} else {
 			self.docs.send(name, opfromprototree(this.getcached[name]));
-			self.sync(name);
-			return this.getcached[name]
 		}
 	}
 
@@ -104,7 +121,10 @@ function BCP(docs, stream, auth){
 			self.errorhandle(msg)
 		}, "era":function(msg) {
 			self.getcached[msg.docname] = msg.tree;
-			self.docs.send(msg.docname, opfromprototree(msg.tree))
+			if (self.bflag[msg.docname]){
+				self.broadcast(msg.docname)
+				self.bflag[msg.docname]=false
+			}
 		}, 0:function(msg){
 			console.log("error: unknown message type")
 			self.error(401)
@@ -118,6 +138,9 @@ function BCP(docs, stream, auth){
 		}, 101:function(msg){
 			self.log("connection", "started")
 			console.log("Connection started")
+			if (self.selected!="") {
+				self.send({"type":"select", "docname":self.selected})
+			}
 		}, 0:function(msg){
 			var str = JSON.stringify(msg)
 			self.log("server error", str)
