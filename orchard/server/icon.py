@@ -28,7 +28,7 @@ class Icon(StatusIcon):
 	def litems(self):
 		def donothing(*args): pass
 		return [
-			self.item("New Window", donothing, "gtk-add"),
+			self.item("New Window", self.server.newwindow, "gtk-add"),
 			self.item("My Documents", donothing, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
 			gtk.SeparatorMenuItem(),
@@ -106,6 +106,11 @@ class IconServer(PoolServer):
 			d.destroy()
 		dialog.connect("response", response)
 		dialog.show()
+
+	def newwindow(self, *args):
+		props = self.pool.properties()
+		wsport = props['WebSocket']['port']
+		props['HTTP']['open']("/newclient#ws="+str(wsport))
 
 if __name__=="__main__":
 	ike = Icon()

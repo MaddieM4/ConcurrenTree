@@ -71,8 +71,6 @@ if args.portset:
 	default("wsport")
 	default("http")
 
-import webbrowser
-
 from ConcurrenTree.model.bcp.serverpool import ServerPool
 from server import http, ws, peers, icon
 from ConcurrenTree.util import storage
@@ -82,11 +80,11 @@ auth = None
 pool = ServerPool(doc, auth)
 
 # add interface servers
-pool.start(http.HTTP, port=args.http)
-pool.start(ws.WebSocketServer, port=args.wsport)
+s_http = pool.start(http.HTTP, port=args.http)
+s_ws   = pool.start(ws.WebSocketServer, port=args.wsport)
 # Start browser
 if not args.browser:
-	webbrowser.open("http://localhost:%d/newclient?ws=%d" % (args.http, args.wsport))
+	s_http.open("/newclient#ws=" + str(s_ws.port))
 # start notification icon
 pool.start(icon.IconServer, pool)
 

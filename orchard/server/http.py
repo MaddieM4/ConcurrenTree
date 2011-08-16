@@ -3,6 +3,8 @@ from ConcurrenTree.util.server import httpfileserver as hfs
 
 import ConcurrenTree
 
+import webbrowser
+
 class HTTP(PoolServer):
 	def __init__(self, port=8080):
 		self.closed = False
@@ -46,6 +48,14 @@ class HTTP(PoolServer):
 		self.closed = True
 		self.server.close()
 
+	def open(self, location="/"):
+		''' Open a new browser window '''
+		webbrowser.open(self.domain+location)
+
+	@property
+	def domain(self):
+		return "http://localhost:%d" % self.port
+
 	@property
 	def properties(self):
 		return {
@@ -53,5 +63,7 @@ class HTTP(PoolServer):
 			"closed":self.closed,
 			"port":self.port,
 			"path":self.rootpath,
+			"domain":self.domain,
+			"open":self.open,
 			"internal_server":self.server
 		}
