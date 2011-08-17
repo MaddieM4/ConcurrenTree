@@ -17,6 +17,7 @@ class Tree(ModelBase):
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
+		self._operations = {}
 		for i in range(len(self)+1):
 			self._children.append(dict())
 
@@ -80,6 +81,13 @@ class Tree(ModelBase):
 	def __len__(self):
 		''' Return the length of the internal immutable string '''
 		return self._length
+
+	@property
+	def operations(self):
+		if self.is_root:
+			return self._operations
+		else:
+			return self.parent._operations
 
 	# Era functions and utilities
 
