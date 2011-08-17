@@ -3,7 +3,7 @@ import re
 import json
 
 class Address(ModelBase):
-	''' Address format: index:hash/index:hash '''
+	''' Address format: [[index, key], [index, key]] '''
 
 	def __init__(self, target):
 		self.layers = []
@@ -24,3 +24,19 @@ class Address(ModelBase):
 
 	def proto(self):
 		return self.layers
+
+def validate_shortcut(shortcut):
+	try:
+		if (type(shortcut) in (str, unicode)):
+			shortcut = shortcut.split("#")
+		assert(type(shortcut)==list or type(shortcut)==tuple)
+		assert(len(shortcut)==2)
+		assert(type(shortcut[0])==int and shortcut[0]>=0)
+		assert(type(shortcut[1]) in (str, unicode))
+	except AssertionError:
+		raise InvalidShortcutError(shortcut)
+	return tuple(shortcut)
+
+class ShortcutError(Exception): pass
+class InvalidShortcutError(ShortcutError): pass
+class ShortcutUnresolvedError(ShortcutError): pass
