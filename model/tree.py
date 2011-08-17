@@ -229,7 +229,7 @@ class Flat(Tree):
 		for pos in childpositions:
 			if shortcut in pos:
 				return pos
-		raise KeyError("Shortcut not found in Flat definition")
+		raise KeyError("Shortcut not found in Flat definition: "+str(shortcut))
 
 	def install(self, protokids):
 		for shortcut in protokids:
@@ -249,7 +249,7 @@ class Document:
 			This function does not need to return anything. 
 		'''
 		self.name = docname
-		self.load = loadcallback
+		self.load = msgcallback
 		self.flat = Flat("", 0, name=self.name)
 		self.root = self.flat.insert(0, "")
 		self.opqueue = []
@@ -389,7 +389,7 @@ def stringparse(l):
 	''' 
 		Return a concatenation of all strings in a list
 	'''
-	return "".join([x for x in value if type(x)==str])
+	return "".join([x for x in l if type(x)==str])
 
 def positionparse(l):
 	''' 
