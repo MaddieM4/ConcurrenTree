@@ -1,5 +1,5 @@
 from ConcurrenTree.model import ModelBase
-from ConcurrenTree.util.hasher import key
+from ConcurrenTree.util.hasher import key, sum
 
 def sort(d):
 	k = d.keys()
@@ -8,7 +8,9 @@ def sort(d):
 
 class Tree(ModelBase):
 	def __init__(self, value="", name=''):
+		''' Do not manipulate children externally. Use class methods. '''
 		self.name = name
+		self.initroot()
 		self._value = value
 		self._length = len(value)
 		self._deletions = [False] * len(self)
@@ -16,6 +18,14 @@ class Tree(ModelBase):
 		self.operations = {}
 		for i in range(len(self)+1):
 			self._children.append(dict())
+
+	def initroot(self):
+		self.initplace(None, 0, "root")
+
+	def initplace(self, parent, level, shortcut):
+		self._parent = parent
+		self._level = level
+		self._shortcut = shortcut
 
 	def insert(self, pos, value):
 		''' Insert a child to the tree with string "value" at position "pos" '''
@@ -28,7 +38,9 @@ class Tree(ModelBase):
 		del self[pos]
 
 	def insert_tree(self, pos, obj):
-		self._children[pos][obj.key] = obj		
+		''' Insert an object as a child tree, setting its era properties '''
+		obj.initplace(self, self.level+1, self._shortcut)
+		self._children[pos][obj.key] = obj
 
 	def get(self, pos, key):
 		''' Return the subtree with key "key" from position "pos" '''
@@ -66,6 +78,56 @@ class Tree(ModelBase):
 	def __len__(self):
 		''' Return the length of the internal immutable string '''
 		return self._length
+
+	# Era functions and utilities
+
+	def up(self, num):
+		if num==0:
+			return self
+		else:
+			return self._parent.up(num-1)
+
+	@property
+	def parent(self):
+		return self._parent
+
+	@property
+	def level(self):
+		return self._level
+
+	@property
+	def era(self):
+		return self.level // 16
+
+	@property
+	def shortcut(self):
+		return self.era, self._shortcut
+
+	@property
+	def shortcutparent(self):
+		return self.up(self.level % 16)
+
+	@property
+	def is_root(self):
+		return self.level==0
+
+	@property
+	def root(self):
+		return self.up(self.level)
+
+	def find(self, shortcut):
+		''' Resolve a shortcut into a tree. '''
+		shortcut = validate_shortcut(shortcut)
+
+	@property
+	def address(self):
+		sp = self.shortcutparent
+		if self.era == 0:
+			# no shortcut
+			pass
+		else:
+			# shortcut
+			pass
 
 	def flatten(self):
 		''' Returns a string that summarizes self and all descendants. Not backwards-compatible for applying ops. '''
@@ -154,6 +216,8 @@ def from_proto(obj, era=None):
 
 def validate_shortcut(shortcut):
 	try:
+		if (type(shortcut) in (str, unicode)):
+			shortcut = shortcut.split("#")
 		assert(type(shortcut)==list or type(shortcut)==tuple)
 		assert(len(shortcut)==2)
 		assert(type(shortcut[0])==int and shortcut[0]>=0)
@@ -166,7 +230,7 @@ def validate_shortcut(shortcut):
 # I tore most of the code out but this part was too good
 # and took too much work, so I'm keeping it for now on
 # the remote chance we need it again, so I won't have to
-# recode it again.
+# recode it again. ~ Philip
 
 class TreeReference(dict):
 	''' 
