@@ -40,6 +40,7 @@ class Tree(ModelBase):
 	def insert_tree(self, pos, obj):
 		''' Insert an object as a child tree, setting its era properties '''
 		obj.initplace(self, self.level+1, self._shortcut)
+		obj.name = self.name
 		self._children[pos][obj.key] = obj
 
 	def get(self, pos, key):
@@ -117,7 +118,19 @@ class Tree(ModelBase):
 
 	def find(self, shortcut):
 		''' Resolve a shortcut into a tree. '''
-		shortcut = validate_shortcut(shortcut)
+		if self.is_root:
+			shortcut = validate_shortcut(shortcut)
+			return self.shortcuts[shortcut]
+		else:
+			return self.parent.find(shortcut)
+
+	def register(self, shortcut, value):
+		''' Registers a shortcut with the root '''
+		if self.is_root:
+			shortcut = validate_shortcut(shortcut)
+			self.shortcuts[shortcut] = value
+		else:
+			self.parent.register(shortcut, value)
 
 	@property
 	def address(self):
@@ -189,7 +202,65 @@ class Tree(ModelBase):
 	def key(self):
 		return key(self._value)
 
+class Flat(Tree):
+	def __init__(self, value, level, protokids={}, name=''):
+		Tree.__init__(self, value, name)
+		self.initplace(None, level, "flat")
+
+	@property
+	def parent(self):
+		raise BeyondFlatError(self.level-1)
+
+	@property
+	def root(self):
+		raise BeyondFlatError(0)
+
+class Document:
+	def __init__(self, docname, loadcallback):
+		self.name = docname
+		self.load = loadcallback
+		self.flat = Flat("", 0, name=self.name)
+		self.root = self.flat.insert(0, "")
+		self.opqueue = []
+
+	def get_era(self, num):
+		pass
+
+	def set_era(self, proto):
+		pass
+
+	def get_flat(self, num):
+		pass
+
+	def set_flat(self, proto):
+		pass
+
+	def apply(self, op):
+		pass
+
+	def slide(self, num):
+		''' 
+			Adjust the era cutoff for storage. Use a positive number
+			to indicate the earliest era to store, or a negative
+			number to indicate how many eras to store (maximum era - num).
+		'''
+		pass
+
+class BeyondFlatError(Exception):
+	def __init__(self, level):
+		''' Level should indicate the level needed to load '''
+		Exception.__init__(self, "Target level not loaded: "+str(level))
+		self.level = level
+
+	@property
+	def era(self):
+		return self.level // 16
+
 def from_proto(obj, era=None):
+	''' 
+		Deprecated in this form, but we'll reuse this code
+		for a Document function.
+	'''
 	if type(obj)==dict:
 		value = None
 		shortcut = obj['address']
@@ -213,7 +284,6 @@ def from_proto(obj, era=None):
 			tree.insert_tree(pos, child)
 	return tree
 
-
 def validate_shortcut(shortcut):
 	try:
 		if (type(shortcut) in (str, unicode)):
@@ -224,7 +294,7 @@ def validate_shortcut(shortcut):
 		assert(type(shortcut[1]) in (str, unicode))
 	except AssertionError:
 		raise InvalidShortcutError(shortcut)
-	return shortcut
+	return tuple(shortcut)
 
 # An older implementation of eras used the classes below.
 # I tore most of the code out but this part was too good
