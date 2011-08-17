@@ -1,6 +1,8 @@
 from ConcurrenTree.model import ModelBase
 from ConcurrenTree.util.hasher import key, sum
 
+import operation
+
 def sort(d):
 	k = d.keys()
 	k.sort()
@@ -15,7 +17,6 @@ class Tree(ModelBase):
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
-		self.operations = {}
 		for i in range(len(self)+1):
 			self._children.append(dict())
 
@@ -216,26 +217,75 @@ class Flat(Tree):
 		raise BeyondFlatError(0)
 
 class Document:
-	def __init__(self, docname, loadcallback):
+	def __init__(self, docname, msgcallback):
+		''' 
+			msgcallback should be an asynchronous function
+			that accepts a BCP msgdict, to send it to the
+			network.
+
+			This function does not need to return anything. 
+		'''
 		self.name = docname
 		self.load = loadcallback
 		self.flat = Flat("", 0, name=self.name)
 		self.root = self.flat.insert(0, "")
 		self.opqueue = []
+		self.operations = {}
+		self.slidewant = 0
+
+	def load_proto(self, msgdict):
+		''' 
+			Accepts:
+				X op
+				* ad
+				* getop
+				* check
+				* thash
+				* get
+				X era
+		'''
+		t = msgdict['type']
+		if t=="era":
+			if msgdict['subtype']=="tree":
+				self.set_era(msgdict['layer'], msgdict['era'])
+			elif msgdict['subtype']=="flat":
+				self.set_flat(msgdict['layer'], msgdict['flat'])
+		elif t=="op":
+			self.apply(operation.Operation(msgdict['instructions']))
 
 	def get_era(self, num):
 		pass
 
-	def set_era(self, proto):
+	def set_era(self, layer, proto):
 		pass
 
 	def get_flat(self, num):
 		pass
 
-	def set_flat(self, proto):
+	def set_flat(self, layer, proto):
 		pass
 
 	def apply(self, op):
+		try:
+			op.apply(self.root)
+		except:
+			pass
+
+	def __str__(self):
+		return self.flat.flatten()
+
+	@property
+	def era(self):
+		''' 
+			Lowest era in memory.
+		'''
+		return self.flat.era
+
+	@property
+	def maxera(self):
+		''' 
+			Highest era in memory.
+		'''
 		pass
 
 	def slide(self, num):
@@ -244,7 +294,34 @@ class Document:
 			to indicate the earliest era to store, or a negative
 			number to indicate how many eras to store (maximum era - num).
 		'''
-		pass
+		era = self.era
+		if num<0:
+			num = self.maxera-num
+		if num==era:
+			return
+		elif num<era:
+			self.load(self.docname, "era", range(num,era))
+		elif num>era:
+			# forget
+			pass
+
+	@property
+	def slidewant(self):
+		''' 
+			Like slide, but indicates what number to slide to when the
+			opqueue is empty. It's configuration, as opposed to the actual
+			slide value, which changes as needed to apply ops or fulfill
+			requests.
+
+			Default is zero, which does not forget anything.
+		'''
+		return self.slidewant
+
+	@slidewant.setter
+	def slidewant(self, num):
+		if type(num)!=int:
+			raise TypeError("Document.slidewant must be of <type 'int'>")
+		self._slidewant = num
 
 class BeyondFlatError(Exception):
 	def __init__(self, level):

@@ -3,7 +3,7 @@ import re
 import json
 
 class Address(ModelBase):
-	''' Address format: index:hash/index:hash '''
+	''' Address format: [[index, key], [index, key]] '''
 
 	def __init__(self, target):
 		self.layers = []

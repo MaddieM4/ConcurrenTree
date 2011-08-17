@@ -4,14 +4,15 @@ import instruction
 from address import Address
 from copy import deepcopy
 import traceback
+import json
 
 class Operation(ModelBase):
 	''' A collection of instructions '''
 
 	def __init__(self, instructions = [], protostring = None):
-		''' If protostring is present, uses that existing protocol object. If not, use instructions list. '''
+		''' If protostring is present, uses that existing serialized instructions. If not, use instructions. '''
 		if protostring:
-			self.instructions = instructions_from_protostring(protostring)
+			self.instructions = json.loads(protostring)
 		else:
 			try:
 				self.instructions = instruction.set(instructions)
