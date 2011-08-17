@@ -205,8 +205,17 @@ class Tree(ModelBase):
 
 class Flat(Tree):
 	def __init__(self, value, level, protokids={}, name=''):
-		Tree.__init__(self, value, name)
+		''' 
+			value: protocol flat (list of strings and ints)
+			level: int
+			protokids: protocol era (dict of prototrees keyed on shortcut)
+			name: docname
+		'''
+		strvalue = stringparse(value)
+		Tree.__init__(self, strvalue, name)
 		self.initplace(None, level, "flat")
+		self.childpositions = positionparse(value)
+		self.install(protokids)
 
 	@property
 	def parent(self):
@@ -215,6 +224,20 @@ class Flat(Tree):
 	@property
 	def root(self):
 		raise BeyondFlatError(0)
+
+	def position(self, shortcut):
+		for pos in childpositions:
+			if shortcut in pos:
+				return pos
+		raise KeyError("Shortcut not found in Flat definition")
+
+	def install(self, protokids):
+		for shortcut in protokids:
+			pos = self.position(shortcut)
+			child = protokids[shortcut]
+			if type(child) == list: #prototree
+				child = tree_from_proto(child)
+			self.insert_tree(pos, child)
 
 class Document:
 	def __init__(self, docname, msgcallback):
@@ -303,7 +326,8 @@ class Document:
 			self.load(self.docname, "era", range(num,era))
 		elif num>era:
 			# forget
-			pass
+			newflat = self.get_flat(num)
+			
 
 	@property
 	def slidewant(self):
@@ -361,67 +385,24 @@ def from_proto(obj, era=None):
 			tree.insert_tree(pos, child)
 	return tree
 
-def validate_shortcut(shortcut):
-	try:
-		if (type(shortcut) in (str, unicode)):
-			shortcut = shortcut.split("#")
-		assert(type(shortcut)==list or type(shortcut)==tuple)
-		assert(len(shortcut)==2)
-		assert(type(shortcut[0])==int and shortcut[0]>=0)
-		assert(type(shortcut[1]) in (str, unicode))
-	except AssertionError:
-		raise InvalidShortcutError(shortcut)
-	return tuple(shortcut)
-
-# An older implementation of eras used the classes below.
-# I tore most of the code out but this part was too good
-# and took too much work, so I'm keeping it for now on
-# the remote chance we need it again, so I won't have to
-# recode it again. ~ Philip
-
-class TreeReference(dict):
+def stringparse(l):
 	''' 
-		An object that acts as a proxy for an actual tree,
-		using an era to request the tree on the fly. Treat it
-		like a regular old Tree object, but be forewarned that
-		those functions may raise ShortcutUnresolvedErrors if
-		the era can't resolve the shortcut to a Tree.
+		Return a concatenation of all strings in a list
 	'''
-	def __init__(self, era, shortcut, tree=None):
-		super(TreeReference, self).__init__()
-		self.era = era
-		self.shortcut = validate_shortcut(shortcut)
-		if tree!=None:
-			self.set(tree)
+	return "".join([x for x in value if type(x)==str])
 
-	def __getattr__(self, attr):
-		if attr in dir(Tree):
-			return getattr(self.tree, attr)
+def positionparse(l):
+	''' 
+		Takes a list of strings and other objects, and returns
+		a dict of the non-string objects keyed on position in the overall string
+	'''
+	position = 0
+	result = {}
+	for x in l:
+		if type(x)==str:
+			position += len(x)
 		else:
-			if attr in self:
-				return self[attr]
+			if position not in result:
+				result[position] = [x]
 			else:
-				raise AttributeError(attr)
-
-	def __setattr__(self, attr, value):
-		if attr in dir(Tree):
-			setattr(self.tree, attr, value)
-		else:
-			self[attr] = value
-
-	def __repr__(self):
-		return "<tree.TreeReference instance: %s>" % str(self.shortcut)
-
-	def proto(self):
-		return {"address":["#"+str(self.shortcut[0]), self.shortcut[1]]}
-
-	@property
-	def tree(self):
-		return self.era.resolve(self.shortcut)
-
-	def set(self, tree):
-		self.era.insert(self.shortcut, tree)
-
-class ShortcutError(Exception): pass
-class InvalidShortcutError(ShortcutError): pass
-class ShortcutUnresolvedError(ShortcutError): pass
+				result[position].append(x)
