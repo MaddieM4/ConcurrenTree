@@ -34,7 +34,7 @@ BCP Errors
 453 = Wrong argument type
 454 = Wrong JSON root type
 
-500 = Unknown Local Error
+500 = Unknown/Undisclosed Local Error
 501 = Service not supported
 502 = Resource not found
 503 = Service recognized but unavailable

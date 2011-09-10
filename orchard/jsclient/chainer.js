@@ -11,9 +11,9 @@ function Chainer(tree) {
 	this.startpos = undefined;
 	this.chain = "";
 
-	this.insert = function(pos, childtext) {this.apply(); return this.tree.insert(pos, childtext)}
-	this.delete = function(pos) {this.apply(); return this.tree.delete(pos)}
-	this.get = function(pos, hash) {this.apply(); return this.tree.get(pos, hash)}
+	this.insert = function(pos, childtext) {this.apply(); return this.tree.insert(pos, childtext);};
+	this.delete = function(pos) {this.apply(); return this.tree.delete(pos);};
+	this.get = function(pos, hash) {this.apply(); return this.tree.get(pos, hash);};
 
 	this.flatten = function() {this.apply(); return this.tree.flatten()}
 	this.trace = function(pos) {this.apply(); return this.tree.trace(pos)}
