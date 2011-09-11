@@ -79,4 +79,5 @@
     return Chainer;
   })();
   console.log("test");
+  window.Chainer = Chainer;
 }).call(this);

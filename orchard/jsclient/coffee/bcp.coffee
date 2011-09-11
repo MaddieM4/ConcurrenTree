@@ -69,7 +69,7 @@ class BCP
     load: (name) ->
         @select name
         @send 
-            type: get
+            type: "get"
             tree: 0
     broadcast: (name) ->
         ###
@@ -135,33 +135,6 @@ class BCP
         @cycle)
         100
         # would it not be better to use web workers? I don't know how to :) 
+	# Neither do I, but it sounds better than this!
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+window.BCP = BCP

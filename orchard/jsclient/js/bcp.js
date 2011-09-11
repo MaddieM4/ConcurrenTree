@@ -72,7 +72,7 @@
     BCP.prototype.load = function(name) {
       this.select(name);
       return this.send({
-        type: get,
+        type: "get",
         tree: 0
       });
     };
@@ -164,4 +164,5 @@
     }), 100);
     return BCP;
   })();
+  window.BCP = BCP;
 }).call(this);

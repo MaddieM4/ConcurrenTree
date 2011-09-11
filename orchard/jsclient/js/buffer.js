@@ -38,4 +38,5 @@
     };
     return Buffer;
   })();
+  window.Buffer = Buffer;
 }).call(this);
