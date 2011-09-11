@@ -69,7 +69,7 @@ class BCP
     load: (name) ->
         @select name
         @send 
-            type: get
+            type: "get"
             tree: 0
     broadcast: (name) ->
         ###
@@ -134,4 +134,3 @@ class BCP
     thread: setInterval (->
         @cycle)
         100
-        # would it not be better to use web workers? I don't know how to :)

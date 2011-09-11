@@ -64,3 +64,5 @@ class Chainer
             @lastpos = undefined
             @chain = ""
 console.log "test"
+
+window.Chainer = Chainer

@@ -30,3 +30,4 @@ class Buffer
             value = @read()
         result
         
+window.Buffer = Buffer
