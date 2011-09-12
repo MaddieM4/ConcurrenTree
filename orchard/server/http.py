@@ -25,6 +25,7 @@ class HTTP(PoolServer):
 			hfs.File(jsclient,"js/bcp.js", ["/bcp.js", "/js/bcp.js"], mimetype="text/javascript", preload=True),
 			hfs.File(jsclient,"js/view.js", ["/view.js", "/js/view.js"], mimetype="text/javascript", preload=True),
 			hfs.File(jsclient,"js/stream.js", ["/stream.js", "/js/stream.js"], mimetype="text/javascript"),
+			hfs.File(jsclient,"js/ws.js", "/js/stream/ws.js", mimetype="text/javascript"),
 			hfs.File(jsclient,"js/jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),
 			hfs.File(jsclient,"js/textile-editor.min.js", ["/textile.js", "/textile-editor.min.js"],"text/javascript"),
 			hfs.File(jsclient,"js/head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
