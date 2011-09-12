@@ -1,6 +1,6 @@
-# stream.coffee
+# stream.coffee :: A Web Worker library for asynchronous IO over a channel.
 
-# A Web Worker library for asynchronous IO over a channel.
+# Dependencies : js/stream folder for worker code
 
 types = 
     websocket: "js/stream/ws.js"

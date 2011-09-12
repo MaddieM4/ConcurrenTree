@@ -6,8 +6,8 @@ class BCP
     constructor: (docs, stream, auth) ->
         @docs = docs
         @stream = stream
+        @stream.onmessage = @recieve
         @auth = auth
-        @buffer = ""
         @selected = ""
         @subscriptions = {}
         @bflag = {}
@@ -15,22 +15,7 @@ class BCP
             selected: ""
             subscriptions: {}
         @getcached = {}
-    cycle: ->
-        # read network input
-        @buffer += @stream.bcp_pull()
-        
-        # debuffer and apply messages 
-        messages = @buffer.split "\x00"
-        @buffer = messages.pop()
-        for m in messages
-            @recieve m
-        
-        # update displays
-        @docs.cycle()
-        
-        # flush the stream buffer
-        @stream.onpush()
-    recieve: (message) ->
+    recieve: (message) =>
         @log "recieving", message
         console.log "Incoming message: #{message}"
         try
@@ -123,7 +108,7 @@ class BCP
     send: (obj) ->
         s = JSON.stringify obj
         @log "sending", s
-        @stream.bcp_push s + "\x00"
+        @stream.send s
     error: (code) ->
         @send
             "type": "error"
@@ -131,10 +116,5 @@ class BCP
     log: (headline, detail) ->
     reconnect: ->
         @stream.reconnect()
-    thread: setInterval (->
-        @cycle)
-        100
-        # would it not be better to use web workers? I don't know how to :) 
-	# Neither do I, but it sounds better than this!
 
 window.BCP = BCP
