@@ -2,16 +2,13 @@ from threading import Lock, Thread, Event
 from Queue import Queue, Empty
 import traceback
 
-from connection import Connection
+import connection
 
 class Pool:
 	''' A collection of server objects that provide real
 	or virtual peers. '''
 
-	def __init__(self, docHandler, authHandler):
-		self.doc = docHandler
-		self.auth = authHandler
-
+	def __init__(self):
 		self.servers = []
 		self.lock = Lock()
 		self.inputevent = Event()
@@ -69,11 +66,10 @@ class Pool:
 		while c < len(self.connections(i)):
 			try:
 				conn = self.connections(i)[c]
-				conn.exchange()
-				# Do something with the log, according to policy
+				# Do something with the input, according to policy
 				while True:
 					try:
-						msg = conn.log.get_nowait()
+						msg = conn.queue.server_pull(0)
 						#print "receiving message:  ", i, c, msg
 						policy.output(msg, conn, broadcast)
 					except Empty:
@@ -87,10 +83,11 @@ class Pool:
 			except Exception as e:
 				self.crash(e)
 
-	def connect(self, server, queue, extensions = {}):
+	def connect(self, server, conn, extensions = {}):
 		print "New connection:",server
-		queue.server_notify(self.inputevent.set)
-		conn = Connection(self.doc, self.auth, queue, extensions=extensions, log="*")
+		if not isinstance(conn, connection.Connection):
+			raise TypeError("Server %s passing connection objects that are not subclasses of Connection" % repr(server))
+		conn.queue.server_notify(self.inputevent.set) # Set pool notification callback
 		self.servers[server][2].append(conn)
 
 	def server(self, index):

@@ -8,8 +8,9 @@ non-Orchard use.
 
 '''
 
-from ConcurrenTree.model.bcp.serverpool import PoolServer, Policy
-import ConcurrenTree.model.bcp.doublequeue as dq
+from ConcurrenTree.util.server.pool.server import Server
+from ConcurrenTree.util.server.pool.policy import *
+import ConcurrenTree.util.server.pool.doublequeue as dq
 
 def startmessage(servname, port):
 	servname = (servname + " Server").ljust(18)

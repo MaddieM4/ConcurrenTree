@@ -31,7 +31,7 @@ class PeerSocket:
 		self.socket.close()
 		self.closed = True
 
-class Peers(PoolServer):
+class Peers(Server):
 	def __init__(self, port=9090):
 		self.lock = Lock()
 		with self.lock:

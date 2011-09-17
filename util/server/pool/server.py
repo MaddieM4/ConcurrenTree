@@ -6,17 +6,10 @@ class Server:
 
 	def starting(self):
 		''' 
-		Return a list of doublequeue.DQ() objects, 
+		Return a list of Connection objects, 
 		one for each NEW connection. Do not include
 		connections that have already been returned
-		through this function. 
-
-		The Queues you return should contain strings
-		until the connection is terminated, at which
-		point your server should put the integer 0, or
-		the integer BCP error code associated with the
-		termination.
-
+		through this function. Subclasses are cool.
 		'''
 		raise NotImplementedError()
 

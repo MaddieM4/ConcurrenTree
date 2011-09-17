@@ -22,16 +22,12 @@ class WSConnection(websocket.WebSocket):
 		super(WSConnection, self).close()
 		self.dq.client_push(0)
 
-class WebSocketServer(PoolServer):
+class WebSocketServer(Server):
 	def __init__(self, port=9091):
 		self.closed = False
 		self.port = port
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
 		self._policy = Policy()
-		#def hash(msg, conn, broadcast):
-		#	if not conn.require("value", msg): return
-		#	conn.push("hashvalue", value=msg['value'], hashvalue=hasher.make(msg['value']))
-		#self._policy.extensions['hash'] = hash
 
 	def run(self):
 		startmessage("WebSocket", self.port)

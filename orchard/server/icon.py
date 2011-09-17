@@ -63,7 +63,7 @@ class Icon(StatusIcon):
 		item.connect("activate", function)
 		return item
 
-class IconServer(PoolServer):
+class IconServer(Server):
 	def __init__(self, pool):
 		self.icon = Icon(self)
 		self._policy = Policy()
