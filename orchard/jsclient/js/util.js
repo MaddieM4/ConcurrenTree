@@ -15,7 +15,7 @@ function af_obj(id) {
 
 function isArray(obj){
 	//return JSON.stringify(obj)[0]==="[";
-    if (typeof obj === "array") {
+    if (typeof obj === "object") {
         return Object.prototype.toString.call(obj) === "[object Array]";
     }
     else {
@@ -57,7 +57,7 @@ function get_url_variable(name, def){
 	query = window.location.href.split('?')[1];
 	if (query===undefined) return def;
 	params = query.split("&");
-	for (i in params) {
+	for (var i in params) {
 		split = params[i].split("=");
 		if (split[0] == name) return split[1];
 	}
