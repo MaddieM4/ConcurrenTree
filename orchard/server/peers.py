@@ -26,6 +26,7 @@ class PeerSocket:
 				self.socket.sendall(self.dq.server_pull(timeout=0))
 			except dq.Empty:
 				break
+		self.connection.cycle()
 
 	def close(self):
 		print "Peersocket closing itself"

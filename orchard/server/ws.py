@@ -11,6 +11,7 @@ class WSConnection(websocket.WebSocket):
 		self.dq = self.connection.ioqueue
 
 	def onmessage(self, data):
+		print "Websocket receiving data:", data
 		self.dq.server_push(data)
 
 	def onsweep(self):
@@ -19,6 +20,7 @@ class WSConnection(websocket.WebSocket):
 				self.send(self.dq.server_pull(timeout=0))
 			except dq.Empty:
 				break
+		self.connection.cycle()
 
 	def close(self):
 		super(WSConnection, self).close()
