@@ -18,13 +18,17 @@ class Pool:
 
 	def start(self, cls, *args, **kwargs):
 		''' Add a server to the pool '''
-		server = cls(*args, **kwargs)
-		thread = Thread(target=server.run)
-		thread.start()
-		with self.lock:
-			self.check_closed()
-			self.servers.append((server, thread, []))
-			return server
+		try:
+			server = cls(*args, **kwargs)
+			thread = Thread(target=server.run)
+			thread.start()
+			with self.lock:
+				self.check_closed()
+				self.servers.append((server, thread, []))
+				return server
+		except Exception as e:
+			self.crash(e)
+			quit(1)
 
 	def run(self):
 		''' Run the pool, allowing interserver communication '''
