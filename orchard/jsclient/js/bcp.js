@@ -1,11 +1,12 @@
 (function() {
   var BCP;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   BCP = (function() {
     function BCP(docs, stream, auth) {
-      this.docs = docs;
+      this.recieve = __bind(this.recieve, this);      this.docs = docs;
       this.stream = stream;
+      this.stream.onmessage = this.recieve;
       this.auth = auth;
-      this.buffer = "";
       this.selected = "";
       this.subscriptions = {};
       this.bflag = {};
@@ -15,18 +16,6 @@
       };
       this.getcached = {};
     }
-    BCP.prototype.cycle = function() {
-      var m, messages, _i, _len;
-      this.buffer += this.stream.bcp_pull();
-      messages = this.buffer.split("\x00");
-      this.buffer = messages.pop();
-      for (_i = 0, _len = messages.length; _i < _len; _i++) {
-        m = messages[_i];
-        this.recieve(m);
-      }
-      this.docs.cycle();
-      return this.stream.onpush();
-    };
     BCP.prototype.recieve = function(message) {
       var msg;
       this.log("recieving", message);
@@ -147,7 +136,7 @@
       var s;
       s = JSON.stringify(obj);
       this.log("sending", s);
-      return this.stream.bcp_push(s + "\x00");
+      return this.stream.send(s);
     };
     BCP.prototype.error = function(code) {
       return this.send({
@@ -159,9 +148,6 @@
     BCP.prototype.reconnect = function() {
       return this.stream.reconnect();
     };
-    BCP.prototype.thread = setInterval((function() {
-      return this.cycle;
-    }), 100);
     return BCP;
   })();
   window.BCP = BCP;

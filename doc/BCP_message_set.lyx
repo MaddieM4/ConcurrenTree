@@ -916,18 +916,34 @@ Authorization
 \end_layout
 
 \begin_layout Section
-login
+token
 \end_layout
 
 \begin_layout Standard
-The BCP authorization system uses, for the most part, the private/public
- key model.
- The login message is provided as an alternative for more traditional username/p
-assword scenarios.
+The thing you actually authorize with.
+ There are two types so far, but OpenID support is expected to expand this
+ at some point in the future.
 \end_layout
 
-\begin_layout Standard
-The response to a correct login is an authok with no 
+\begin_layout Description
+local tokens are session tokens specific to the site you're logging into.
+ Further details are arbitrary, although a simple unsigned int session identifie
+r is a practical option for most implementations.
+ Should either include an expiration date or imply one from the date it
+ is issued.
+ Servers must support multiple logins with a single token simultaneously.
+\end_layout
+
+\begin_layout Description
+identity tokens have the properties 
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+, 
 \begin_inset Quotes eld
 \end_inset
 
@@ -935,8 +951,45 @@ key
 \begin_inset Quotes erd
 \end_inset
 
- property.
- Incorrect logins should trigger an error.
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+sigs
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Address is a valid MCP address, 
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+ is the corresponding public key, and 
+\begin_inset Quotes eld
+\end_inset
+
+sigs
+\begin_inset Quotes erd
+\end_inset
+
+ is a list of address/signature pairs expressed as a mapping ({}).
+\end_layout
+
+\begin_layout Section
+login
+\end_layout
+
+\begin_layout Standard
+A local token request.
+ The response should be an rtoken message.
+ Username and password are standard arguments but this can be as application-spe
+cific as you need it to be, although if you're going really off the wall
+ you can always make up a proprietary token type, expand the message set,
+ whatever you need.
 \end_layout
 
 \begin_layout Quote
@@ -992,13 +1045,20 @@ bukket
 \end_layout
 
 \begin_layout Section
-auth
+logout
 \end_layout
 
 \begin_layout Standard
-A request for an MEL of a random string.
- A live BCP node can only authorize for documents it's a part of/knows the
- participants of.
+Ends a local token session.
+ Returns an rtoken with property 
+\begin_inset Quotes eld
+\end_inset
+
+valid
+\begin_inset Quotes erd
+\end_inset
+
+ set to false.
 \end_layout
 
 \begin_layout Quote
@@ -1014,38 +1074,38 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-auth
+logout
 \begin_inset Quotes erd
 \end_inset
 
-,
+, 
 \begin_inset Quotes erd
 \end_inset
 
-docname
+token
 \begin_inset Quotes erd
 \end_inset
 
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-}
+: ...
+ }
 \end_layout
 
 \begin_layout Section
-authmel
+rtoken
 \end_layout
 
 \begin_layout Standard
-The response to an auth request.
- It's a random string encoded into an MEL (multiply-encoded list, where
- each element is the plaintext data encoded in a different participant's
- public key).
+A server-provided local token in response to a login request (response token
+ -> rtoken).
+ May include 
+\begin_inset Quotes eld
+\end_inset
+
+valid
+\begin_inset Quotes erd
+\end_inset
+
+ property when it would be true, must include it when it is false.
 \end_layout
 
 \begin_layout Quote
@@ -1061,23 +1121,7 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-authmel
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes erd
-\end_inset
-
-docname
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
+rtoken
 \begin_inset Quotes erd
 \end_inset
 
@@ -1085,129 +1129,24 @@ willynelson
 \begin_inset Quotes eld
 \end_inset
 
-mel
+token
 \begin_inset Quotes erd
 \end_inset
 
-:[ ...
- ]}
-\end_layout
-
-\begin_layout Section
-authmd
-\end_layout
-
-\begin_layout Standard
-Response to authmel.
- It's a list of decrypted strings, one of which hopefully will match the
- random string.
- It stands for Authorization MEL Decrypted.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-authmd
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes erd
-\end_inset
-
-docname
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-, 
+: ...
+ , 
 \begin_inset Quotes eld
 \end_inset
 
-mel
+valid
 \begin_inset Quotes erd
 \end_inset
 
-:[ ...
- ]}
+:true}
 \end_layout
 
-\begin_layout Section
-authok
-\end_layout
-
-\begin_layout Standard
-The final part of the auth dance.
- The server sends the client the symmetric key of the document.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-authok
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-docname
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
-}
+\begin_layout Part
+Meta
 \end_layout
 
 \begin_layout Section
@@ -1218,7 +1157,7 @@ lookup
 Look up metadata about something, found by an identifier.
  The identifier will vary in type and format based on how you're using BCP,
  it can be whatever you want as long as you're consistent.
- In ECP, for example, we use a public key for finding people.
+ In ECP, for example, we use an email address for finding people.
  Example subtypes are 
 \emph on
 person
@@ -1462,23 +1401,6 @@ Collecting decapitated teddy bears
 }
 \end_layout
 
-\begin_layout Part
-Meta
-\end_layout
-
-\begin_layout Standard
-Messages that contain messages.
- Well, except for 
-\begin_inset Quotes eld
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
-, but it still seemed like the right place to put that one, so hush.
-\end_layout
-
 \begin_layout Section
 part
 \end_layout
@@ -1497,27 +1419,6 @@ Multipart messages are a simple way to send large messages without clogging
  The contained message is treated like a big string and will be evaluated
  as soon as a piece is sent with the property done set to true (this can
  be ommitted in any non-final piece).
-\end_layout
-
-\begin_layout Standard
-While it supports the hashalgorithm property used for the 
-\begin_inset Quotes eld
-\end_inset
-
-encrypted
-\begin_inset Quotes erd
-\end_inset
-
- message type, such precautions are much less likely to be necessary for
- the 
-\begin_inset Quotes eld
-\end_inset
-
-part
-\begin_inset Quotes erd
-\end_inset
-
- message type.
 \end_layout
 
 \begin_layout Quote
@@ -1570,217 +1471,6 @@ contents
 \end_inset
 
 }
-\end_layout
-
-\begin_layout Section
-encrypted
-\end_layout
-
-\begin_layout Standard
-Ideally, you should run a BCP stream inside an encrypted connection (preferably
- point-to-point), instead of running encrypted messages over an unencrypted
- channel.
- Sometimes, though, that's not an option, and we want to make a standard
- mechanism for encryption in those use cases.
-\end_layout
-
-\begin_layout Standard
-When there is a key for each end, the sender always encrypts with their
- private key first, then with the recipient's public key (the recipient
- decrypts this in reverse order).
- If the docname selected by the sending end refers to an encrypted document,
- they must add a layer of encryption with the document's symettric key beneath
- the endpoint encryption layers.
-\end_layout
-
-\begin_layout Standard
-If you're using cryptography on your connection, you probably have support
- for advanced hashing algorithms on both ends, too.
- Not only that, but this is one of the few cases where the hashes actually
- need to be cryptographically secure.
- Therefore we give you a 
-\begin_inset Quotes eld
-\end_inset
-
-hashalgorithm
-\begin_inset Quotes erd
-\end_inset
-
- property to indicate what you're encoding in, which the remote end can
- accept, or respond with an error that contains a list of all supported
- algorithms.
- 
-\begin_inset Quotes eld
-\end_inset
-
-default
-\begin_inset Quotes erd
-\end_inset
-
- is the BCP sum() function and should not be used for this.
- However, it is what will be assumed if you do not specify the algorithm
- (hashalgorithm is an optional property).
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-encrypted
-\begin_inset Quotes erd
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes erd
-\end_inset
-
-hash
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-0b00411f
-\begin_inset Quotes erd
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-hashalgorithm
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-md5
-\begin_inset Quotes erd
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-contents
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
-}
-\end_layout
-
-\begin_layout Section
-key
-\end_layout
-
-\begin_layout Standard
-You probably noticed that there was no key exchange in the 
-\begin_inset Quotes eld
-\end_inset
-
-encrypted
-\begin_inset Quotes erd
-\end_inset
-
- message.
- That's because we do that with 
-\begin_inset Quotes eld
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
- messages, which work a bit like 
-\begin_inset Quotes eld
-\end_inset
-
-select
-\begin_inset Quotes erd
-\end_inset
-
- messages.
- Key messages exchange public keys between ends of a connection, and are
- also used to acknowledge that a key has been recieved.
- A key can be set to a string or to null.
-\end_layout
-
-\begin_layout Standard
-Encryption should not be used on a key until it has been acknowledged.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-mine
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-yours
-\begin_inset Quotes erd
-\end_inset
-
-:null}
 \end_layout
 
 \begin_layout Part
@@ -2333,6 +2023,8 @@ ee was originally invented for).
  clearly been run over by a truck and inedible (unparsable), and a nice,
  friendly-looking pie with a bunch of razor blades in it (parsable, but
  with bad data inside).
+ Well-formed messages will not trigger parsing errors, and valid data will
+ not trigger semantic errors.
 \end_layout
 
 \begin_layout Description
