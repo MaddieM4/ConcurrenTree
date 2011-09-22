@@ -36,10 +36,10 @@ class DQ:
 		return self.server.get(timeout=timeout)
 
 	def client_notify(self, function):
-		self.clientnotify = function
+		self._clientnotify = function
 
 	def server_notify(self, function):
-		self.servernotify = function
+		self._servernotify = function
 
 	def notify(self, function):
 		if function:

@@ -1,115 +1,66 @@
-import Queue
 import json
 import traceback
 
 from ConcurrenTree.model import operation
+from ConcurrenTree.util.server.pool.connection import Connection
 from peer import Peer
 from errors import errors
 
 nullbyte = "\x00"
 
-class Connection:
+class BCPConnection(Connection):
 	''' A connection between two Peers '''
-	def __init__(self, docHandler, authHandler, queue, extensions = {}, log=[]):
-		self.docs = docHandler
-		self.auth = authHandler
-		self.queue = queue # must be a BCP.doublequeue
-		self.extensions = extensions
-		self.logtypes = log
+	def __init__(self, docs, auth):
+		Connection.__init__(self)
+		self.docs = docs
+		self.auth = auth
 
-		self.buffer = ""
-		self.log = Queue.Queue()
 		self.here = Peer()
 		self.there = Peer()
-		self.closed = False
 
-	def recv(self):
-		''' 
-			Returns True if there was data to read,
-			False if there was a timeout.
-		'''
-		if self.closed: return False
+	def incoming(self, value):
+		if nullbyte in value:
+			length = value.index(nullbyte)
+			try:
+				self.recv(value[:length])
+			finally:
+				return value[length+1:]
+		else:
+			return value
+
+	def recv(self, msg):
+		''' Takes a textual BCP message of unknown validity '''
+		print "recving message:",msg
 		try:
-			self.feed(self.queue.server_pull(timeout=0))
-			return True
-		except Queue.Empty:
-			return False
-
-	def send(self):
-		return False
-
-	def exchange(self):
-		flag = True
-		while flag:
-			flag = self.recv() or self.send()
-
-	def feed(self, string=""):
-		''' Read a string into the buffer and process it '''
-		#print "BCP.Connection receiving %s:" % type(string), string
-		if type(string)==int:
-			# close this connection
-			self.close(string)
+			obj = json.loads(msg)
+		except ValueError:
+			self.error(451) # Bad JSON
 			return
-		self.buffer += string
-		if nullbyte in self.buffer:
-			length = self.buffer.index(nullbyte)
-			msg, self.buffer = self.buffer[:length], self.buffer[length+1:]
-			print "recving message:",msg
-			try:
-				obj = json.loads(msg)
-			except ValueError:
-				self.error(451) # Bad JSON
-				return
-			if type(obj)!=dict:
-				self.error(454) # Wrong root type
-				return
-			try:
-				self.analyze(obj, msg)
-			except:
-				traceback.print_exc()
-				self.error(500)
-			self.feed()
+		if type(obj)!=dict:
+			self.error(454) # Wrong root type
+			return
+		try:
+			self.analyze(obj, msg)
+		except:
+			traceback.print_exc()
+			self.error(500)
 
-	def extend(self, name, callback):
-		self.extensions[name] = callback
-
-	def is_extended(self, name):
-		return name in self.extensions
-
-	def unextend(self, name):
-		del self.extensions[name]
+	def outgoing(self, msg):
+		return json.dumps(msg)+nullbyte
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
-		print "sending message:",kwargs
-		self.queue.server_push(json.dumps(kwargs)+"\x00 ")
+		self.send(kwargs)
+
+	def send(self, msg):
+		print "sending message:",msg
+		self.ioqueue.client_push(json.dumps(msg)+nullbyte)
 
 	def select(self, docname):
 		if self.here.selected != docname:
 			self.push("select", docname=docname)
 
 	def analyze(self, obj, objstring):
-		if not "type" in obj:
-			self.error(452, 'Missing required argument: "type"')
-			return
-		obt = obj['type']
-		# log
-		if self.logtypes == "*" or obt in self.logtypes:
-			obj["selected"] = self.there.selected
-			self.log.put(obj)
-		# Check extensions for override on type
-		def broadcast(msg):
-			self.log.put(msg)
-		if obt in self.extensions:
-			return self.extensions[obt](obj, self, broadcast)
-		elif "*" in self.extensions:
-			# Global extension on all message types
-			return self.extensions["*"](obj, self, broadcast)
-		else:
-			# No extension, do normal stuff
-			self.apply(obj, objstring)
-
-	def apply(self, obj, objstring):
 		''' 
 			Apply a message as a piece of remote communication.
 		'''
@@ -214,6 +165,3 @@ class Connection:
 	def ldoc(self):
 		''' Locally selected document '''
 		return self.docs[self.here.selected]
-
-	def close(self, error=0):
-		self.closed = True

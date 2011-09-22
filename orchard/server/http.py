@@ -5,7 +5,7 @@ import ConcurrenTree
 
 import webbrowser
 
-class HTTP(PoolServer):
+class HTTP(Server):
 	def __init__(self, port=8080):
 		self.closed = False
 		self.port = port
