@@ -62,7 +62,7 @@ class Pool:
 		policy = self.server(i).policy()
 		# Accept new connections
 		for conn in self.server(i).starting():
-			self.connect(i, conn, policy.extensions)
+			self.connect(i, conn)
 		def broadcast(msg):
 			self.buffer.append(msg)
 		# Scan through connections
@@ -75,11 +75,11 @@ class Pool:
 					try:
 						msg = conn.queue.server_pull(0)
 						#print "receiving message:  ", i, c, msg
-						policy.output(msg, conn, broadcast)
+						policy.input(msg, conn, broadcast)
 					except Empty:
 						break
 				for msg in self.lastbuffer:
-					policy.input(msg, conn, broadcast)
+					policy.output(msg, conn, broadcast)
 				if conn.closed:
 					del self.servers[i][2][c]
 				else:
@@ -87,7 +87,7 @@ class Pool:
 			except Exception as e:
 				self.crash(e)
 
-	def connect(self, server, conn, extensions = {}):
+	def connect(self, server, conn):
 		print "New connection:",server
 		if not isinstance(conn, connection.Connection):
 			raise TypeError("Server %s passing connection objects that are not subclasses of Connection" % repr(server))
