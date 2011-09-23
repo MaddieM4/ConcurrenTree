@@ -60,15 +60,15 @@ class SubPolicy(dict):
 		with self.lock:
 			dict.__delitem__(self, i)
 
-	def set_multi(self, value, *args, keys=None):
-		if type(keys) == list:
-			args += keys
+	def set_multi(self, value, *args, **kwargs):
+		if "keys" in kwargs:
+			args += kwargs["keys"]
 		for i in args:
 			self[i] = value
 
-	def bloom(self, source, *args, keys=None):
-		if type(keys) == list:
-			args += keys
+	def bloom(self, source, *args, **kwargs):
+		if "keys" in kwargs:
+			args += kwargs["keys"]
 		self.set_multi(self[source], keys=args)
 
 	@property
