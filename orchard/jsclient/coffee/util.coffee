@@ -25,11 +25,11 @@ arrayFill = (array, value, count) ->
         Examples:
             pad an array with nulls
             arrayFill [], (-> null), 4
-            returns [null, null, null, null]
+                returns [null, null, null, null]
             
             Produce the 6 first square numbers 
             arrayFill [], ((i) -> i * i), 6
-            returns [0, 1, 4, 9, 16, 25]
+                returns [0, 1, 4, 9, 16, 25]
     ###
     array.push value i for i in [0 ... count]
     array
@@ -116,7 +116,7 @@ urlParameters = (url = window.location.href) ->
         
         Examples: 
             urlParameters 'http://y.tld/?x=1&b=sugar&magic'
-            {x: '1', b: 'sugar', magic: null}
+                {x: '1', b: 'sugar', magic: null}
             
         Developer:
             This should logically be extended to use the url decode function 
@@ -130,13 +130,38 @@ urlParameters = (url = window.location.href) ->
         params[kv[0]] = if kv.length > 1 then kv[1] else null
     params
 
+# get_url_variable is a pythonic name, variable should be parameter, recommend changing
 get_url_variable = getUrlParameter = (name, def) -> 
-    # get_url_variable is a pythonic name, variable should be parameter
-    # recommend changing
+    ### extracts the parameter name from the current page url, or returns def if
+        name does not exist.
+        
+        Arguments:
+            name: the name of the url parameter to extract.
+            def: a default value to be returned if name does not exist as a 
+                parameter value in the page url.
+        
+        Returns:
+            The value of name, or def.
+        
+        Notes:
+            If name exists but has no value, null is returned (see urlParameters
+            function).
+        
+        Examples:
+            (in all examples, the page url is 'http://x.tld/?y=dog&n')
+            getUrlParameter 'y', 'default'
+                'dog'
+            getUrlParameter 'n', 'default'
+                null
+            getUrlParameter 'z', 'default'
+                'default'
+            
+    ###
     params = urlParameters()
     if params[name] isnt undefined then params[name] else def
 
 isJSON = (str) ->
+    # tests if the suppled string is valid JSON
     try
         JSON.parse str
         true
@@ -153,11 +178,12 @@ serial =
     modulo: 65536 # 2^8? This is 2^16
     
     sum: (str) ->
+        # could not work out how to neatly convert this to coffeescript
         s = 0 
-        ```for (var i = 0; i < str.length; i++) {
+        `for (var i = 0; i < str.length; i++) {
             s = (s * s + str.charCodeAt(i)) % serial.modulo;
-        }```
-        return s 
+        }`
+        s 
     
     strict: (obj) ->
         
@@ -165,27 +191,3 @@ assert = (condition, message) ->
     message = if message isnt "" then "Assertion error: '#{message}'" else 'Assertion error'
     if not condition then throw message
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
