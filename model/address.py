@@ -21,7 +21,7 @@ class Address(ModelBase):
 		pos = None
 		for i in l:
 			if type(i)==int:
-				pos = int
+				pos = i
 			else:
 				if pos==None:
 					self.layers.append(i)
