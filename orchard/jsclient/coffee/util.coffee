@@ -162,6 +162,8 @@ get_url_variable = getUrlParameter = (name, def) ->
 
 isJSON = (str) ->
     # tests if the suppled string is valid JSON
+    # Arguments: str: a string. 
+    # Returns: true/false
     try
         JSON.parse str
         true
@@ -170,6 +172,19 @@ isJSON = (str) ->
 
 serial = 
     key: (str) ->
+        # I don't know what this function does
+        ###
+            Arguments:
+                str: the string to be formed into a key 
+            
+            Returns: 
+                The key formed from the given string 
+            
+            Notes:
+            
+            Examples:
+            
+        ###
         if str.length > 10
             str.slice(0, 10) + serial.sum(str.slice(10))
         else
@@ -178,16 +193,52 @@ serial =
     modulo: 65536 # 2^8? This is 2^16
     
     sum: (str) ->
-        # could not work out how to neatly convert this to coffeescript
+        ### sums the string passed to it
+            
+            Arguments: 
+                str: the string to be summed
+            
+            Returns:
+                the integer sum of the string given
+            
+            Notes:
+                http://stackoverflow.com/q/7538590/473479
+            
+            Examples:
+            
+        ###
         s = 0 
-        `for (var i = 0; i < str.length; i++) {
-            s = (s * s + str.charCodeAt(i)) % serial.modulo;
-        }`
+        for i in [0... str.length] 
+            s = (s * s + str.charCodeAt(i)) % serial.modulo
         s 
     
     strict: (obj) ->
+        # does nothing whatsoever :) 
         
 assert = (condition, message) ->
+    ### throws an error if the condition passed is not true. Optionally provide
+        the error message to be thrown.
+        
+        Arguments:
+            condition: a boolean
+            message: an error message (optional)
+        
+        Returns: 
+            nothing
+        
+        Throws: 
+            'Assertion error' 
+        
+        Notes:
+            Recommended use is:
+            assert this is that, 'error if not'
+            
+            This is because asserting a definite boolean is reduntant, the 
+            error can just be thrown instead of calling assert.
+        
+        Examples:
+            assert (isString str), 'str is not a string!'
+    ###
     message = if message isnt "" then "Assertion error: '#{message}'" else 'Assertion error'
     if not condition then throw message
         
