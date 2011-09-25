@@ -1043,22 +1043,47 @@ name
 
 \begin_layout Quote
 {
-\begin_inset Quotes erd
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
 \end_inset
 
 type
 \begin_inset Quotes erd
 \end_inset
 
-:
-\begin_inset Quotes erd
+ : 
+\begin_inset Quotes eld
 \end_inset
 
 metadata
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+ : 
+\begin_inset Quotes eld
+\end_inset
+
+person
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
 \begin_inset Quotes eld
 \end_inset
 
@@ -1066,15 +1091,18 @@ id
 \begin_inset Quotes erd
 \end_inset
 
-:
-\begin_inset Quotes erd
+ : 
+\begin_inset Quotes eld
 \end_inset
 
 philip.horger
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
+\end_layout
+
+\begin_layout Quote
 \begin_inset Quotes eld
 \end_inset
 
