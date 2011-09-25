@@ -1,5 +1,5 @@
 from ConcurrenTree.model import ModelBase
-from ConcurrenTree.util.hasher import key, sum
+from ConcurrenTree.util.hasher import key, sum, checksum
 
 import operation
 
@@ -9,25 +9,14 @@ def sort(d):
 	return k
 
 class Tree(ModelBase):
-	def __init__(self, value="", name=''):
+	def __init__(self, value=""):
 		''' Do not manipulate children externally. Use class methods. '''
-		self.name = name
-		self.initroot()
 		self._value = value
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
-		self._operations = {}
 		for i in range(len(self)+1):
 			self._children.append(dict())
-
-	def initroot(self):
-		self.initplace(None, 0, "root")
-
-	def initplace(self, parent, level, shortcut):
-		self._parent = parent
-		self._level = level
-		self._shortcut = shortcut
 
 	def insert(self, pos, value):
 		''' Insert a child to the tree with string "value" at position "pos" '''
@@ -82,77 +71,8 @@ class Tree(ModelBase):
 		''' Return the length of the internal immutable string '''
 		return self._length
 
-	@property
-	def operations(self):
-		if self.is_root:
-			return self._operations
-		else:
-			return self.parent._operations
-
-	# Era functions and utilities
-
-	def up(self, num):
-		if num==0:
-			return self
-		else:
-			return self._parent.up(num-1)
-
-	@property
-	def parent(self):
-		return self._parent
-
-	@property
-	def level(self):
-		return self._level
-
-	@property
-	def era(self):
-		return self.level // 16
-
-	@property
-	def shortcut(self):
-		return self.era, self._shortcut
-
-	@property
-	def shortcutparent(self):
-		return self.up(self.level % 16)
-
-	@property
-	def is_root(self):
-		return self.level==0
-
-	@property
-	def root(self):
-		return self.up(self.level)
-
-	def find(self, shortcut):
-		''' Resolve a shortcut into a tree. '''
-		if self.is_root:
-			shortcut = validate_shortcut(shortcut)
-			return self.shortcuts[shortcut]
-		else:
-			return self.parent.find(shortcut)
-
-	def register(self, shortcut, value):
-		''' Registers a shortcut with the root '''
-		if self.is_root:
-			shortcut = validate_shortcut(shortcut)
-			self.shortcuts[shortcut] = value
-		else:
-			self.parent.register(shortcut, value)
-
-	@property
-	def address(self):
-		sp = self.shortcutparent
-		if self.era == 0:
-			# no shortcut
-			pass
-		else:
-			# shortcut
-			pass
-
 	def flatten(self):
-		''' Returns a string that summarizes self and all descendants. Not backwards-compatible for applying ops. '''
+		''' Returns a string that summarizes self and all descendants. '''
 		rstring = ""
 		for i in range(self._length+1):
 			for c in self.children(i):
@@ -208,190 +128,28 @@ class Tree(ModelBase):
 		return result
 
 	@property
+	def summable(self):
+		pass
+
+	@property
+	def sum(self):
+		return checksum(self.summable)
+
+	@property
 	def key(self):
 		return key(self._value)
 
 class Flat(Tree):
-	def __init__(self, value, level, protokids={}, name=''):
-		''' 
-			value: protocol flat (list of strings and ints)
-			level: int
-			protokids: protocol era (dict of prototrees keyed on shortcut)
-			name: docname
-		'''
-		strvalue = stringparse(value)
-		Tree.__init__(self, strvalue, name)
-		self.initplace(None, level, "flat")
-		self.childpositions = positionparse(value)
-		self.install(protokids)
-
-	@property
-	def parent(self):
-		raise BeyondFlatError(self.level-1)
-
-	@property
-	def root(self):
-		raise BeyondFlatError(0)
-
-	def position(self, shortcut):
-		for pos in childpositions:
-			if shortcut in pos:
-				return pos
-		raise KeyError("Shortcut not found in Flat definition: "+str(shortcut))
-
-	def install(self, protokids):
-		for shortcut in protokids:
-			pos = self.position(shortcut)
-			child = protokids[shortcut]
-			if type(child) == list: #prototree
-				child = tree_from_proto(child)
-			self.insert_tree(pos, child)
-
-class Document:
-	def __init__(self, docname, msgcallback):
-		''' 
-			msgcallback should be an asynchronous function
-			that accepts a BCP msgdict, to send it to the
-			network.
-
-			This function does not need to return anything. 
-		'''
-		self.name = docname
-		self.load = msgcallback
-		self.flat = Flat("", 0, name=self.name)
-		self.root = self.flat.insert(0, "")
-		self.opqueue = []
-		self.operations = {}
-		self.slidewant = 0
-
-	def load_proto(self, msgdict):
-		''' 
-			Accepts:
-				X op
-				* ad
-				* getop
-				* check
-				* thash
-				* get
-				X era
-		'''
-		t = msgdict['type']
-		if t=="era":
-			if msgdict['subtype']=="tree":
-				self.set_era(msgdict['layer'], msgdict['era'])
-			elif msgdict['subtype']=="flat":
-				self.set_flat(msgdict['layer'], msgdict['flat'])
-		elif t=="op":
-			self.apply(operation.Operation(msgdict['instructions']))
-
-	def get_era(self, num):
-		pass
-
-	def set_era(self, layer, proto):
-		pass
-
-	def get_flat(self, num):
-		pass
-
-	def set_flat(self, layer, proto):
-		pass
-
-	def apply(self, op):
-		try:
-			op.apply(self.root)
-		except:
-			pass
-
-	def __str__(self):
-		return self.flat.flatten()
-
-	@property
-	def era(self):
-		''' 
-			Lowest era in memory.
-		'''
-		return self.flat.era
-
-	@property
-	def maxera(self):
-		''' 
-			Highest era in memory.
-		'''
-		pass
-
-	def slide(self, num):
-		''' 
-			Adjust the era cutoff for storage. Use a positive number
-			to indicate the earliest era to store, or a negative
-			number to indicate how many eras to store (maximum era - num).
-		'''
-		era = self.era
-		if num<0:
-			num = self.maxera-num
-		if num==era:
-			return
-		elif num<era:
-			self.load(self.docname, "era", range(num,era))
-		elif num>era:
-			# forget
-			newflat = self.get_flat(num)
-			
-
-	@property
-	def slidewant(self):
-		''' 
-			Like slide, but indicates what number to slide to when the
-			opqueue is empty. It's configuration, as opposed to the actual
-			slide value, which changes as needed to apply ops or fulfill
-			requests.
-
-			Default is zero, which does not forget anything.
-		'''
-		return self.slidewant
-
-	@slidewant.setter
-	def slidewant(self, num):
-		if type(num)!=int:
-			raise TypeError("Document.slidewant must be of <type 'int'>")
-		self._slidewant = num
+	def __init__(self, key, value, sum):
+		self._key = key
+		self._value = value
+		self._sum = sum
 
 class BeyondFlatError(Exception):
-	def __init__(self, level):
-		''' Level should indicate the level needed to load '''
-		Exception.__init__(self, "Target level not loaded: "+str(level))
-		self.level = level
-
-	@property
-	def era(self):
-		return self.level // 16
-
-def from_proto(obj, era=None):
-	''' 
-		Deprecated in this form, but we'll reuse this code
-		for a Document function.
-	'''
-	if type(obj)==dict:
-		value = None
-		shortcut = obj['address']
-		if "value" in obj:
-			value = tree_from_proto(obj['value'])
-		return TreeReference(era, [int(shortcut[0][1:]), shortcut[1]], value)
-	children = {}
-	value =""
-	deletions = obj.pop()
-	for x in obj:
-		if type(x)==str:
-			value+=x
-		else:
-			pos = len(value)
-			if not pos in children:
-				children[pos]=[]
-			children[pos].append(from_proto(x, era))
-	tree = Tree(value)
-	for pos in children:
-		for child in children[pos]:
-			tree.insert_tree(pos, child)
-	return tree
+	def __init__(self, flataddr):
+		''' Flataddr should be the address of the node that needs to be loaded. '''
+		Exception.__init__(self, "Target flat not loaded: "+str(flataddr))
+		self.addr = flataddr
 
 def stringparse(l):
 	''' 
