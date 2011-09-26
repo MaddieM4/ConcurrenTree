@@ -3,9 +3,9 @@ import re
 import json
 
 class Address(ModelBase):
-	''' Address format: [[index, key], [index, key]] '''
+	''' Address format: [4,"hello"," dolly"] '''
 
-	def __init__(self, target):
+	def __init__(self, target=[]):
 		if type(target)==list:
 			self.parse(target)
 		elif isinstance(target, Address):
@@ -45,3 +45,7 @@ class Address(ModelBase):
 			else:
 				result.append(i)
 		return result
+
+	def prepend(self, value):
+		''' Value may be a 2-tuple or a string '''
+		self.layers.insert(0,value)

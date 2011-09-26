@@ -2,11 +2,7 @@ from ConcurrenTree.model import ModelBase
 from ConcurrenTree.util.hasher import key, sum, checksum
 
 import operation
-
-def sort(d):
-	k = d.keys()
-	k.sort()
-	return k
+from address import Address
 
 class Tree(ModelBase):
 	def __init__(self, value=""):
@@ -18,21 +14,20 @@ class Tree(ModelBase):
 		for i in range(len(self)+1):
 			self._children.append(dict())
 
-	def insert(self, pos, value):
+	def insert(self, pos, value, override=False):
 		''' Insert a child to the tree with string "value" at position "pos" '''
 		result = Tree(value)
-		self.insert_tree(pos, result)
+		self.insert_tree(pos, result, override)
 		return result
+
+	def insert_tree(self, pos, obj, override=True):
+		''' Insert an object as a child tree '''
+		if not obj.key in self._children[pos] or override:
+			self._children[pos][obj.key] = obj
 
 	def delete(self, pos):
 		''' Mark a character in a tree as deleted '''
 		del self[pos]
-
-	def insert_tree(self, pos, obj):
-		''' Insert an object as a child tree, setting its era properties '''
-		obj.initplace(self, self.level+1, self._shortcut)
-		obj.name = self.name
-		self._children[pos][obj.key] = obj
 
 	def get(self, pos, key):
 		''' Return the subtree with key "key" from position "pos" '''
@@ -71,6 +66,10 @@ class Tree(ModelBase):
 		''' Return the length of the internal immutable string '''
 		return self._length
 
+	def __repr__(self):
+		classname = repr(self.__class__).split()[1]
+		return "<%s instance '%s' at %s>" % (classname, self.key, hex(long(id(self)))[:-1])
+
 	def flatten(self):
 		''' Returns a string that summarizes self and all descendants. '''
 		rstring = ""
@@ -82,6 +81,14 @@ class Tree(ModelBase):
 				if not self._deletions[i]:
 					rstring += self._value[i]
 		return rstring
+
+	def flatnode(self):
+		''' Returns a Flat version of this node '''
+		return Flat(self.key, self._value, self.treesum)
+
+	def flattenchild(self, pos, key):
+		newflat = self._children[pos][key].flatnode()
+		self.insert_tree(pos, newflat)
 
 	def trace(self, pos):
 		''' 
@@ -129,10 +136,26 @@ class Tree(ModelBase):
 
 	@property
 	def summable(self):
-		pass
+		runningstring = ""
+		deletions = []
+		result = []
+		for i in range(len(self)+1):
+			kids = {}
+			for k in self._children[i]:
+				kids[k] = self._children[i][k].treesum
+			if kids:
+				result.append(runningstring)
+				runningstring = ""
+				result.append(kids)
+			if i < len(self):
+				runningstring += self._value[i]
+				if self._deletions[i]: deletions.append(i)
+		if runningstring: result.append(runningstring)
+		result.append(deletions)
+		return result
 
 	@property
-	def sum(self):
+	def treesum(self):
 		return checksum(self.summable)
 
 	@property
@@ -144,12 +167,63 @@ class Flat(Tree):
 		self._key = key
 		self._value = value
 		self._sum = sum
+		self._length = len(value)
+
+	def __getitem__(self, pos):
+		self.require()
+
+	def __delitem__(self, pos):
+		self.require()
+
+	def flatten(self):
+		return self._value
+
+	def flatnode(self):
+		return self
+
+	def _trace(self, pos):
+		self.require()
+
+	def proto(self):
+		return [self._key, self._value, self._sum]
+
+	@property
+	def _children(self):
+		self.require()
+
+	@property
+	def _deletions(self):
+		self.require()
+
+	@property
+	def summable(self):
+		self.require()
+
+	@property
+	def treesum(self):
+		return self._sum
+
+	@property
+	def key(self):
+		return self._key
+
+	def require(self):
+		raise BeyondFlatError(Address())
 
 class BeyondFlatError(Exception):
 	def __init__(self, flataddr):
 		''' Flataddr should be the address of the node that needs to be loaded. '''
 		Exception.__init__(self, "Target flat not loaded: "+str(flataddr))
 		self.addr = flataddr
+
+	def propogate(self, value):
+		self.addr.prepend(value)
+		raise self
+
+def sort(d):
+	k = d.keys()
+	k.sort()
+	return k
 
 def stringparse(l):
 	''' 
