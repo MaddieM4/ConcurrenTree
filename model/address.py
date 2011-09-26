@@ -49,3 +49,9 @@ class Address(ModelBase):
 	def prepend(self, value):
 		''' Value may be a 2-tuple or a string '''
 		self.layers.insert(0,value)
+
+	def jump(self, pos, max, key):
+		if pos==max:
+			return key
+		else:
+			return pos, key

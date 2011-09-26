@@ -104,14 +104,17 @@ class Tree(ModelBase):
 		togo = pos
 		for i in range(len(self)+1):
 			for child in self.children(i):
-				x = child._trace(togo)
-				print "///",x
+				try:
+					x = child._trace(togo)
+				except BeyondFlatError as e:
+					e.propogate(e.addr.jump(i,len(self),child.key))
 				if type(x) == tuple:
-					return [[i, child.key]]+x[0], x[1]
+					x[0].prepend(x[0].jump(i, len(self), child.key))
+					return x
 				else:
 					togo -= x
 			if togo == 0:
-				return ([],i)
+				return (Address(),i)
 			if i < len(self) and not self._deletions[i]:
 				togo -=1
 		return togo
@@ -218,7 +221,7 @@ class BeyondFlatError(Exception):
 
 	def propogate(self, value):
 		self.addr.prepend(value)
-		raise self
+		raise BeyondFlatError(self.addr)
 
 def sort(d):
 	k = d.keys()
