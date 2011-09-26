@@ -2,7 +2,7 @@ from ConcurrenTree.model import ModelBase
 from ConcurrenTree.util.hasher import key, sum, checksum
 
 import operation
-from address import Address
+from address import Address, BeyondFlatError
 
 class Tree(ModelBase):
 	def __init__(self, value=""):
@@ -31,7 +31,10 @@ class Tree(ModelBase):
 
 	def get(self, pos, key):
 		''' Return the subtree with key "key" from position "pos" '''
-		return self._children[pos][key]
+		try:
+			return self._children[pos][key]
+		except BeyondFlatError as e:
+			e.propogate(pos, len(self), key)
 
 	def all_children(self):
 		''' 
@@ -107,12 +110,12 @@ class Tree(ModelBase):
 				try:
 					x = child._trace(togo)
 				except BeyondFlatError as e:
-					e.propogate(e.addr.jump(i,len(self),child.key))
+					e.propogate(i,len(self),child.key)
 				if type(x) == tuple:
 					x[0].prepend(x[0].jump(i, len(self), child.key))
 					return x
 				else:
-					togo -= x
+					togo = x
 			if togo == 0:
 				return (Address(),i)
 			if i < len(self) and not self._deletions[i]:
@@ -185,7 +188,10 @@ class Flat(Tree):
 		return self
 
 	def _trace(self, pos):
-		self.require()
+		if pos > len(self):
+			return pos-len(self)
+		else:
+			self.require()
 
 	def proto(self):
 		return [self._key, self._value, self._sum]
@@ -212,16 +218,6 @@ class Flat(Tree):
 
 	def require(self):
 		raise BeyondFlatError(Address())
-
-class BeyondFlatError(Exception):
-	def __init__(self, flataddr):
-		''' Flataddr should be the address of the node that needs to be loaded. '''
-		Exception.__init__(self, "Target flat not loaded: "+str(flataddr))
-		self.addr = flataddr
-
-	def propogate(self, value):
-		self.addr.prepend(value)
-		raise BeyondFlatError(self.addr)
 
 def sort(d):
 	k = d.keys()

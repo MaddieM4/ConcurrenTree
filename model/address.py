@@ -31,10 +31,16 @@ class Address(ModelBase):
 
 	def resolve(self, tree):
 		x = tree
+		error = 0
 		for i in self.layers:
+			error += 2
 			if type(i) in (str, unicode):
 				i = (len(x), i)
-			x = x.get(i[0],i[1])
+				error -= 1
+			try:
+				x = x.get(i[0],i[1])
+			except BeyondFlatError as e:
+				raise BeyondFlatError(Address(self.proto()[:error]))
 		return x
 
 	def proto(self):
@@ -55,3 +61,18 @@ class Address(ModelBase):
 			return key
 		else:
 			return pos, key
+
+
+	def __repr__(self):
+		classname = repr(self.__class__).split()[1]
+		return "<%s instance %s at %s>" % (classname, str(self.proto()), hex(long(id(self)))[:-1])
+
+class BeyondFlatError(Exception):
+	def __init__(self, flataddr):
+		''' Flataddr should be the address of the node that needs to be loaded. '''
+		Exception.__init__(self, "Target flat not loaded: "+str(flataddr))
+		self.addr = flataddr
+
+	def propogate(self, pos, max, value):
+		self.addr.prepend(self.addr.jump(pos, max, value))
+		raise BeyondFlatError(self.addr)
