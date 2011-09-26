@@ -87,7 +87,7 @@ class Tree(ModelBase):
 
 	def flatnode(self):
 		''' Returns a Flat version of this node '''
-		return Flat(self.key, self._value, self.treesum)
+		return Flat(self.key, self.flatten(), self.treesum)
 
 	def flattenchild(self, pos, key):
 		newflat = self._children[pos][key].flatnode()
