@@ -40,7 +40,7 @@ class Storage(object):
             self._cache[x] = tree
             return tree
         else:
-            self[x] = Tree(name=x)
+            self[x] = Tree()
             return self[x]
             #raise NameError('Not Found in local storage: Tree with id ' + x)
 

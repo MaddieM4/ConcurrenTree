@@ -19,6 +19,7 @@ class BCPConnection(Connection):
 		self.there = Peer()
 
 	def incoming(self, value):
+		''' Processes IO buffer '''
 		if nullbyte in value:
 			length = value.index(nullbyte)
 			try:
@@ -46,6 +47,7 @@ class BCPConnection(Connection):
 			self.error(500)
 
 	def outgoing(self, msg):
+		''' Accepts messages from pool '''
 		return json.dumps(msg)+nullbyte
 
 	def push(self, msgtype, **kwargs):
