@@ -18,7 +18,7 @@ createBlob = (obj) ->
 createBlobURL(obj) ->
     getBlobURL createBlob obj
 
-getBlobURL(blob)
+getBlobURL(blob) ->
     window.URL.createObjectURL blob.getBlob()
 
 window.blobworker = {

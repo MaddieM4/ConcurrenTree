@@ -8,9 +8,55 @@ var window = {}
 importScripts('js/util');
 serial = window.serial;
 importScripts('js/ctree.js');
+CTree = window.CTree
 
 log = function(obj) {postMessage(['log',obj])}
 cursors = {0:0};
+locked = false;
+tree = CTree("") // The document for this display
+
+function pushCursors(){
+    postMessage(["cursor", cursors]);
+}
+
+function rewrite(){
+    postMessage(["rewrite",tree.flatten()]);
+}
+
+function insert(value){
+    var pos, t, node;
+    pos = cursors[0];
+    t = tree.trace(pos);
+
+    // convert to operations system later
+    node = tree.resolve(t.addr);
+    node.insert(t.pos, value);
+    rewrite();
+}
+
+function deleteone(pos) {
+    t = tree.trace(pos);
+
+    // convert to operations system later
+    node = tree.resolve(t.addr);
+    node.delete(t.pos);    
+}
+
+function delete(amount){
+    var start, times, pos;
+    pos = cursors[0];
+    if (amount==0) return;
+    if (amount > 0) {start=pos, times=amount}
+    if (amount < 0) {start=pos+amount, times=-amount}
+    for (var i =0; i<times;i++){
+        deleteone(start);
+    }
+    rewrite();
+}
+
+function operate(op) {
+// work on this later
+}
 
 onmessage = function(e){
     data = e.data;
@@ -19,12 +65,15 @@ onmessage = function(e){
       case "cursor":
         cursors[data[1]] = data[2];
         return postMessage(["cursor", {data[1]:data[2]]});
-      case "insert":
-        cursorpos = data[1]; return;
-        return postMessage(["cursor", data[1], data[2]]);
-      case "delete":
-        cursorpos = data[1]; return;
-        return postMessage(["cursor", data[1], data[2]]);
+      case "insert": return insert(data[1]);
+      case "delete": return delete(data[1]);
+      case "op": return operate(data[1]);
+      case "lock":
+        locked = true; break;
+      case "unlock":
+        locked = false; break;
+      default:
+        return log("Unknown message type:"+type.toString());
     }
 }
 
@@ -70,12 +119,15 @@ class Display
         @worker.postMessage(["unlock"])
 
     cursor: (id, pos) ->
+        throw "Display not locked or in switching state" if @islocked or @switching
         @worker.postMessage ["cursor", id, pos]
 
     insert: (value) ->
+        throw "Display not locked or in switching state" if @islocked or @switching
         @worker.postMessage ["insert", value]
 
     delete: (amount) ->
+        throw "Display not locked or in switching state" if @islocked or @switching
         @worker.postMessage ["delete", amount]
 
     onwconnect: (e) ->

@@ -1,7 +1,7 @@
 (function() {
   var Display, worker, workerurl;
 
-  worker = "\nvar window = {}\nimportScripts('js/util');\nserial = window.serial;\nimportScripts('js/ctree.js');\n\nlog = function(obj) {postMessage(['log',obj])}\ncursors = {0:0};\n\nonmessage = function(e){\n    data = e.data;\n    type = data[0];\n    switch(type){\n      case \"cursor\":\n        cursors[data[1]] = data[2];\n        return postMessage([\"cursor\", {data[1]:data[2]]});\n      case \"insert\":\n        cursorpos = data[1]; return;\n        return postMessage([\"cursor\", data[1], data[2]]);\n      case \"delete\":\n        cursorpos = data[1]; return;\n        return postMessage([\"cursor\", data[1], data[2]]);\n    }\n}\n";
+  worker = "\nvar window = {}\nimportScripts('js/util');\nserial = window.serial;\nimportScripts('js/ctree.js');\nCTree = window.CTree\n\nlog = function(obj) {postMessage(['log',obj])}\ncursors = {0:0};\nlocked = false;\ntree = CTree(\"\") // The document for this display\n\nfunction pushCursors(){\n    postMessage([\"cursor\", cursors]);\n}\n\nfunction rewrite(){\n    postMessage([\"rewrite\",tree.flatten()]);\n}\n\nfunction insert(value){\n    var pos, t, node;\n    pos = cursors[0];\n    t = tree.trace(pos);\n\n    // convert to operations system later\n    node = tree.resolve(t.addr);\n    node.insert(t.pos, value);\n    rewrite();\n}\n\nfunction deleteone(pos) {\n    t = tree.trace(pos);\n\n    // convert to operations system later\n    node = tree.resolve(t.addr);\n    node.delete(t.pos);    \n}\n\nfunction delete(amount){\n    var start, times, pos;\n    pos = cursors[0];\n    if (amount==0) return;\n    if (amount > 0) {start=pos, times=amount}\n    if (amount < 0) {start=pos+amount, times=-amount}\n    for (var i =0; i<times;i++){\n        deleteone(start);\n    }\n    rewrite();\n}\n\nfunction operate(op) {\n// work on this later\n}\n\nonmessage = function(e){\n    data = e.data;\n    type = data[0];\n    switch(type){\n      case \"cursor\":\n        cursors[data[1]] = data[2];\n        return postMessage([\"cursor\", {data[1]:data[2]]});\n      case \"insert\": return insert(data[1]);\n      case \"delete\": return delete(data[1]);\n      case \"op\": return operate(data[1]);\n      case \"lock\":\n        locked = true; break;\n      case \"unlock\":\n        locked = false; break;\n      default:\n        return log(\"Unknown message type:\"+type.toString());\n    }\n}\n";
 
   workerurl = blobworker.createBlobURL(worker);
 
@@ -53,12 +53,21 @@
       return this.worker.postMessage(["unlock"]);
     },
     cursor: function(id, pos) {
+      if (this.islocked || this.switching) {
+        throw "Display not locked or in switching state";
+      }
       return this.worker.postMessage(["cursor", id, pos]);
     },
     insert: function(value) {
+      if (this.islocked || this.switching) {
+        throw "Display not locked or in switching state";
+      }
       return this.worker.postMessage(["insert", value]);
     },
     "delete": function(amount) {
+      if (this.islocked || this.switching) {
+        throw "Display not locked or in switching state";
+      }
       return this.worker.postMessage(["delete", amount]);
     },
     onwconnect: function(e) {
