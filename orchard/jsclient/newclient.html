@@ -12,7 +12,6 @@
 			"jquery.js",
 			//"textile.js",
 			"util.js",
-			"buffer.js",
 			"stream.js",
 			"ctree.js",
 			"operation.js",
@@ -38,9 +37,7 @@
 			}
 
 			// Start BCP processor
-			docs = new DocumentHandler();
-
-			bcp = new BCP(docs, hostws, null)
+			bcp = new BCP(hostws, null)
 			bcp.log = log;
 
 			function checkJSON(){

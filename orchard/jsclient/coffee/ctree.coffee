@@ -1,6 +1,6 @@
 # ctree.coffee :: CTree object and DocumentHandler object
 
-# Dependencies: Util, View
+# Dependencies: Util
 
 class CTree
     constructor: (value) ->
@@ -18,8 +18,9 @@ class CTree
         @children[pos][child.key] = child
     delete: (pos) ->
         # mark a character in this tree as deleted
-        
         @deletions[pos] = true
         this
     get: (pos, key) ->
         @children[pos][key]
+
+window.CTree = CTree

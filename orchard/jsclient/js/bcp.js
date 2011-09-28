@@ -4,8 +4,8 @@
 
   BCP = (function() {
 
-    function BCP(docs, stream, auth) {
-      this.recieve = __bind(this.recieve, this);      this.docs = docs;
+    function BCP(stream, auth) {
+      this.recieve = __bind(this.recieve, this);      this.docs = [];
       this.stream = stream;
       this.stream.onmessage = this.recieve;
       this.auth = auth;
@@ -32,10 +32,12 @@
     };
 
     BCP.prototype.local = function(op, name) {
-      console.log("selecting");
+      /*
+              Process a locally-generated op
+      */      console.log("selecting");
       this.select(name);
       console.log("sending local");
-      this.docs.send(name, op);
+      this.docssend(name, op);
       console.log("sending proto");
       return this.send(op.proto());
     };
@@ -81,7 +83,7 @@
       if (this.getcached[name] === void 0) {
         return this.bflag[name] = true;
       } else {
-        return this.docs.send(name, opfromprototree(this.getcached[name]));
+        return this.docssend(name, opfromprototree(this.getcached[name]));
       }
     };
 
@@ -92,6 +94,17 @@
         "type": "check",
         "eras": 0
       });
+    };
+
+    BCP.prototype.docssend = function(op, name) {
+      var doc, _i, _len, _ref, _results;
+      _ref = this.docs;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        doc = _ref[_i];
+        _results.push(doc.external(op, name));
+      }
+      return _results;
     };
 
     BCP.prototype.handle = function(message) {

@@ -3,8 +3,8 @@
 # Dependancies: CTree, Stream
 
 class BCP
-    constructor: (docs, stream, auth) ->
-        @docs = docs
+    constructor: (stream, auth) ->
+        @docs = []
         @stream = stream
         @stream.onmessage = @recieve
         @auth = auth
@@ -25,10 +25,13 @@ class BCP
             # probably bad json
         return
     local: (op, name) ->
+        ###
+        Process a locally-generated op
+        ###
         console.log "selecting"
         @select name
         console.log "sending local"
-        @docs.send name, op
+        @docssend name, op
         console.log "sending proto"
         @send op.proto()
     select: (name) ->
@@ -67,13 +70,15 @@ class BCP
         if @getcached[name] is undefined
             @bflag[name] = on
         else
-            @docs.send name, opfromprototree @getcached[name]
+            @docssend name, opfromprototree @getcached[name]
     sync: (name) ->
         if name is undefined then name = @selected
         @select name
         @send 
             "type": "check"
             "eras": 0
+    docssend: (op, name) ->
+        doc.external(op, name) for doc in @docs
     handle: (message) ->
         @_handle message, message.type, @handlers
     errorhandle: (message) ->

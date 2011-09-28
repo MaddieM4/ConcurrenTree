@@ -34,4 +34,6 @@
 
   })();
 
+  window.CTree = CTree;
+
 }).call(this);
