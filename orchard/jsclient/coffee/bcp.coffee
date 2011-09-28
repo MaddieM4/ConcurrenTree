@@ -55,7 +55,7 @@ class BCP
         @select name
         @send 
             type: "get"
-            tree: 0
+            address: []
     broadcast: (name) ->
         ###
         Send a loaded document to docs as an operation, 

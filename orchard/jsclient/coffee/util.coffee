@@ -1,6 +1,6 @@
 # util.coffee :: Utilities
 
-# Dependencies: A BCP object must be available to handle md5 requests
+# Dependencies: none
 
 arrayFill = (array, value, count) ->
     ### Fills an array with the values returned by value when given an index
@@ -131,7 +131,7 @@ urlParameters = (url = window.location.href) ->
     params
 
 # get_url_variable is a pythonic name, variable should be parameter, recommend changing
-get_url_variable = getUrlParameter = (name, def) -> 
+window.get_url_variable = getUrlParameter = (name, def) -> 
     ### extracts the parameter name from the current page url, or returns def if
         name does not exist.
         

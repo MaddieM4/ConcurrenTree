@@ -1,17 +1,21 @@
 (function() {
   var Buffer;
+
   Buffer = (function() {
+
     function Buffer() {
       this.readposition = 0;
       this.writeposition = 0;
       this._contents = {};
       this.readlock = false;
     }
+
     Buffer.prototype.write = function(value) {
       var pos;
       pos = ++this.writeposition;
       return this._contents[pos - 1] = value;
     };
+
     Buffer.prototype.read = function() {
       var read, result, write;
       if (this.readlock) return;
@@ -26,6 +30,7 @@
       this.readlock = false;
       return result;
     };
+
     Buffer.prototype.read_all = function() {
       var result, value;
       result = [];
@@ -36,7 +41,11 @@
       }
       return result;
     };
+
     return Buffer;
+
   })();
+
   window.Buffer = Buffer;
+
 }).call(this);
