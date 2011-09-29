@@ -7,8 +7,6 @@ log = function(obj) {postMessage(['log',obj])}
 var window = {}
 importScripts('/js/util.js');
 serial = window.serial;
-log("serial")
-log(window)
 importScripts('/js/ctree.js');
 
 CTree = window.CTree
