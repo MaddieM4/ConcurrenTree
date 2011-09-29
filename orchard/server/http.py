@@ -26,6 +26,7 @@ class HTTP(Server):
 			hfs.File(jsclient,"js/view.js", ["/view.js", "/js/view.js"], mimetype="text/javascript", preload=True),
 			hfs.File(jsclient,"js/worker.js", mimetype="text/javascript"),
 			hfs.File(jsclient,"js/display.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"js/displayworker.js", mimetype="text/javascript"),
 			hfs.File(jsclient,"js/stream.js", ["/stream.js", "/js/stream.js"], mimetype="text/javascript"),
 			hfs.File(jsclient,"js/ws.js", "/js/stream/ws.js", mimetype="text/javascript"),
 			hfs.File(jsclient,"js/jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),

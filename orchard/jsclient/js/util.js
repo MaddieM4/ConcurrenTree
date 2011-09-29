@@ -1,7 +1,7 @@
 (function() {
-  var af_object, arrayFill, getUrlParameter, isArray, isBoolean, isJSON, isNumber, isObject, range, serial, urlParameters;
+  var getUrlParameter;
 
-  arrayFill = function(array, value, count) {
+  window.arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
     
         Arguments:
@@ -37,11 +37,7 @@
     return array;
   };
 
-  af_object = function(id) {
-    return {};
-  };
-
-  isArray = function(obj) {
+  window.isArray = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Array]";
     } else {
@@ -49,7 +45,7 @@
     }
   };
 
-  isObject = function(obj) {
+  window.isObject = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Object]";
     } else {
@@ -57,11 +53,11 @@
     }
   };
 
-  isNumber = function(obj) {
+  window.isNumber = function(obj) {
     return typeof obj === "number";
   };
 
-  isBoolean = function(obj) {
+  window.isBoolean = function(obj) {
     /* tests if an object is a boolean object
         
         Note! This does not test if an object can resolve to a boolean, it 
@@ -73,7 +69,7 @@
     */    return typeof obj === "boolean";
   };
 
-  range = function(start, end, step) {
+  window.range = function(start, end, step) {
     var i, _results;
     if (step == null) step = 1;
     /* returns an array containing integers ranged between start and end,
@@ -115,7 +111,7 @@
     return _results;
   };
 
-  urlParameters = function(url) {
+  window.urlParameters = function(url) {
     var i, kv, pairs, params, _i, _len;
     if (url == null) url = window.location.href;
     /* extracts a dictionary of url parameters from the given url
@@ -181,7 +177,7 @@
     }
   };
 
-  isJSON = function(str) {
+  window.isJSON = function(str) {
     try {
       JSON.parse(str);
       return true;
@@ -190,7 +186,7 @@
     }
   };
 
-  serial = {
+  window.serial = {
     key: function(str) {
       if (str.length > 10) {
         return str.slice(0, 10) + serial.sum(str.slice(10));

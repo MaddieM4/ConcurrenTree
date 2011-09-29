@@ -8,11 +8,13 @@
       this.length = value.length;
       this.key = serial.key(value);
       this.deletions = [];
-      arrayfill(this.deletions, (function() {
+      window.arrayFill(this.deletions, (function() {
         return false;
       }), this.length);
       this.children = [];
-      arrayfill(this.children, af_obj, this.length + 1);
+      window.arrayFill(this.children, (function() {
+        return {};
+      }), this.length + 1);
     }
 
     CTree.prototype.insert = function(pos, childtext) {

@@ -1,9 +1,7 @@
 (function() {
-  var Display, worker, workerurl;
+  var Display, workerurl;
 
-  worker = "\nvar window = {}\nimportScripts('/js/util.js');\nserial = window.serial;\nimportScripts('js/ctree.js');\nCTree = window.CTree\n\nlog = function(obj) {postMessage(['log',obj])}\ncursors = {0:0};\nlocked = false;\ntree = CTree(\"\") // The document for this display\n\nfunction pushCursors(){\n    postMessage([\"cursor\", cursors]);\n}\n\nfunction rewrite(){\n    postMessage([\"rewrite\",tree.flatten()]);\n}\n\nfunction insert(value){\n    var pos, t, node;\n    pos = cursors[0];\n    t = tree.trace(pos);\n\n    // convert to operations system later\n    node = tree.resolve(t.addr);\n    node.insert(t.pos, value);\n    rewrite();\n}\n\nfunction deleteone(pos) {\n    t = tree.trace(pos);\n\n    // convert to operations system later\n    node = tree.resolve(t.addr);\n    node.delete(t.pos);    \n}\n\nfunction deletemany(amount){\n    var start, times, pos;\n    pos = cursors[0];\n    if (amount==0) return;\n    if (amount > 0) {start=pos, times=amount}\n    if (amount < 0) {start=pos+amount, times=-amount}\n    for (var i =0; i<times;i++){\n        deleteone(start);\n    }\n    rewrite();\n}\n\nfunction operate(op) {\n// work on this later\n}\n\nonmessage = function(e){\n    data = e.data;\n    type = data[0];\n    switch(type){\n      case \"cursor\":\n        var id = data[1], value = data[2];\n        cursors[id] = value;\n        return postMessage([\"cursor\", {id:value}]);\n      case \"insert\": return insert(data[1]);\n      case \"delete\": return deletemany(data[1]);\n      case \"op\": return operate(data[1]);\n      case \"lock\":\n        locked = true; break;\n      case \"unlock\":\n        locked = false; break;\n      default:\n        return log(\"Unknown message type:\"+type.toString());\n    }\n}\n";
-
-  workerurl = blobworker.createBlobURL(worker);
+  workerurl = "/js/displayworker.js";
 
   Display = (function() {
 

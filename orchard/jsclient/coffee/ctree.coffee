@@ -9,9 +9,9 @@ class CTree
         @length = value.length
         @key = serial.key value
         @deletions = []
-        arrayfill @deletions, (-> false), @length
+        window.arrayFill @deletions, (-> false), @length
         @children = []
-        arrayfill @children, af_obj, @length+1
+        window.arrayFill @children, (-> {}), @length+1
     insert: (pos, childtext) ->
         # insert and return a child tree
         child = new CTree childtext

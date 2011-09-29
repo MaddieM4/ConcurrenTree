@@ -2,7 +2,7 @@
 
 # Dependencies: none
 
-arrayFill = (array, value, count) ->
+window.arrayFill = (array, value, count) ->
     ### Fills an array with the values returned by value when given an index
     
         Arguments:
@@ -34,28 +34,25 @@ arrayFill = (array, value, count) ->
     array.push value i for i in [0 ... count]
     array
 
-af_object = (id) -> # I have no idea why this function exists :)
-    {}
-
-isArray = (obj) ->
+window.isArray = (obj) ->
     # tests if an object is an array
     if typeof obj is "object" 
         Object.prototype.toString.call(obj) is "[object Array]"
     else
         false
 
-isObject = (obj) ->
+window.isObject = (obj) ->
     # tests if an object is a hash/dictionary type object
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Object]"
     else
         false
 
-isNumber = (obj) ->
+window.isNumber = (obj) ->
     # tests if an object is a number
     typeof obj is "number"
 
-isBoolean = (obj) ->
+window.isBoolean = (obj) ->
     ### tests if an object is a boolean object
         
         Note! This does not test if an object can resolve to a boolean, it 
@@ -67,7 +64,7 @@ isBoolean = (obj) ->
     ###
     typeof obj is "boolean"
 
-range = (start, end, step = 1) ->
+window.range = (start, end, step = 1) ->
     ### returns an array containing integers ranged between start and end,
         with a gap of step between each one.
         
@@ -103,7 +100,7 @@ range = (start, end, step = 1) ->
     step = if (start < end and step > 0) or (start > end and step < 0) then step else - step
     i for i in [start... end] by step
 
-urlParameters = (url = window.location.href) ->
+window.urlParameters = (url = window.location.href) ->
     ### extracts a dictionary of url parameters from the given url
         
         Arguments:
@@ -160,7 +157,7 @@ window.get_url_variable = getUrlParameter = (name, def) ->
     params = urlParameters()
     if params[name] isnt undefined then params[name] else def
 
-isJSON = (str) ->
+window.isJSON = (str) ->
     # tests if the suppled string is valid JSON
     try
         JSON.parse str
@@ -168,7 +165,7 @@ isJSON = (str) ->
     catch e
         false
 
-serial = 
+window.serial = 
     key: (str) ->
         if str.length > 10
             str.slice(0, 10) + serial.sum(str.slice(10))
