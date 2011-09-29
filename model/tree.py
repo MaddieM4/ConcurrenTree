@@ -162,6 +162,7 @@ class Tree(ModelBase):
 
 	@property
 	def treesum(self):
+		''' Value used to check tree equivalence '''
 		return checksum(self.summable)
 
 	@property

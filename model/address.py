@@ -56,9 +56,17 @@ class Address(ModelBase):
 		else:
 			return pos, key
 
+	def __eq__(self, other):
+		return self.layers == other.layers
+
+	def __ne__(self, other):
+		return self.layers != other.layers
+
+	__hash__ = None
+
 	def __repr__(self):
 		classname = repr(self.__class__).split()[1]
-		return "<%s instance %s at %s>" % (classname, str(self.proto()), hex(long(id(self)))[:-1])
+		return "<%s instance %s at %s>" % (classname, str(self), hex(long(id(self)))[:-1])
 
 class BeyondFlatError(Exception):
 	def __init__(self, flataddr):
