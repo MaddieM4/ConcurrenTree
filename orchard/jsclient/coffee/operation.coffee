@@ -57,5 +57,5 @@ class Operation
 
     serialize:-> JSON.stringify(@proto())
 
-    fromTree:(tree)->
-        console.warn("operation.fromTree is not yet supported")
+    fromTree:(address, tree)->
+        # Handle this layer

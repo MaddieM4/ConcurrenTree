@@ -1,6 +1,7 @@
 import json
 import traceback
 
+from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import operation, address
 from ConcurrenTree.util.server.pool.connection import Connection
 from peer import Peer
@@ -56,7 +57,7 @@ class BCPConnection(Connection):
 
 	def send(self, msg):
 		print "sending message:",msg
-		self.ioqueue.client_push(json.dumps(msg)+nullbyte)
+		self.ioqueue.client_push(strict(msg)+nullbyte)
 
 	def select(self, docname):
 		if self.here.selected != docname:
@@ -120,7 +121,6 @@ class BCPConnection(Connection):
 		elif obt=='get':
 			if not self.check_selected():return
 			if not self.require("address", obj):return
-			if not self.require("value", obj):return
 			addr = address.Address(obj['address'])
 			node = addr.resolve(self.fdoc)
 			if "depth" in obj:

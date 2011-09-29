@@ -5,6 +5,9 @@
   BCP = (function() {
 
     function BCP(stream, auth) {
+      this._handle = __bind(this._handle, this);
+      this.errorhandle = __bind(this.errorhandle, this);
+      this.handle = __bind(this.handle, this);
       this.recieve = __bind(this.recieve, this);      this.docs = [];
       this.stream = stream;
       this.stream.onmessage = this.recieve;
@@ -21,14 +24,17 @@
 
     BCP.prototype.recieve = function(message) {
       var msg;
+      message = message.slice(0, -1);
       this.log("recieving", message);
       console.log("Incoming message: " + message);
       try {
         msg = JSON.parse(message);
-        this.handle(msg);
       } catch (error) {
-
+        if (typeof this.log === "function") {
+          this.log("error", "bad message from remote end");
+        }
       }
+      this.handle(msg);
     };
 
     BCP.prototype.local = function(op, name) {
@@ -78,12 +84,16 @@
       /*
               Send a loaded document to docs as an operation, 
               or flag for it to happen when get returns
-      */      if (name === void 0) name = this.selected;
+      */
+      var op;
+      if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string.");
       if (this.getcached[name] === void 0) {
         return this.bflag[name] = true;
       } else {
-        return this.docssend(name, opfromprototree(this.getcached[name]));
+        op = new Operation([]);
+        op.fromTree([], CTreeFromProto(this.getcached[name]));
+        return this.docssend(op, name);
       }
     };
 
@@ -123,41 +133,41 @@
       var f;
       f = handlerset[type];
       if (f === void 0) f = handlerset[0];
-      return f(message);
+      return f(this, message);
     };
 
     BCP.prototype.handlers = {
-      "hashvalue": function(message) {
+      "hashvalue": function(self, message) {
         return md5table[message.value] = message.hashvalue;
       },
-      "error": function(message) {
-        return this.errorhandle(message);
+      "error": function(self, message) {
+        return self.errorhandle(message);
       },
-      "era": function(message) {
-        this.getcached[message.docname] = message.tree;
-        if (this.bflag[message.docname]) {
-          this.broadcast(message.docname);
-          return this.bflag[message.docname] = false;
+      "tree": function(self, message) {
+        self.getcached[message.docname] = message.tree;
+        if (self.bflag[message.docname]) {
+          self.broadcast(message.docname);
+          return self.bflag[message.docname] = false;
         }
       },
-      0: function(message) {
+      0: function(self, message) {
         console.log("error: unknown message type");
-        return this.error(401);
+        return self.error(401);
       }
     };
 
     BCP.prototype.ehandlers = {
-      100: function(message) {
-        this.log("connection", "broken");
+      100: function(self, message) {
+        self.log("connection", "broken");
         return console.error("Connection broken");
       },
-      101: function(message) {
-        return this.log("connection", "started");
+      101: function(self, message) {
+        return self.log("connection", "started");
       },
-      0: function(message) {
+      0: function(self, message) {
         var m;
         m = JSON.stringify(message);
-        this.log("server error", m);
+        self.log("server error", m);
         return console.error("Server error: " + m);
       }
     };

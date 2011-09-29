@@ -105,9 +105,7 @@
       return JSON.stringify(this.proto());
     };
 
-    Operation.prototype.fromTree = function(tree) {
-      return console.warn("operation.fromTree is not yet supported");
-    };
+    Operation.prototype.fromTree = function(address, tree) {};
 
     return Operation;
 

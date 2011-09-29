@@ -1,6 +1,6 @@
 # bcp.coffee :: BCP Parsing Hub
 
-# Dependancies: CTree, Stream
+# Dependancies: CTree, Operation, Stream
 
 class BCP
     constructor: (stream, auth) ->
@@ -16,13 +16,15 @@ class BCP
             subscriptions: {}
         @getcached = {}
     recieve: (message) =>
+        message = message[..-2] # get rid of nullbyte
         @log "recieving", message
         console.log "Incoming message: #{message}"
         try
             msg = JSON.parse message
-            @handle msg
         catch error
+            @log?("error","bad message from remote end")
             # probably bad json
+        @handle msg
         return
     local: (op, name) ->
         ###
@@ -70,7 +72,9 @@ class BCP
         if @getcached[name] is undefined
             @bflag[name] = on
         else
-            @docssend name, opfromprototree @getcached[name]
+            op = new Operation []
+            op.fromTree [], CTreeFromProto @getcached[name]
+            @docssend op, name
     sync: (name) ->
         if name is undefined then name = @selected
         @select name
@@ -81,36 +85,36 @@ class BCP
         doc.external(op, name) for doc in @docs
     register: (display) ->
         @docs.push(display)
-    handle: (message) ->
+    handle: (message) =>
         @_handle message, message.type, @handlers
-    errorhandle: (message) ->
+    errorhandle: (message) =>
         @_handle message, message.code, @ehandlers
-    _handle: (message, type, handlerset) ->
+    _handle: (message, type, handlerset) =>
         f = handlerset[type]
         if f is undefined then f = handlerset[0]
-        f message
+        f @, message
     handlers: 
-        "hashvalue": (message) ->
+        "hashvalue": (self, message) ->
             md5table[message.value] = message.hashvalue
-        "error": (message) ->
-            @errorhandle message
-        "era": (message) ->
-            @getcached[message.docname] = message.tree
-            if @bflag[message.docname]
-                @broadcast message.docname
-                @bflag[message.docname] = off
-        0: (message) ->
+        "error": (self, message) ->
+            self.errorhandle message
+        "tree": (self, message) ->
+            self.getcached[message.docname] = message.tree
+            if self.bflag[message.docname]
+                self.broadcast message.docname
+                self.bflag[message.docname] = off
+        0: (self, message) ->
             console.log "error: unknown message type"
-            @error 401
+            self.error 401
     ehandlers: 
-        100: (message) ->
-            @log "connection", "broken"
+        100: (self, message) ->
+            self.log "connection", "broken"
             console.error "Connection broken"
-        101: (message) ->
-            @log "connection", "started"
-        0: (message) ->
+        101: (self, message) ->
+            self.log "connection", "started"
+        0: (self, message) ->
             m = JSON.stringify message
-            @log "server error", m
+            self.log "server error", m
             console.error "Server error: #{m}"
     send: (obj) ->
         s = JSON.stringify obj
