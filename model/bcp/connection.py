@@ -1,7 +1,7 @@
 import json
 import traceback
 
-from ConcurrenTree.model import operation
+from ConcurrenTree.model import operation, address
 from ConcurrenTree.util.server.pool.connection import Connection
 from peer import Peer
 from errors import errors
@@ -19,6 +19,7 @@ class BCPConnection(Connection):
 		self.there = Peer()
 
 	def incoming(self, value):
+		''' Processes IO buffer '''
 		if nullbyte in value:
 			length = value.index(nullbyte)
 			try:
@@ -46,6 +47,7 @@ class BCPConnection(Connection):
 			self.error(500)
 
 	def outgoing(self, msg):
+		''' Accepts messages from pool '''
 		return json.dumps(msg)+nullbyte
 
 	def push(self, msgtype, **kwargs):
@@ -99,26 +101,49 @@ class BCPConnection(Connection):
 					"operation":obj['hash']
 				}) # Resource not found
 		elif obt=='check':
-			pass
-		elif obt=='thash':
-			pass
+			# TODO - error testing
+			if not self.check_selected():return
+			if not self.require("address", obj):return
+			addr = address.Address(obj['address'])
+			sum = addr.resolve(self.fdoc).treesum
+			self.select(self.there.selected)
+			self.push("tsum",address=addr.proto(), value=sum)
+		elif obt=='tsum':
+			if not self.check_selected():return
+			if not self.require("address", obj):return
+			if not self.require("value", obj):return
+			# Compare to our own treesum
+			addr = address.Address(obj['address'])
+			sum = addr.resolve(self.fdoc).treesum
+			if sum != obj['value']:
+				self.push("get", address=addr.proto(), depth=1)
 		elif obt=='get':
 			if not self.check_selected():return
-			if "tree" in obj:
-				self.push("era",
-					docname = self.there.selected,
-					tree = self.fdoc.proto())
-		elif obt=='era':
-			pass
+			if not self.require("address", obj):return
+			if not self.require("value", obj):return
+			addr = address.Address(obj['address'])
+			node = addr.resolve(self.fdoc)
+			if "depth" in obj:
+				result = node.proto(obj['depth'])
+			else:
+				result = node.proto()
+			self.push("tree", address = addr.proto(), value=result)
+		elif obt=='tree':
+			if not self.check_selected():return
+			if not self.require("address", obj):return
+			if not self.require("value", obj):return
+			addr = address.Address(obj['address'])
+			node = addr.resolve(self.fdoc)
+			node.upgrade(obj['value'])
 		elif obt=='subscribe':
 			if "subtype" not in obj or obj['subtype']=="live":
 				# live subscription
 				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("live")
+					self.there.subscriptions[name] = ("live",)
 			elif obj['subtype']=="notify":
 				# notify subscription (ad-only)
 				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("notify")
+					self.there.subscriptions[name] = ("notify",)
 			elif obj['subtype']=="marked":
 				# notify subscription (read/unread)
 				for name in obj['docnames']:
