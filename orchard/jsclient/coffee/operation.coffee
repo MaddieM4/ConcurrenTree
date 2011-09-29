@@ -59,3 +59,5 @@ class Operation
 
     fromTree:(address, tree)->
         # Handle this layer
+
+window.Operation = Operation

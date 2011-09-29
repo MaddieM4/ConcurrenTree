@@ -127,6 +127,7 @@ class BCPConnection(Connection):
 				result = node.proto(obj['depth'])
 			else:
 				result = node.proto()
+			self.select(self.there.selected)
 			self.push("tree", address = addr.proto(), value=result)
 		elif obt=='tree':
 			if not self.check_selected():return

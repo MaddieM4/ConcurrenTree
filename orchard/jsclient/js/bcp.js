@@ -133,10 +133,14 @@
       var f;
       f = handlerset[type];
       if (f === void 0) f = handlerset[0];
+      if (!(message.docname != null)) message.docname = this.other.selected;
       return f(this, message);
     };
 
     BCP.prototype.handlers = {
+      "select": function(self, message) {
+        return self.other.selected = message.docname;
+      },
       "hashvalue": function(self, message) {
         return md5table[message.value] = message.hashvalue;
       },
@@ -144,7 +148,7 @@
         return self.errorhandle(message);
       },
       "tree": function(self, message) {
-        self.getcached[message.docname] = message.tree;
+        self.getcached[message.docname] = message.value;
         if (self.bflag[message.docname]) {
           self.broadcast(message.docname);
           return self.bflag[message.docname] = false;

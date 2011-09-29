@@ -111,4 +111,6 @@
 
   })();
 
+  window.Operation = Operation;
+
 }).call(this);

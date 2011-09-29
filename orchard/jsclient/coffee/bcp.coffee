@@ -92,14 +92,17 @@ class BCP
     _handle: (message, type, handlerset) =>
         f = handlerset[type]
         if f is undefined then f = handlerset[0]
+        message.docname = @other.selected if not message.docname?
         f @, message
     handlers: 
+        "select": (self, message) ->
+            self.other.selected = message.docname
         "hashvalue": (self, message) ->
             md5table[message.value] = message.hashvalue
         "error": (self, message) ->
             self.errorhandle message
         "tree": (self, message) ->
-            self.getcached[message.docname] = message.tree
+            self.getcached[message.docname] = message.value
             if self.bflag[message.docname]
                 self.broadcast message.docname
                 self.bflag[message.docname] = off
