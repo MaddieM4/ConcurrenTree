@@ -35,7 +35,7 @@ class BCP
         console.log "sending proto"
         @send op.proto()
     select: (name) ->
-        assert isString(name), "Docnames must be a string"
+        assert typeof name is "string", "Docnames must be a string"
         if name is @selected then return
         @send 
             "type": "select"
@@ -47,7 +47,7 @@ class BCP
         does not broadcast
         ###
         if name is undefined then name = @selected
-        assert isString(name), "Docnames must be a string"
+        assert typeof name is "string", "Docnames must be a string"
         
         if @getcached[name] is undefined
             @getcached[name] = [[]]
@@ -65,7 +65,7 @@ class BCP
         or flag for it to happen when get returns
         ###
         if name is undefined then name = @selected
-        assert isString(name), "Docnames must be a string."
+        assert typeof name is "string", "Docnames must be a string."
         
         if @getcached[name] is undefined
             @bflag[name] = on
@@ -79,6 +79,8 @@ class BCP
             "eras": 0
     docssend: (op, name) ->
         doc.external(op, name) for doc in @docs
+    register: (display) ->
+        @docs.push(display)
     handle: (message) ->
         @_handle message, message.type, @handlers
     errorhandle: (message) ->

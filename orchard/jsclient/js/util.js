@@ -1,5 +1,5 @@
 (function() {
-  var af_object, arrayFill, assert, getUrlParameter, isArray, isBoolean, isJSON, isNumber, isObject, range, serial, urlParameters;
+  var af_object, arrayFill, getUrlParameter, isArray, isBoolean, isJSON, isNumber, isObject, range, serial, urlParameters;
 
   arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
@@ -210,7 +210,7 @@
     strict: function(obj) {}
   };
 
-  assert = function(condition, message) {
+  window.assert = function(condition, message) {
     message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
     if (!condition) throw message;
   };

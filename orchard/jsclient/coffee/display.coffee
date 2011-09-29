@@ -5,7 +5,7 @@
 worker = """
 
 var window = {}
-importScripts('js/util');
+importScripts('/js/util.js');
 serial = window.serial;
 importScripts('js/ctree.js');
 CTree = window.CTree
@@ -42,7 +42,7 @@ function deleteone(pos) {
     node.delete(t.pos);    
 }
 
-function delete(amount){
+function deletemany(amount){
     var start, times, pos;
     pos = cursors[0];
     if (amount==0) return;
@@ -63,10 +63,11 @@ onmessage = function(e){
     type = data[0];
     switch(type){
       case "cursor":
-        cursors[data[1]] = data[2];
-        return postMessage(["cursor", {data[1]:data[2]]});
+        var id = data[1], value = data[2];
+        cursors[id] = value;
+        return postMessage(["cursor", {id:value}]);
       case "insert": return insert(data[1]);
-      case "delete": return delete(data[1]);
+      case "delete": return deletemany(data[1]);
       case "op": return operate(data[1]);
       case "lock":
         locked = true; break;
@@ -96,12 +97,13 @@ class Display
         @onrewrite = null
         @onlock = null
         @onunlock = null
+        @handler.register @
 
     external: (op, name) ->
         @apply op if (name == @docname)
 
     internal: (op) ->
-	@handler.local op, @docname
+        @handler.local op, @docname
 
     apply: (op) ->
         @worker.postMessage(["op", op])
@@ -163,3 +165,5 @@ class Display
         @switching = off
         @islocked = off
         @onunlock?()
+
+window.Display = Display

@@ -43,7 +43,7 @@
     };
 
     BCP.prototype.select = function(name) {
-      assert(isString(name), "Docnames must be a string");
+      assert(typeof name === "string", "Docnames must be a string");
       if (name === this.selected) return;
       this.send({
         "type": "select",
@@ -57,7 +57,7 @@
               recieve or sync a document
               does not broadcast
       */      if (name === void 0) name = this.selected;
-      assert(isString(name), "Docnames must be a string");
+      assert(typeof name === "string", "Docnames must be a string");
       if (this.getcached[name] === void 0) {
         this.getcached[name] = [[]];
         return this.load(name);
@@ -79,7 +79,7 @@
               Send a loaded document to docs as an operation, 
               or flag for it to happen when get returns
       */      if (name === void 0) name = this.selected;
-      assert(isString(name), "Docnames must be a string.");
+      assert(typeof name === "string", "Docnames must be a string.");
       if (this.getcached[name] === void 0) {
         return this.bflag[name] = true;
       } else {
@@ -105,6 +105,10 @@
         _results.push(doc.external(op, name));
       }
       return _results;
+    };
+
+    BCP.prototype.register = function(display) {
+      return this.docs.push(display);
     };
 
     BCP.prototype.handle = function(message) {

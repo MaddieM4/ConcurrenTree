@@ -15,6 +15,8 @@
 			"stream.js",
 			"ctree.js",
 			"operation.js",
+			"js/worker.js",
+			"js/display.js",
 			"bcp.js",
 			"view.js")
 
@@ -60,8 +62,9 @@
 			})
 		});
 
-		function my_display(){
+		function my_display(docname){
 			this.text = "";
+			this.primitive = new Display(docname, bcp, true)
 			this.display = $("#display #screen");
 			this.buttons = $("#display input:button");
 			this.display.removeClass("loaded");
@@ -94,9 +97,8 @@
 		var rootdisplay;
 		function load_document(name){
 			$("#docname").html('Docname: "'+name+'"')
-			rootview = docs.get(name)[0]
-			rootdisplay = new my_display();
-			rootview.display = rootdisplay;
+			if (rootdisplay) {rootdisplay = null}
+			rootdisplay = new my_display(name);
 			bcp.broadcast(name);
 			bcp.get(name);
 		}
@@ -112,15 +114,21 @@
 		function easy_insert(){
 			var pos = $('.inserter .pos').val();
 			var value = $('.inserter .value').val();
-			//rootdisplay.replace(pos,pos,value);
-			rootview.insert(pos, value);
+			rootdisplay.lock(function(){
+				rootdisplay.cursor(0,pos);
+				rootdisplay.insert(value);
+				rootdisplay.unlock();
+			});
 		}
 
 		function easy_delete(){
 			var start = int($('.deleter .start').val());
 			var end = int($('.deleter .end').val());
-			//rootdisplay.replace(start,end+1,"");
-			rootview.delete(start, end);
+			rootdisplay.lock(function(){
+				rootdisplay.cursor(0,start);
+				rootdisplay.delete(start-end);
+				rootdisplay.unlock();
+			});
 		}
 	</script>
 	<style>

@@ -187,7 +187,6 @@ serial =
     
     strict: (obj) ->
         
-assert = (condition, message) ->
+window.assert = (condition, message) ->
     message = if message isnt "" then "Assertion error: '#{message}'" else 'Assertion error'
     if not condition then throw message
-        

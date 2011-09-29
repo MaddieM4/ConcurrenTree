@@ -6,19 +6,24 @@ if not BlobBuilder?
 if not window.URL?
     if window.WebkitURL?
         window.URL = window.WebkitURL
+    else if window.createObjectURL?
+        window.URL = {
+           createObjectURL:(obj)->window.createObjectURL obj,
+           revokeObjectURL:(url)->window.revokeObjectURL url
+        }
 
-createWorker = (obj) ->
+createWorker=(obj) ->
     worker = new Worker createBlobURL obj
 
-createBlob = (obj) ->
+createBlob= (obj) ->
     builder = new BlobBuilder()
     builder.append obj.toString()
     builder
 
-createBlobURL(obj) ->
+createBlobURL=(obj) ->
     getBlobURL createBlob obj
 
-getBlobURL(blob) ->
+getBlobURL=(blob) ->
     window.URL.createObjectURL blob.getBlob()
 
 window.blobworker = {

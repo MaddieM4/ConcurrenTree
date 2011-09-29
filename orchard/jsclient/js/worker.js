@@ -1,5 +1,5 @@
 (function() {
-  var createBlob, createWorker;
+  var createBlob, createBlobURL, createWorker, getBlobURL;
 
   if (!(typeof BlobBuilder !== "undefined" && BlobBuilder !== null)) {
     if (typeof WebkitBlobBuilder !== "undefined" && WebkitBlobBuilder !== null) {
@@ -10,7 +10,18 @@
   }
 
   if (!(window.URL != null)) {
-    if (window.WebkitURL != null) window.URL = window.WebkitURL;
+    if (window.WebkitURL != null) {
+      window.URL = window.WebkitURL;
+    } else if (window.createObjectURL != null) {
+      window.URL = {
+        createObjectURL: function(obj) {
+          return window.createObjectURL(obj);
+        },
+        revokeObjectURL: function(url) {
+          return window.revokeObjectURL(url);
+        }
+      };
+    }
   }
 
   createWorker = function(obj) {
@@ -25,13 +36,13 @@
     return builder;
   };
 
-  createBlobURL(obj)(function() {
+  createBlobURL = function(obj) {
     return getBlobURL(createBlob(obj));
-  });
+  };
 
-  getBlobURL(blob)(function() {
+  getBlobURL = function(blob) {
     return window.URL.createObjectURL(blob.getBlob());
-  });
+  };
 
   window.blobworker = {
     createWorker: createWorker,
