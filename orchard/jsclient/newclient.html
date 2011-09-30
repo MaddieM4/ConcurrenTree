@@ -63,6 +63,7 @@
 		});
 
 		function my_display(docname){
+			self = this;
 			this.text = "";
 			this.primitive = new Display(docname, bcp, true)
 			this.display = $("#display #screen");
@@ -84,13 +85,14 @@
 				this.display.html(this.text);
 			}
 			this.rewrite = function(value){
-				this.write(value);
-				this.display.addClass("loaded");
+				self.write(value);
+				self.display.addClass("loaded");
 			}
 			this.clear = function(){
 				this.write("");
 			}
 			this.clear();
+			this.primitive.onrewrite = self.rewrite;
 		}
 
 		var rootview;

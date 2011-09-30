@@ -54,11 +54,12 @@ class Display
         throw "Display not locked or in switching state" if @islocked or @switching
         @worker.postMessage ["delete", amount]
 
-    onwconnect: (e) ->
+    onwconnect: (e) =>
         @ready = on
 
-    onwmessage: (e) ->
+    onwmessage: (e) =>
         data = e.data
+        console.log("Display worker output:"+data.toString())
         type = data[0]
         switch type
           when "op"  then @internal data[1]
@@ -67,7 +68,7 @@ class Display
           when "unlock" then @_onunlock()
           when "cursor","rewrite","write","delete" then @event data
 
-    onwerror: (e) ->
+    onwerror: (e) =>
         console.error(e)
         @ready = off
 

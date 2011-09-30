@@ -1,6 +1,5 @@
 (function() {
   var getUrlParameter;
-
   window.arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
     
@@ -30,13 +29,13 @@
             arrayFill [], ((i) -> i * i), 6
                 returns [0, 1, 4, 9, 16, 25]
     */
+
     var i;
     for (i = 0; 0 <= count ? i < count : i > count; 0 <= count ? i++ : i--) {
       array.push(value(i));
     }
     return array;
   };
-
   window.isArray = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Array]";
@@ -44,7 +43,6 @@
       return false;
     }
   };
-
   window.isObject = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Object]";
@@ -52,11 +50,9 @@
       return false;
     }
   };
-
   window.isNumber = function(obj) {
     return typeof obj === "number";
   };
-
   window.isBoolean = function(obj) {
     /* tests if an object is a boolean object
         
@@ -66,9 +62,9 @@
         if obj is true or obj is false then true else false
         
         JS Condition (obj === true || obj === false), not '=='!
-    */    return typeof obj === "boolean";
+    */
+    return typeof obj === "boolean";
   };
-
   window.range = function(start, end, step) {
     var i, _results;
     if (step == null) step = 1;
@@ -103,6 +99,7 @@
             range 5, 0, 2
                 [5, 3, 1]
     */
+
     step = (start < end && step > 0) || (start > end && step < 0) ? step : -step;
     _results = [];
     for (i = start; start <= end ? i < end : i > end; i += step) {
@@ -110,7 +107,6 @@
     }
     return _results;
   };
-
   window.urlParameters = function(url) {
     var i, kv, pairs, params, _i, _len;
     if (url == null) url = window.location.href;
@@ -133,6 +129,7 @@
             to decode urlencoded values, and where possible, these values 
             could be unstringified (1 should be 1 not '1', perhaps?)
     */
+
     params = {};
     pairs = url.slice(url.indexOf('?') + 1).split('&');
     for (_i = 0, _len = pairs.length; _i < _len; _i++) {
@@ -142,7 +139,6 @@
     }
     return params;
   };
-
   window.get_url_variable = getUrlParameter = function(name, def) {
     /* extracts the parameter name from the current page url, or returns def if
         name does not exist.
@@ -168,6 +164,7 @@
             getUrlParameter 'z', 'default'
                 'default'
     */
+
     var params;
     params = urlParameters();
     if (params[name] !== void 0) {
@@ -176,7 +173,6 @@
       return def;
     }
   };
-
   window.isJSON = function(str) {
     try {
       JSON.parse(str);
@@ -185,7 +181,6 @@
       return false;
     }
   };
-
   window.serial = {
     key: function(str) {
       if (str.length > 10) {
@@ -205,10 +200,8 @@
     },
     strict: function(obj) {}
   };
-
   window.assert = function(condition, message) {
     message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
     if (!condition) throw message;
   };
-
 }).call(this);

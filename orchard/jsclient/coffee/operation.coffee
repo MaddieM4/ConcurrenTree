@@ -58,6 +58,13 @@ class Operation
     serialize:-> JSON.stringify(@proto())
 
     fromTree:(address, tree)->
-        # Handle this layer
+        # Only handles children, to support immutable root node
+        # Root is assumed to be the same
+        for p in [0..tree.length]
+          for key, node in tree.children[p]
+            nodeaddr = address.concat tree.jump(p, key)
+            @pushinsert nodeaddr, p, node.value
+            @pushdelete nodeaddr, node.deletions
+            @fromTree nodeaddr, node
 
 window.Operation = Operation

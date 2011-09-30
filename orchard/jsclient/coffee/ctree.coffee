@@ -28,8 +28,28 @@ class CTree
         @children[pos][child.key] = child
         child
 
+    flatten: ->
+        result = ""
+        for p in [0..@length]
+          nodes = @kids(p)
+          result += node.flatten() for node in nodes
+          result += @value[p] if p<@length
+        result
+
     get: (pos, key) ->
         @children[pos][key]
+
+    keys: (pos) ->
+        #sorted keys at this position
+        (key for key of @children[pos]).sort()
+
+    kids: (pos) ->
+        #sorted children at this position
+        @get(pos,key) for key in @keys(pos)
+
+    jump: (pos, key) ->
+        key if pos is @length
+        else [pos, key]
 
 window.CTreeFromProto = (proto)->
     deletions = proto.pop()
@@ -41,5 +61,6 @@ window.CTreeFromProto = (proto)->
     tree.deletions = deletions
     for i in proto
       tree.insert_obj window.CTreeFromProto i if typeof i is not "string"
+    tree
 
 window.CTree = CTree
