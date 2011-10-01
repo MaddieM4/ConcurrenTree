@@ -3,8 +3,8 @@
 # Dependancies: CTree, Stream
 
 class BCP
-    constructor: (docs, stream, auth) ->
-        @docs = docs
+    constructor: (stream, auth) ->
+        @docs = []
         @stream = stream
         @stream.onmessage = @recieve
         @auth = auth
@@ -25,14 +25,17 @@ class BCP
             # probably bad json
         return
     local: (op, name) ->
+        ###
+        Process a locally-generated op
+        ###
         console.log "selecting"
         @select name
         console.log "sending local"
-        @docs.send name, op
+        @docssend name, op
         console.log "sending proto"
         @send op.proto()
     select: (name) ->
-        assert isString(name), "Docnames must be a string"
+        assert typeof name is "string", "Docnames must be a string"
         if name is @selected then return
         @send 
             "type": "select"
@@ -44,7 +47,7 @@ class BCP
         does not broadcast
         ###
         if name is undefined then name = @selected
-        assert isString(name), "Docnames must be a string"
+        assert typeof name is "string", "Docnames must be a string"
         
         if @getcached[name] is undefined
             @getcached[name] = [[]]
@@ -55,25 +58,29 @@ class BCP
         @select name
         @send 
             type: "get"
-            tree: 0
+            address: []
     broadcast: (name) ->
         ###
         Send a loaded document to docs as an operation, 
         or flag for it to happen when get returns
         ###
         if name is undefined then name = @selected
-        assert isString(name), "Docnames must be a string."
+        assert typeof name is "string", "Docnames must be a string."
         
         if @getcached[name] is undefined
             @bflag[name] = on
         else
-            @docs.send name, opfromprototree @getcached[name]
+            @docssend name, opfromprototree @getcached[name]
     sync: (name) ->
         if name is undefined then name = @selected
         @select name
         @send 
             "type": "check"
             "eras": 0
+    docssend: (op, name) ->
+        doc.external(op, name) for doc in @docs
+    register: (display) ->
+        @docs.push(display)
     handle: (message) ->
         @_handle message, message.type, @handlers
     errorhandle: (message) ->

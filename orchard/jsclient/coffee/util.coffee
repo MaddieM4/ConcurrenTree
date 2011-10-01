@@ -1,8 +1,10 @@
 # util.coffee :: Utilities
 
-# Dependencies: A BCP object must be available to handle md5 requests
+# Dependencies: none
+if not window.util? then window.util = {}
+context = window.util 
 
-arrayFill = (array, value, count) ->
+context.arrayFill = (array, value, count) ->
     ### Fills an array with the values returned by value when given an index
     
         Arguments:
@@ -38,37 +40,35 @@ arrayFill = (array, value, count) ->
     array.push value i for i in [0 ... count]
     array
 
-af_object = (id) -> # I have no idea why this function exists :)
-    {}
-
-isArray = (obj) ->
+context.isArray = (obj) ->
     # tests if an object is an array
     if typeof obj is "object" 
         Object.prototype.toString.call(obj) is "[object Array]"
     else
         false
 
-isObject = (obj) ->
+context.isObject = (obj) ->
     # tests if an object is a hash/dictionary type object
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Object]"
     else
         false
 
-isFunction = (obj) ->
+context.isFunction = (obj) ->
     # tests if an object is a function
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Function]"
 
-isNumber = (obj) ->
-    # tests if an object is a number
-    typeof obj is "number"
-
-isInteger = (obj) ->
+context.isInteger = (obj) ->
     # tests if an object belongs to the Integer set
     Math.floor(obj) is obj and isNumber obj
 
-isBoolean = (obj) ->
+
+context.isNumber = (obj) ->
+    # tests if an object is a number
+    typeof obj is "number"
+
+context.isBoolean = (obj) ->
     ### tests if an object is a boolean object
         
         Note! This does not test if an object can resolve to a boolean, it 
@@ -80,7 +80,7 @@ isBoolean = (obj) ->
     ###
     typeof obj is "boolean"
 
-range = (start, end, step = 1) ->
+context.range = (start, end, step = 1) ->
     ### returns an array containing integers ranged between start and end,
         with a gap of step between each one.
         
@@ -116,12 +116,12 @@ range = (start, end, step = 1) ->
     step = if (start < end and step > 0) or (start > end and step < 0) then step else - step
     i for i in [start... end] by step
 
-urlParameters = (url = window.location.href) ->
+context.urlParameters = (url = context.location.href) ->
     ### extracts a dictionary of url parameters from the given url
         
         Arguments:
             url: a url to parse parameters from. (Optional, default = 
-                window.location.href)
+                context.location.href)
         
         Returns:
             An object containing key: value pairs of the url parameters.
@@ -144,7 +144,7 @@ urlParameters = (url = window.location.href) ->
     params
 
 # get_url_variable is a pythonic name, variable should be parameter, recommend changing
-get_url_variable = getUrlParameter = (name, def) -> 
+context.get_url_variable = getUrlParameter = (name, def) -> 
     ### extracts the parameter name from the current page url, or returns def if
         name does not exist.
         
@@ -173,7 +173,7 @@ get_url_variable = getUrlParameter = (name, def) ->
     params = urlParameters()
     if params[name] isnt undefined then params[name] else def
 
-isJSON = (str) ->
+context.isJSON = (str) ->
     # tests if the suppled string is valid JSON
     # Arguments: str: a string. 
     # Returns: true/false
@@ -183,7 +183,7 @@ isJSON = (str) ->
     catch e
         false
 
-serial = 
+context.serial = 
     key: (str) ->
         # I don't know what this function does
         ###
@@ -228,7 +228,8 @@ serial =
     strict: (obj) ->
         # does nothing whatsoever :) 
         
-assert = (condition, message) ->
+
+context.assert = (condition, message) ->
     ### throws an error if the condition passed is not true. Optionally provide
         the error message to be thrown.
         
@@ -252,6 +253,6 @@ assert = (condition, message) ->
         Examples:
             assert (isString str), 'str is not a string!'
     ###
+
     message = if message isnt "" then "Assertion error: '#{message}'" else 'Assertion error'
     if not condition then throw message
-        

@@ -1,6 +1,6 @@
 # ctree.coffee :: CTree object and DocumentHandler object
 
-# Dependencies: Util, View
+# Dependencies: Util
 
 class CTree
     constructor: (value) ->
@@ -9,17 +9,18 @@ class CTree
         @length = value.length
         @key = serial.key value
         @deletions = []
-        arrayfill @deletions, (-> false), @length
+        window.arrayFill @deletions, (-> false), @length
         @children = []
-        arrayfill @children, af_obj, @length+1
+        window.arrayFill @children, (-> {}), @length+1
     insert: (pos, childtext) ->
         # insert and return a child tree
         child = new CTree childtext
         @children[pos][child.key] = child
     delete: (pos) ->
         # mark a character in this tree as deleted
-        
         @deletions[pos] = true
         this
     get: (pos, key) ->
         @children[pos][key]
+
+window.CTree = CTree
