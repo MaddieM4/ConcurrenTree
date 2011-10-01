@@ -58,10 +58,12 @@ context.isFunction = (obj) ->
     # tests if an object is a function
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Function]"
+    else 
+        false
 
 context.isInteger = (obj) ->
     # tests if an object belongs to the Integer set
-    Math.floor(obj) is obj and isNumber obj
+    isNumber(obj) and Math.floor(obj) is obj
 
 
 context.isNumber = (obj) ->
