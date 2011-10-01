@@ -2,6 +2,8 @@
 
 # Dependencies: Util
 
+context = window
+
 class CTree
     constructor: (value) ->
         # action functions should return trees
@@ -23,4 +25,4 @@ class CTree
     get: (pos, key) ->
         @children[pos][key]
 
-window.CTree = CTree
+context.CTree = CTree

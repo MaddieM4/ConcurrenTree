@@ -2,6 +2,8 @@
 
 # Dependancies: CTree, Stream
 
+context = window
+
 class BCP
     constructor: (stream, auth) ->
         @docs = []
@@ -124,4 +126,4 @@ class BCP
     reconnect: ->
         @stream.reconnect()
 
-window.BCP = BCP
+context.BCP = BCP

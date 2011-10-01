@@ -2,6 +2,8 @@
 
 # Dependencies : js/stream folder for worker code
 
+context = window
+
 types = 
     websocket: "js/stream/ws.js"
 
@@ -52,4 +54,4 @@ class Stream
         @started = true
         @running = true
 
-window.Stream = Stream
+context.Stream = Stream

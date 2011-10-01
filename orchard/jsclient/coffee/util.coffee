@@ -1,8 +1,8 @@
 # util.coffee :: Utilities
 
 # Dependencies: none
-if not window.util? then window.util = {}
-context = window.util 
+
+context = window
 
 context.arrayFill = (array, value, count) ->
     ### Fills an array with the values returned by value when given an index

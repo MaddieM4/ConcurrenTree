@@ -2,6 +2,8 @@
 
 # dependencies: util and ctree are loaded automatically by worker
 
+context = window
+
 workerurl = "/js/displayworker.js"
 
 class Display
@@ -88,4 +90,4 @@ class Display
         @islocked = off
         @onunlock?()
 
-window.Display = Display
+context.Display = Display
