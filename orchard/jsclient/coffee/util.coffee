@@ -8,7 +8,7 @@ arrayFill = (array, value, count) ->
         Arguments:
             array: the array to be extended
             value: a function returning the value to be appended when given an       
-                index possible index values being between 0 and count exclusive 
+                index, possible index values being between 0 and count exclusive 
                 of count
             count: the number of values to append
         
@@ -31,6 +31,10 @@ arrayFill = (array, value, count) ->
             arrayFill [], ((i) -> i * i), 6
                 returns [0, 1, 4, 9, 16, 25]
     ###
+    assert (isArray array), 'array (first argument) must be an array'
+    assert (isFunction value), 'value (second argument) must be a function'
+    assert 
+    
     array.push value i for i in [0 ... count]
     array
 
@@ -51,9 +55,18 @@ isObject = (obj) ->
     else
         false
 
+isFunction = (obj) ->
+    # tests if an object is a function
+    if typeof obj is "object"
+        Object.prototype.toString.call(obj) is "[object Function]"
+
 isNumber = (obj) ->
     # tests if an object is a number
     typeof obj is "number"
+
+isInteger = (obj) ->
+    # tests if an object belongs to the Integer set
+    Math.floor(obj) is obj and isNumber obj
 
 isBoolean = (obj) ->
     ### tests if an object is a boolean object
