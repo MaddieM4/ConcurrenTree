@@ -1,12 +1,12 @@
 (function() {
   var tests;
-
   tests = {
     arrayFill: function() {
       /* test case 1
           padding with zeroes
           tests with a function which always returns none
       */
+
       var output, result, testcase;
       testcase = [0, 0, 0, 0, 0, 0, 0];
       output = arrayFill([], (function() {
@@ -17,6 +17,7 @@
       /* test case 2
           padding with index
       */
+
       testcase = [0, 1, 2, 3, 4, 5];
       output = arrayFill([], (function(i) {
         return i;
@@ -26,6 +27,7 @@
       /* test case 3
           negative value of count
       */
+
       testcase = [0, -1, -2, -3];
       output = arrayFill([], (function(i) {
         return i;
@@ -36,6 +38,7 @@
     af_object: function() {
       /* test case 1
       */
+
       var output, result, testcase;
       testcase = {};
       output = af_object(null);
@@ -46,6 +49,7 @@
       /* test suite
           [] returns true
       */
+
       var i, testcasesFalse, testcasesTrue, _i, _j, _len, _len2, _results;
       testcasesTrue = [[], [void 0], [null], [0], [false], [''], [[]], [{}], ['test']];
       testcasesFalse = [{}, 0, 1, true, false, '', 'hello, world', void 0, null];
@@ -69,5 +73,4 @@
       return _results;
     }
   };
-
 }).call(this);

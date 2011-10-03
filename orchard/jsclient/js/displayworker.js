@@ -7,12 +7,12 @@ log = function(obj) {postMessage(['log',obj])}
 var window = {}
 importScripts('/js/util.js');
 serial = window.serial;
-importScripts('/js/ctree.js');
+importScripts('/js/operation.js','/js/ctree.js');
 
 CTree = window.CTree
 cursors = {0:0};
 locked = false;
-tree = CTree("") // The document for this display
+tree = new CTree("") // The document for this display
 
 function pushCursors(){
     postMessage(["cursor", cursors]);
@@ -54,7 +54,9 @@ function deletemany(amount){
 }
 
 function operate(op) {
-// work on this later
+    op = new window.Operation(op.instructions);
+    op.apply(tree);
+    rewrite();
 }
 
 onmessage = function(e){
