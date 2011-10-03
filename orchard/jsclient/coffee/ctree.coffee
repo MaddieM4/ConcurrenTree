@@ -2,6 +2,8 @@
 
 # Dependencies: Util
 
+context = window if not context?
+
 class CTree
     constructor: (value) ->
         # action functions should return trees
@@ -31,7 +33,7 @@ class CTree
     get: (pos, key) ->
         @children[pos][key]
 
-window.CTreeFromProto = (proto)->
+context.CTreeFromProto = (proto)->
     deletions = proto.pop()
     value = for i in proto
       i if typeof i is "string"
@@ -42,4 +44,4 @@ window.CTreeFromProto = (proto)->
     for i in proto
       tree.insert_obj window.CTreeFromProto i if typeof i is not "string"
 
-window.CTree = CTree
+context.CTree = CTree

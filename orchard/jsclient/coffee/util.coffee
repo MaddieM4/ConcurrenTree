@@ -2,13 +2,15 @@
 
 # Dependencies: none
 
-window.arrayFill = (array, value, count) ->
+context = window
+
+context.arrayFill = (array, value, count) ->
     ### Fills an array with the values returned by value when given an index
     
         Arguments:
             array: the array to be extended
             value: a function returning the value to be appended when given an       
-                index possible index values being between 0 and count exclusive 
+                index, possible index values being between 0 and count exclusive 
                 of count
             count: the number of values to append
         
@@ -31,28 +33,44 @@ window.arrayFill = (array, value, count) ->
             arrayFill [], ((i) -> i * i), 6
                 returns [0, 1, 4, 9, 16, 25]
     ###
+    assert (isArray array), 'array (first argument) must be an array'
+    assert (isFunction value), 'value (second argument) must be a function'
+    assert 
+    
     array.push value i for i in [0 ... count]
     array
 
-window.isArray = (obj) ->
+context.isArray = (obj) ->
     # tests if an object is an array
     if typeof obj is "object" 
         Object.prototype.toString.call(obj) is "[object Array]"
     else
         false
 
-window.isObject = (obj) ->
+context.isObject = (obj) ->
     # tests if an object is a hash/dictionary type object
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Object]"
     else
         false
 
-window.isNumber = (obj) ->
+context.isFunction = (obj) ->
+    # tests if an object is a function
+    if typeof obj is "object"
+        Object.prototype.toString.call(obj) is "[object Function]"
+    else 
+        false
+
+context.isInteger = (obj) ->
+    # tests if an object belongs to the Integer set
+    isNumber(obj) and Math.floor(obj) is obj
+
+
+context.isNumber = (obj) ->
     # tests if an object is a number
     typeof obj is "number"
 
-window.isBoolean = (obj) ->
+context.isBoolean = (obj) ->
     ### tests if an object is a boolean object
         
         Note! This does not test if an object can resolve to a boolean, it 
@@ -64,7 +82,7 @@ window.isBoolean = (obj) ->
     ###
     typeof obj is "boolean"
 
-window.range = (start, end, step = 1) ->
+context.range = (start, end, step = 1) ->
     ### returns an array containing integers ranged between start and end,
         with a gap of step between each one.
         
@@ -100,12 +118,12 @@ window.range = (start, end, step = 1) ->
     step = if (start < end and step > 0) or (start > end and step < 0) then step else - step
     i for i in [start... end] by step
 
-window.urlParameters = (url = window.location.href) ->
+context.urlParameters = (url = context.location.href) ->
     ### extracts a dictionary of url parameters from the given url
         
         Arguments:
             url: a url to parse parameters from. (Optional, default = 
-                window.location.href)
+                context.location.href)
         
         Returns:
             An object containing key: value pairs of the url parameters.
@@ -128,7 +146,7 @@ window.urlParameters = (url = window.location.href) ->
     params
 
 # get_url_variable is a pythonic name, variable should be parameter, recommend changing
-window.get_url_variable = getUrlParameter = (name, def) -> 
+context.get_url_variable = getUrlParameter = (name, def) -> 
     ### extracts the parameter name from the current page url, or returns def if
         name does not exist.
         
@@ -157,16 +175,31 @@ window.get_url_variable = getUrlParameter = (name, def) ->
     params = urlParameters()
     if params[name] isnt undefined then params[name] else def
 
-window.isJSON = (str) ->
+context.isJSON = (str) ->
     # tests if the suppled string is valid JSON
+    # Arguments: str: a string. 
+    # Returns: true/false
     try
         JSON.parse str
         true
     catch e
         false
 
-window.serial = 
+context.serial = 
     key: (str) ->
+        # I don't know what this function does
+        ###
+            Arguments:
+                str: the string to be formed into a key 
+            
+            Returns: 
+                The key formed from the given string 
+            
+            Notes:
+            
+            Examples:
+            
+        ###
         if str.length > 10
             str.slice(0, 10) + serial.sum(str.slice(10))
         else
@@ -175,15 +208,53 @@ window.serial =
     modulo: 65536 # 2^8? This is 2^16
     
     sum: (str) ->
-        # could not work out how to neatly convert this to coffeescript
+        ### sums the string passed to it
+            
+            Arguments: 
+                str: the string to be summed
+            
+            Returns:
+                the integer sum of the string given
+            
+            Notes:
+                http://stackoverflow.com/q/7538590/473479
+            
+            Examples:
+            
+        ###
         s = 0 
-        `for (var i = 0; i < str.length; i++) {
-            s = (s * s + str.charCodeAt(i)) % serial.modulo;
-        }`
+        for i in [0... str.length] 
+            s = (s * s + str.charCodeAt(i)) % serial.modulo
         s 
     
     strict: (obj) ->
+        # does nothing whatsoever :) 
         
-window.assert = (condition, message) ->
+
+context.assert = (condition, message) ->
+    ### throws an error if the condition passed is not true. Optionally provide
+        the error message to be thrown.
+        
+        Arguments:
+            condition: a boolean
+            message: an error message (optional)
+        
+        Returns: 
+            nothing
+        
+        Throws: 
+            'Assertion error' 
+        
+        Notes:
+            Recommended use is:
+            assert this is that, 'error if not'
+            
+            This is because asserting a definite boolean is reduntant, the 
+            error can just be thrown instead of calling assert.
+        
+        Examples:
+            assert (isString str), 'str is not a string!'
+    ###
+
     message = if message isnt "" then "Assertion error: '#{message}'" else 'Assertion error'
     if not condition then throw message
