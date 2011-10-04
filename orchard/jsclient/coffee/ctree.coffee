@@ -54,7 +54,8 @@ class CTree
         else [pos, key]
 
 protostr = (item) ->
-    i if typeof i is "string"
+    if typeof item is "string"
+      item
     else ""
 
 protoval = (list) ->

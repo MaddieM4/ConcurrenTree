@@ -1,7 +1,10 @@
 (function() {
   var CTree, protostr, protoval, window;
+
   window = this;
+
   CTree = (function() {
+
     function CTree(value) {
       this.value = value;
       this.length = value.length;
@@ -15,11 +18,13 @@
         return {};
       }), this.length + 1);
     }
+
     CTree.prototype.insert = function(pos, childtext) {
       var child;
       child = new CTree(childtext);
       return this.insert_obj(pos(child));
     };
+
     CTree.prototype["delete"] = function(pos) {
       var x, _i, _j, _len, _ref, _ref2, _ref3, _results;
       _ref3 = (function() {
@@ -33,10 +38,12 @@
       }
       return this;
     };
+
     CTree.prototype.insert_obj = function(pos, child) {
       this.children[pos][child.key] = child;
       return child;
     };
+
     CTree.prototype.flatten = function() {
       var node, nodes, p, result, _i, _len, _ref;
       result = "";
@@ -50,9 +57,11 @@
       }
       return result;
     };
+
     CTree.prototype.get = function(pos, key) {
       return this.children[pos][key];
     };
+
     CTree.prototype.keys = function(pos) {
       var key;
       return ((function() {
@@ -64,6 +73,7 @@
         return _results;
       }).call(this)).sort();
     };
+
     CTree.prototype.kids = function(pos) {
       var key, _i, _len, _ref, _results;
       _ref = this.keys(pos);
@@ -74,14 +84,23 @@
       }
       return _results;
     };
+
     CTree.prototype.jump = function(pos, key) {
       return key(pos === this.length ? void 0 : [pos, key]);
     };
+
     return CTree;
+
   })();
+
   protostr = function(item) {
-    return i(typeof i === "string" ? void 0 : "");
+    if (typeof item === "string") {
+      return item;
+    } else {
+      return "";
+    }
   };
+
   protoval = function(list) {
     var i;
     return ((function() {
@@ -94,6 +113,7 @@
       return _results;
     })()).join("");
   };
+
   this.CTreeFromProto = function(proto) {
     var deletions, i, tree, value, _i, _len;
     deletions = proto.pop();
@@ -106,5 +126,7 @@
     }
     return tree;
   };
+
   this.CTree = CTree;
+
 }).call(this);

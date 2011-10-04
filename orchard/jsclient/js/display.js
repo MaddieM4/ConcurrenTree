@@ -1,9 +1,13 @@
 (function() {
   var Display, context, workerurl;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   context = window;
+
   workerurl = "/js/displayworker.js";
+
   Display = (function() {
+
     function Display(docname, handler, immediate) {
       this.docname = docname;
       this.handler = handler;
@@ -26,48 +30,58 @@
       this.onunlock = null;
       this.handler.register(this);
     }
+
     Display.prototype.external = function(op, name) {
       if (name === this.docname) return this.apply(op);
     };
+
     Display.prototype.internal = function(op) {
       return this.handler.local(op, this.docname);
     };
+
     Display.prototype.apply = function(op) {
       return this.worker.postMessage(["op", op]);
     };
+
     Display.prototype.lock = function(callback) {
       if (this.switching) throw "Display in switching state, cannot lock";
       this.switching = true;
       if (callback != null) this.onlock = callback;
       return this.worker.postMessage(["lock"]);
     };
+
     Display.prototype.unlock = function(callback) {
       if (this.switching) throw "Display in switching state, cannot unlock";
       this.switching = true;
       if (callback != null) this.onunlock = callback;
       return this.worker.postMessage(["unlock"]);
     };
+
     Display.prototype.cursor = function(id, pos) {
       if (this.islocked || this.switching) {
         throw "Display not locked or in switching state";
       }
       return this.worker.postMessage(["cursor", id, pos]);
     };
+
     Display.prototype.insert = function(value) {
       if (this.islocked || this.switching) {
         throw "Display not locked or in switching state";
       }
       return this.worker.postMessage(["insert", value]);
     };
+
     Display.prototype["delete"] = function(amount) {
       if (this.islocked || this.switching) {
         throw "Display not locked or in switching state";
       }
       return this.worker.postMessage(["delete", amount]);
     };
+
     Display.prototype.onwconnect = function(e) {
       return this.ready = true;
     };
+
     Display.prototype.onwmessage = function(e) {
       var data, type;
       data = e.data;
@@ -89,10 +103,12 @@
           return this.event(data);
       }
     };
+
     Display.prototype.onwerror = function(e) {
       console.error(e);
       return this.ready = false;
     };
+
     Display.prototype.event = function(message) {
       switch (message[0]) {
         case "cursor":
@@ -105,17 +121,23 @@
           return typeof this.onrewrite === "function" ? this.onrewrite(message[1]) : void 0;
       }
     };
+
     Display.prototype._onlock = function() {
       this.switching = false;
       this.islocked = true;
       return typeof this.onlock === "function" ? this.onlock() : void 0;
     };
+
     Display.prototype._onunlock = function() {
       this.switching = false;
       this.islocked = false;
       return typeof this.onunlock === "function" ? this.onunlock() : void 0;
     };
+
     return Display;
+
   })();
+
   context.Display = Display;
+
 }).call(this);
