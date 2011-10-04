@@ -1,6 +1,7 @@
 (function() {
-  var BCP;
+  var BCP, context;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  context = window;
   BCP = (function() {
     function BCP(stream, auth) {
       this._handle = __bind(this._handle, this);
@@ -180,5 +181,5 @@
     };
     return BCP;
   })();
-  window.BCP = BCP;
+  context.BCP = BCP;
 }).call(this);

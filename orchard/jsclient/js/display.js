@@ -1,6 +1,7 @@
 (function() {
-  var Display, workerurl;
+  var Display, context, workerurl;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  context = window;
   workerurl = "/js/displayworker.js";
   Display = (function() {
     function Display(docname, handler, immediate) {
@@ -116,5 +117,5 @@
     };
     return Display;
   })();
-  window.Display = Display;
+  context.Display = Display;
 }).call(this);

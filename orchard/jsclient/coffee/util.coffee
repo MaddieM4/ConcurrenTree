@@ -2,9 +2,7 @@
 
 # Dependencies: none
 
-context = window
-
-context.arrayFill = (array, value, count) ->
+this.arrayFill = (array, value, count) ->
     ### Fills an array with the values returned by value when given an index
     
         Arguments:
@@ -40,37 +38,38 @@ context.arrayFill = (array, value, count) ->
     array.push value i for i in [0 ... count]
     array
 
-context.isArray = (obj) ->
+this.isArray = (obj) ->
     # tests if an object is an array
     if typeof obj is "object" 
         Object.prototype.toString.call(obj) is "[object Array]"
     else
         false
 
-context.isObject = (obj) ->
+this.isObject = (obj) ->
     # tests if an object is a hash/dictionary type object
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Object]"
     else
         false
 
-context.isFunction = (obj) ->
+this.isFunction = (obj) ->
     # tests if an object is a function
+    return true if typeof obj is "function"
     if typeof obj is "object"
         Object.prototype.toString.call(obj) is "[object Function]"
     else 
         false
 
-context.isInteger = (obj) ->
+this.isInteger = (obj) ->
     # tests if an object belongs to the Integer set
     isNumber(obj) and Math.floor(obj) is obj
 
 
-context.isNumber = (obj) ->
+this.isNumber = (obj) ->
     # tests if an object is a number
     typeof obj is "number"
 
-context.isBoolean = (obj) ->
+this.isBoolean = (obj) ->
     ### tests if an object is a boolean object
         
         Note! This does not test if an object can resolve to a boolean, it 
@@ -82,7 +81,7 @@ context.isBoolean = (obj) ->
     ###
     typeof obj is "boolean"
 
-context.range = (start, end, step = 1) ->
+this.range = (start, end, step = 1) ->
     ### returns an array containing integers ranged between start and end,
         with a gap of step between each one.
         
@@ -118,12 +117,12 @@ context.range = (start, end, step = 1) ->
     step = if (start < end and step > 0) or (start > end and step < 0) then step else - step
     i for i in [start... end] by step
 
-context.urlParameters = (url = context.location.href) ->
+this.urlParameters = (url = this.location.href) ->
     ### extracts a dictionary of url parameters from the given url
         
         Arguments:
             url: a url to parse parameters from. (Optional, default = 
-                context.location.href)
+                this.location.href)
         
         Returns:
             An object containing key: value pairs of the url parameters.
@@ -146,7 +145,7 @@ context.urlParameters = (url = context.location.href) ->
     params
 
 # get_url_variable is a pythonic name, variable should be parameter, recommend changing
-context.get_url_variable = getUrlParameter = (name, def) -> 
+this.get_url_variable = getUrlParameter = (name, def) -> 
     ### extracts the parameter name from the current page url, or returns def if
         name does not exist.
         
@@ -175,7 +174,7 @@ context.get_url_variable = getUrlParameter = (name, def) ->
     params = urlParameters()
     if params[name] isnt undefined then params[name] else def
 
-context.isJSON = (str) ->
+this.isJSON = (str) ->
     # tests if the suppled string is valid JSON
     # Arguments: str: a string. 
     # Returns: true/false
@@ -185,7 +184,7 @@ context.isJSON = (str) ->
     catch e
         false
 
-context.serial = 
+this.serial = 
     key: (str) ->
         # I don't know what this function does
         ###
@@ -231,7 +230,7 @@ context.serial =
         # does nothing whatsoever :) 
         
 
-context.assert = (condition, message) ->
+this.assert = (condition, message) ->
     ### throws an error if the condition passed is not true. Optionally provide
         the error message to be thrown.
         

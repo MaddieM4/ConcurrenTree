@@ -2,7 +2,7 @@
 
 # Dependencies: Util
 
-context = window if not context?
+window = this;
 
 class CTree
     constructor: (value) ->
@@ -53,16 +53,20 @@ class CTree
         key if pos is @length
         else [pos, key]
 
-context.CTreeFromProto = (proto)->
+protostr = (item) ->
+    i if typeof i is "string"
+    else ""
+
+protoval = (list) ->
+    (protostr(i) for i in list).join("")
+
+this.CTreeFromProto = (proto)->
     deletions = proto.pop()
-    value = for i in proto
-      i if typeof i is "string"
-      else ""
-    value = value.join("")
+    value = protoval(proto)
     tree = new CTree(value)
     tree.deletions = deletions
     for i in proto
       tree.insert_obj window.CTreeFromProto i if typeof i is not "string"
     tree
 
-context.CTree = CTree
+this.CTree = CTree

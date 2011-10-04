@@ -1,10 +1,12 @@
 (function() {
-  var createBlob, createBlobURL, createWorker, getBlobURL;
-  if (!(typeof BlobBuilder !== "undefined" && BlobBuilder !== null)) {
-    if (typeof WebkitBlobBuilder !== "undefined" && WebkitBlobBuilder !== null) {
-      window.BlobBuilder = WebKitBlobBuilder;
-    } else if (typeof MozBlobBuilder !== "undefined" && MozBlobBuilder !== null) {
-      window.BlobBuilder = MozBlobBuilder;
+  var context;
+  if (!(window.blobworker != null)) window.blobworker = {};
+  context = window.blobworker;
+  if (!(window.BlobBuilder != null)) {
+    if (window.WebkitBlobBuilder != null) {
+      window.BlobBuilder = window.WebKitBlobBuilder;
+    } else if (window.MozBlobBuilder != null) {
+      window.BlobBuilder = window.MozBlobBuilder;
     }
   }
   if (!(window.URL != null)) {
@@ -21,26 +23,20 @@
       };
     }
   }
-  createWorker = function(obj) {
+  context.createWorker = function(obj) {
     var worker;
     return worker = new Worker(createBlobURL(obj));
   };
-  createBlob = function(obj) {
+  context.createBlob = function(obj) {
     var builder;
     builder = new BlobBuilder();
     builder.append(obj.toString());
     return builder;
   };
-  createBlobURL = function(obj) {
+  context.createBlobURL = function(obj) {
     return getBlobURL(createBlob(obj));
   };
-  getBlobURL = function(blob) {
+  context.getBlobURL = function(blob) {
     return window.URL.createObjectURL(blob.getBlob());
-  };
-  window.blobworker = {
-    createWorker: createWorker,
-    createBlob: createBlob,
-    createBlobURL: createBlobURL,
-    getBlobURL: getBlobURL
   };
 }).call(this);

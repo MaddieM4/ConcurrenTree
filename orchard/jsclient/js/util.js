@@ -1,12 +1,12 @@
 (function() {
   var getUrlParameter;
-  window.arrayFill = function(array, value, count) {
+  this.arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
     
         Arguments:
             array: the array to be extended
             value: a function returning the value to be appended when given an       
-                index possible index values being between 0 and count exclusive 
+                index, possible index values being between 0 and count exclusive 
                 of count
             count: the number of values to append
         
@@ -31,29 +31,43 @@
     */
 
     var i;
+    assert(isArray(array), 'array (first argument) must be an array');
+    assert(isFunction(value), 'value (second argument) must be a function');
+    assert;
     for (i = 0; 0 <= count ? i < count : i > count; 0 <= count ? i++ : i--) {
       array.push(value(i));
     }
     return array;
   };
-  window.isArray = function(obj) {
+  this.isArray = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Array]";
     } else {
       return false;
     }
   };
-  window.isObject = function(obj) {
+  this.isObject = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Object]";
     } else {
       return false;
     }
   };
-  window.isNumber = function(obj) {
+  this.isFunction = function(obj) {
+    if (typeof obj === "function") return true;
+    if (typeof obj === "object") {
+      return Object.prototype.toString.call(obj) === "[object Function]";
+    } else {
+      return false;
+    }
+  };
+  this.isInteger = function(obj) {
+    return isNumber(obj) && Math.floor(obj) === obj;
+  };
+  this.isNumber = function(obj) {
     return typeof obj === "number";
   };
-  window.isBoolean = function(obj) {
+  this.isBoolean = function(obj) {
     /* tests if an object is a boolean object
         
         Note! This does not test if an object can resolve to a boolean, it 
@@ -65,7 +79,7 @@
     */
     return typeof obj === "boolean";
   };
-  window.range = function(start, end, step) {
+  this.range = function(start, end, step) {
     var i, _results;
     if (step == null) step = 1;
     /* returns an array containing integers ranged between start and end,
@@ -107,14 +121,14 @@
     }
     return _results;
   };
-  window.urlParameters = function(url) {
+  this.urlParameters = function(url) {
     var i, kv, pairs, params, _i, _len;
-    if (url == null) url = window.location.href;
+    if (url == null) url = this.location.href;
     /* extracts a dictionary of url parameters from the given url
         
         Arguments:
             url: a url to parse parameters from. (Optional, default = 
-                window.location.href)
+                this.location.href)
         
         Returns:
             An object containing key: value pairs of the url parameters.
@@ -139,7 +153,7 @@
     }
     return params;
   };
-  window.get_url_variable = getUrlParameter = function(name, def) {
+  this.get_url_variable = getUrlParameter = function(name, def) {
     /* extracts the parameter name from the current page url, or returns def if
         name does not exist.
         
@@ -173,7 +187,7 @@
       return def;
     }
   };
-  window.isJSON = function(str) {
+  this.isJSON = function(str) {
     try {
       JSON.parse(str);
       return true;
@@ -181,8 +195,19 @@
       return false;
     }
   };
-  window.serial = {
+  this.serial = {
     key: function(str) {
+      /*
+                  Arguments:
+                      str: the string to be formed into a key 
+                  
+                  Returns: 
+                      The key formed from the given string 
+                  
+                  Notes:
+                  
+                  Examples:
+      */
       if (str.length > 10) {
         return str.slice(0, 10) + serial.sum(str.slice(10));
       } else {
@@ -191,16 +216,53 @@
     },
     modulo: 65536,
     sum: function(str) {
-      var s;
+      /* sums the string passed to it
+          
+          Arguments: 
+              str: the string to be summed
+          
+          Returns:
+              the integer sum of the string given
+          
+          Notes:
+              http://stackoverflow.com/q/7538590/473479
+          
+          Examples:
+      */
+
+      var i, s, _ref;
       s = 0;
-      for (var i = 0; i < str.length; i++) {
-            s = (s * s + str.charCodeAt(i)) % serial.modulo;
-        };
+      for (i = 0, _ref = str.length; 0 <= _ref ? i < _ref : i > _ref; 0 <= _ref ? i++ : i--) {
+        s = (s * s + str.charCodeAt(i)) % serial.modulo;
+      }
       return s;
     },
     strict: function(obj) {}
   };
-  window.assert = function(condition, message) {
+  this.assert = function(condition, message) {
+    /* throws an error if the condition passed is not true. Optionally provide
+        the error message to be thrown.
+        
+        Arguments:
+            condition: a boolean
+            message: an error message (optional)
+        
+        Returns: 
+            nothing
+        
+        Throws: 
+            'Assertion error' 
+        
+        Notes:
+            Recommended use is:
+            assert this is that, 'error if not'
+            
+            This is because asserting a definite boolean is reduntant, the 
+            error can just be thrown instead of calling assert.
+        
+        Examples:
+            assert (isString str), 'str is not a string!'
+    */
     message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
     if (!condition) throw message;
   };

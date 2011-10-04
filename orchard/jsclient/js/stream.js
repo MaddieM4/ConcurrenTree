@@ -1,6 +1,7 @@
 (function() {
-  var Stream, types;
+  var Stream, context, types;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  context = window;
   types = {
     websocket: "js/stream/ws.js"
   };
@@ -66,5 +67,5 @@
     };
     return Stream;
   })();
-  window.Stream = Stream;
+  context.Stream = Stream;
 }).call(this);

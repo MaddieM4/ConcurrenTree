@@ -67,4 +67,4 @@ class Operation
             @pushdelete nodeaddr, node.deletions
             @fromTree nodeaddr, node
 
-window.Operation = Operation
+this.Operation = Operation

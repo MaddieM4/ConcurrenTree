@@ -4,12 +4,10 @@
 
 log = function(obj) {postMessage(['log',obj])}
 
-var window = {}
 importScripts('/js/util.js');
-serial = window.serial;
 importScripts('/js/operation.js','/js/ctree.js');
 
-CTree = window.CTree
+CTree = this.CTree
 cursors = {0:0};
 locked = false;
 tree = new CTree("") // The document for this display
@@ -54,7 +52,7 @@ function deletemany(amount){
 }
 
 function operate(op) {
-    op = new window.Operation(op.instructions);
+    op = new this.Operation(op.instructions);
     op.apply(tree);
     rewrite();
 }

@@ -111,5 +111,5 @@
     };
     return Operation;
   })();
-  window.Operation = Operation;
+  this.Operation = Operation;
 }).call(this);

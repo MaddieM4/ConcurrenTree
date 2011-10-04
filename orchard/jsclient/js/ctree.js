@@ -1,5 +1,6 @@
 (function() {
-  var CTree;
+  var CTree, protostr, protoval, window;
+  window = this;
   CTree = (function() {
     function CTree(value) {
       this.value = value;
@@ -78,19 +79,25 @@
     };
     return CTree;
   })();
-  window.CTreeFromProto = function(proto) {
-    var deletions, i, tree, value, _i, _len;
-    deletions = proto.pop();
-    value = (function() {
+  protostr = function(item) {
+    return i(typeof i === "string" ? void 0 : "");
+  };
+  protoval = function(list) {
+    var i;
+    return ((function() {
       var _i, _len, _results;
       _results = [];
-      for (_i = 0, _len = proto.length; _i < _len; _i++) {
-        i = proto[_i];
-        _results.push(i(typeof i === "string" ? void 0 : ""));
+      for (_i = 0, _len = list.length; _i < _len; _i++) {
+        i = list[_i];
+        _results.push(protostr(i));
       }
       return _results;
-    })();
-    value = value.join("");
+    })()).join("");
+  };
+  this.CTreeFromProto = function(proto) {
+    var deletions, i, tree, value, _i, _len;
+    deletions = proto.pop();
+    value = protoval(proto);
     tree = new CTree(value);
     tree.deletions = deletions;
     for (_i = 0, _len = proto.length; _i < _len; _i++) {
@@ -99,5 +106,5 @@
     }
     return tree;
   };
-  window.CTree = CTree;
+  this.CTree = CTree;
 }).call(this);
