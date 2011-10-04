@@ -66,8 +66,12 @@ this.CTreeFromProto = (proto)->
     value = protoval(proto)
     tree = new CTree(value)
     tree.deletions = deletions
+    pos = 0
     for i in proto
-      tree.insert_obj window.CTreeFromProto i if typeof i is not "string"
+      if typeof i is "string"
+        pos += i.length
+      else
+        tree.insert_obj pos, window.CTreeFromProto i
     tree
 
 this.CTree = CTree

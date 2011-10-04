@@ -115,14 +115,19 @@
   };
 
   this.CTreeFromProto = function(proto) {
-    var deletions, i, tree, value, _i, _len;
+    var deletions, i, pos, tree, value, _i, _len;
     deletions = proto.pop();
     value = protoval(proto);
     tree = new CTree(value);
     tree.deletions = deletions;
+    pos = 0;
     for (_i = 0, _len = proto.length; _i < _len; _i++) {
       i = proto[_i];
-      if (typeof i === !"string") tree.insert_obj(window.CTreeFromProto(i));
+      if (typeof i === "string") {
+        pos += i.length;
+      } else {
+        tree.insert_obj(pos, window.CTreeFromProto(i));
+      }
     }
     return tree;
   };
