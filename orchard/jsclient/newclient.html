@@ -91,11 +91,16 @@
 			this.clear = function(){
 				this.write("");
 			}
+			this.insert = function(pos, value) {
+			  this.primitive.act(function(prim){
+				prim.cursor(0,pos);
+				prim.insert(value);
+			  });
+			}
 			this.clear();
 			this.primitive.onrewrite = self.rewrite;
 		}
 
-		var rootview;
 		var rootdisplay;
 		function load_document(name){
 			$("#docname").html('Docname: "'+name+'"')
@@ -116,11 +121,7 @@
 		function easy_insert(){
 			var pos = $('.inserter .pos').val();
 			var value = $('.inserter .value').val();
-			rootdisplay.lock(function(){
-				rootdisplay.cursor(0,pos);
-				rootdisplay.insert(value);
-				rootdisplay.unlock();
-			});
+			rootdisplay.insert(pos, value);
 		}
 
 		function easy_delete(){

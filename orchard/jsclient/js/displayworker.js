@@ -57,6 +57,16 @@ function operate(op) {
     rewrite();
 }
 
+function lock() {
+    locked = true;
+    postMessage(["lock"]);
+}
+
+function unlock() {
+    locked = true;
+    postMessage(["unlock"]);
+}
+
 onmessage = function(e){
     data = e.data;
     type = data[0];
@@ -69,9 +79,9 @@ onmessage = function(e){
       case "delete": return deletemany(data[1]);
       case "op": return operate(data[1]);
       case "lock":
-        locked = true; break;
+        lock(); break;
       case "unlock":
-        locked = false; break;
+        unlock(); break;
       default:
         return log("Unknown message type:"+type.toString());
     }

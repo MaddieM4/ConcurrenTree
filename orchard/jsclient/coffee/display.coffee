@@ -44,17 +44,26 @@ class Display
         @onunlock = callback if callback?
         @worker.postMessage(["unlock"])
 
+    act: (callback) =>
+        newcallback = =>
+          callback(this)
+          this.unlock()
+        this.lock newcallback
+
     cursor: (id, pos) ->
-        throw "Display not locked or in switching state" if @islocked or @switching
+        @checklock()
         @worker.postMessage ["cursor", id, pos]
 
     insert: (value) ->
-        throw "Display not locked or in switching state" if @islocked or @switching
+        @checklock()
         @worker.postMessage ["insert", value]
 
     delete: (amount) ->
-        throw "Display not locked or in switching state" if @islocked or @switching
+        @checklock()
         @worker.postMessage ["delete", amount]
+
+    checklock: ->
+        throw "Display not locked or in switching state" if !@islocked or @switching
 
     onwconnect: (e) =>
         @ready = on
@@ -80,6 +89,8 @@ class Display
           when "write" then @onwrite(message[1], message[2])
           when "delete" then @ondelete?(message[1], message[2])
           when "rewrite" then @onrewrite?(message[1])
+          when "lock" then @_onlock()
+          when "unlock" then @_onunlock()
 
     _onlock: ->
         @switching = off

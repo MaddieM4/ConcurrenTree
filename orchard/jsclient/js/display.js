@@ -15,6 +15,7 @@
       this.onwerror = __bind(this.onwerror, this);
       this.onwmessage = __bind(this.onwmessage, this);
       this.onwconnect = __bind(this.onwconnect, this);
+      this.act = __bind(this.act, this);
       this.islocked = false;
       this.switching = false;
       this.ready = false;
@@ -57,25 +58,35 @@
       return this.worker.postMessage(["unlock"]);
     };
 
+    Display.prototype.act = function(callback) {
+      var newcallback;
+      var _this = this;
+      newcallback = function() {
+        callback(_this);
+        return _this.unlock();
+      };
+      return this.lock(newcallback);
+    };
+
     Display.prototype.cursor = function(id, pos) {
-      if (this.islocked || this.switching) {
-        throw "Display not locked or in switching state";
-      }
+      this.checklock();
       return this.worker.postMessage(["cursor", id, pos]);
     };
 
     Display.prototype.insert = function(value) {
-      if (this.islocked || this.switching) {
-        throw "Display not locked or in switching state";
-      }
+      this.checklock();
       return this.worker.postMessage(["insert", value]);
     };
 
     Display.prototype["delete"] = function(amount) {
-      if (this.islocked || this.switching) {
+      this.checklock();
+      return this.worker.postMessage(["delete", amount]);
+    };
+
+    Display.prototype.checklock = function() {
+      if (!this.islocked || this.switching) {
         throw "Display not locked or in switching state";
       }
-      return this.worker.postMessage(["delete", amount]);
     };
 
     Display.prototype.onwconnect = function(e) {
@@ -119,6 +130,10 @@
           return typeof this.ondelete === "function" ? this.ondelete(message[1], message[2]) : void 0;
         case "rewrite":
           return typeof this.onrewrite === "function" ? this.onrewrite(message[1]) : void 0;
+        case "lock":
+          return this._onlock();
+        case "unlock":
+          return this._onunlock();
       }
     };
 
