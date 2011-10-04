@@ -22,7 +22,8 @@ class CTree
 
     delete: (pos) ->
         # mark a character in this tree as deleted
-        @delete x for x in [pos[0]..pos[1]] if window.isArray(pos)
+        if window.isArray(pos)
+          @delete x for x in [pos[0]..pos[1]]
         else @deletions[pos] = true
         this
 
@@ -35,7 +36,7 @@ class CTree
         for p in [0..@length]
           nodes = @kids(p)
           result += node.flatten() for node in nodes
-          result += @value[p] if p<@length
+          result += @value[p] if p<@length and not @deletions[p]
         result
 
     get: (pos, key) ->
@@ -65,7 +66,7 @@ this.CTreeFromProto = (proto)->
     deletions = proto.pop()
     value = protoval(proto)
     tree = new CTree(value)
-    tree.deletions = deletions
+    tree.delete(i) for i in deletions
     pos = 0
     for i in proto
       if typeof i is "string"

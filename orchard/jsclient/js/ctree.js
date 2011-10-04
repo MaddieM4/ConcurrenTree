@@ -26,15 +26,13 @@
     };
 
     CTree.prototype["delete"] = function(pos) {
-      var x, _i, _j, _len, _ref, _ref2, _ref3, _results;
-      _ref3 = (function() {
-        _results = [];
-        for (var _j = _ref = pos[0], _ref2 = pos[1]; _ref <= _ref2 ? _j <= _ref2 : _j >= _ref2; _ref <= _ref2 ? _j++ : _j--){ _results.push(_j); }
-        return _results;
-      }).apply(this)(window.isArray(pos) ? void 0 : this.deletions[pos] = true);
-      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-        x = _ref3[_i];
-        this["delete"](x);
+      var x, _ref, _ref2;
+      if (window.isArray(pos)) {
+        for (x = _ref = pos[0], _ref2 = pos[1]; _ref <= _ref2 ? x <= _ref2 : x >= _ref2; _ref <= _ref2 ? x++ : x--) {
+          this["delete"](x);
+        }
+      } else {
+        this.deletions[pos] = true;
       }
       return this;
     };
@@ -53,7 +51,7 @@
           node = nodes[_i];
           result += node.flatten();
         }
-        if (p < this.length) result += this.value[p];
+        if (p < this.length && !this.deletions[p]) result += this.value[p];
       }
       return result;
     };
@@ -115,14 +113,17 @@
   };
 
   this.CTreeFromProto = function(proto) {
-    var deletions, i, pos, tree, value, _i, _len;
+    var deletions, i, pos, tree, value, _i, _j, _len, _len2;
     deletions = proto.pop();
     value = protoval(proto);
     tree = new CTree(value);
-    tree.deletions = deletions;
+    for (_i = 0, _len = deletions.length; _i < _len; _i++) {
+      i = deletions[_i];
+      tree["delete"](i);
+    }
     pos = 0;
-    for (_i = 0, _len = proto.length; _i < _len; _i++) {
-      i = proto[_i];
+    for (_j = 0, _len2 = proto.length; _j < _len2; _j++) {
+      i = proto[_j];
       if (typeof i === "string") {
         pos += i.length;
       } else {
