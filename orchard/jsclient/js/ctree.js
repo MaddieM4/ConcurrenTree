@@ -1,9 +1,10 @@
 (function() {
   var CTree, protostr, protoval, window;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   window = this;
   CTree = (function() {
     function CTree(value) {
-      this.value = value;
+      this.resolve = __bind(this.resolve, this);      this.value = value;
       this.length = value.length;
       this.key = serial.key(value);
       this.deletions = [];
@@ -48,6 +49,20 @@
       }
       return result;
     };
+    CTree.prototype.resolve = function(addr) {
+      var child, key, pos;
+      if (addr.length === 0) {
+        return this;
+      } else {
+        if (isNumber(addr[0])) {
+          pos = addr.shift();
+        } else {
+          pos = this.length;
+        }
+        key = addr.shift();
+        return child = this.get(pos, key).resolve(addr);
+      }
+    };
     CTree.prototype.trace = function(pos) {
       var result;
       result = this._trace(pos);
@@ -79,6 +94,12 @@
       return togo;
     };
     CTree.prototype.get = function(pos, key) {
+      if (pos > this.length || pos < 0 || !window.isNumber(pos)) {
+        throw "IndexError: CTree.get position out of range (" + pos.toString() + ")";
+      }
+      if (!((this.children[pos][key] != null) && window.isString(key))) {
+        throw "KeyError: CTree.get child does not exist at position " + pos + " and with key '" + key + "'";
+      }
       return this.children[pos][key];
     };
     CTree.prototype.keys = function(pos) {

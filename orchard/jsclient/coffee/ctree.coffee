@@ -39,6 +39,17 @@ class CTree
           result += @value[p] if p<@length and not @deletions[p]
         result
 
+    resolve: (addr) =>
+        if addr.length is 0
+          return this
+        else
+          if isNumber(addr[0])
+            pos = addr.shift()
+          else
+            pos = @length
+          key = addr.shift()
+          child = @get(pos, key).resolve(addr)
+
     trace: (pos) ->
         # Returns an object with properties "address" and "pos" or throws error
         result = @_trace(pos)
@@ -58,6 +69,8 @@ class CTree
         togo
 
     get: (pos, key) ->
+        throw "IndexError: CTree.get position out of range ("+pos.toString()+")" if pos > @length or pos < 0 or not window.isNumber(pos)
+        throw "KeyError: CTree.get child does not exist at position "+pos+" and with key '"+key+"'" if not (@children[pos][key]? and window.isString(key))
         @children[pos][key]
 
     keys: (pos) ->

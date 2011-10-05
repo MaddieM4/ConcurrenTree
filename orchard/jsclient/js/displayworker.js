@@ -26,7 +26,7 @@ function insert(value){
     t = tree.trace(pos);
 
     // convert to operations system later
-    node = tree.resolve(t.addr);
+    node = tree.resolve(t.address);
     node.insert(t.pos, value);
     rewrite();
 }
