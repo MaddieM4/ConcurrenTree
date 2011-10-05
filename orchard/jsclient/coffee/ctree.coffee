@@ -69,7 +69,8 @@ class CTree
         @get(pos,key) for key in @keys(pos)
 
     jump: (pos, key) ->
-        [key] if pos is @length
+        if pos is @length
+          [key]
         else [pos, key]
 
 protostr = (item) ->

@@ -1,6 +1,5 @@
 (function() {
   var getUrlParameter;
-
   this.arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
     
@@ -30,6 +29,7 @@
             arrayFill [], ((i) -> i * i), 6
                 returns [0, 1, 4, 9, 16, 25]
     */
+
     var i;
     assert(isArray(array), 'array (first argument) must be an array');
     assert(isFunction(value), 'value (second argument) must be a function');
@@ -39,7 +39,6 @@
     }
     return array;
   };
-
   this.isArray = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Array]";
@@ -47,7 +46,6 @@
       return false;
     }
   };
-
   this.isObject = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Object]";
@@ -55,7 +53,6 @@
       return false;
     }
   };
-
   this.isFunction = function(obj) {
     if (typeof obj === "function") return true;
     if (typeof obj === "object") {
@@ -64,15 +61,12 @@
       return false;
     }
   };
-
   this.isInteger = function(obj) {
     return isNumber(obj) && Math.floor(obj) === obj;
   };
-
   this.isNumber = function(obj) {
     return typeof obj === "number";
   };
-
   this.isBoolean = function(obj) {
     /* tests if an object is a boolean object
         
@@ -82,9 +76,9 @@
         if obj is true or obj is false then true else false
         
         JS Condition (obj === true || obj === false), not '=='!
-    */    return typeof obj === "boolean";
+    */
+    return typeof obj === "boolean";
   };
-
   this.range = function(start, end, step) {
     var i, _results;
     if (step == null) step = 1;
@@ -119,6 +113,7 @@
             range 5, 0, 2
                 [5, 3, 1]
     */
+
     step = (start < end && step > 0) || (start > end && step < 0) ? step : -step;
     _results = [];
     for (i = start; start <= end ? i < end : i > end; i += step) {
@@ -126,7 +121,6 @@
     }
     return _results;
   };
-
   this.urlParameters = function(url) {
     var i, kv, pairs, params, _i, _len;
     if (url == null) url = this.location.href;
@@ -149,6 +143,7 @@
             to decode urlencoded values, and where possible, these values 
             could be unstringified (1 should be 1 not '1', perhaps?)
     */
+
     params = {};
     pairs = url.slice(url.indexOf('?') + 1).split('&');
     for (_i = 0, _len = pairs.length; _i < _len; _i++) {
@@ -158,7 +153,6 @@
     }
     return params;
   };
-
   this.get_url_variable = getUrlParameter = function(name, def) {
     /* extracts the parameter name from the current page url, or returns def if
         name does not exist.
@@ -184,6 +178,7 @@
             getUrlParameter 'z', 'default'
                 'default'
     */
+
     var params;
     params = urlParameters();
     if (params[name] !== void 0) {
@@ -192,7 +187,6 @@
       return def;
     }
   };
-
   this.isJSON = function(str) {
     try {
       JSON.parse(str);
@@ -201,7 +195,6 @@
       return false;
     }
   };
-
   this.serial = {
     key: function(str) {
       /*
@@ -214,7 +207,8 @@
                   Notes:
                   
                   Examples:
-      */      if (str.length > 10) {
+      */
+      if (str.length > 10) {
         return str.slice(0, 10) + serial.sum(str.slice(10));
       } else {
         return str;
@@ -235,6 +229,7 @@
           
           Examples:
       */
+
       var i, s, _ref;
       s = 0;
       for (i = 0, _ref = str.length; 0 <= _ref ? i < _ref : i > _ref; 0 <= _ref ? i++ : i--) {
@@ -244,7 +239,6 @@
     },
     strict: function(obj) {}
   };
-
   this.assert = function(condition, message) {
     /* throws an error if the condition passed is not true. Optionally provide
         the error message to be thrown.
@@ -268,8 +262,8 @@
         
         Examples:
             assert (isString str), 'str is not a string!'
-    */    message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
+    */
+    message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
     if (!condition) throw message;
   };
-
 }).call(this);

@@ -1,15 +1,11 @@
 (function() {
   var Stream, context, types;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
   context = window;
-
   types = {
     websocket: "js/stream/ws.js"
   };
-
   Stream = (function() {
-
     function Stream(type, url) {
       var jsaddress;
       this.type = type;
@@ -31,15 +27,12 @@
       this.worker.onerror = this._error;
       this.reconnect();
     }
-
     Stream.prototype.send = function(value) {
       return this.worker.postMessage([2, value]);
     };
-
     Stream.prototype._connect = function(event) {
       if (this.onconnect != null) return this.onconnect(event);
     };
-
     Stream.prototype._message = function(event) {
       switch (event.data[0]) {
         case 0:
@@ -53,35 +46,26 @@
           return console.log("Stream worker debug: " + event.data);
       }
     };
-
     Stream.prototype._error = function(event) {
       if (this.onerror != null) return this.onerror(event);
     };
-
     Stream.prototype.close = function() {
       this.worker.postMessage([0]);
       return this.running = false;
     };
-
     Stream.prototype.closed = function() {
       if (started && !running) return true;
     };
-
     Stream.prototype.reconnect = function() {
       this.close();
       return this.connect(this.url);
     };
-
     Stream.prototype.connect = function(url) {
       this.worker.postMessage([1, url]);
       this.started = true;
       return this.running = true;
     };
-
     return Stream;
-
   })();
-
   context.Stream = Stream;
-
 }).call(this);

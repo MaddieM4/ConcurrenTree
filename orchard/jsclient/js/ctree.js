@@ -1,10 +1,7 @@
 (function() {
   var CTree, protostr, protoval, window;
-
   window = this;
-
   CTree = (function() {
-
     function CTree(value) {
       this.value = value;
       this.length = value.length;
@@ -18,13 +15,11 @@
         return {};
       }), this.length + 1);
     }
-
     CTree.prototype.insert = function(pos, childtext) {
       var child;
       child = new CTree(childtext);
       return this.insert_obj(pos, child);
     };
-
     CTree.prototype["delete"] = function(pos) {
       var x, _ref, _ref2;
       if (window.isArray(pos)) {
@@ -36,12 +31,10 @@
       }
       return this;
     };
-
     CTree.prototype.insert_obj = function(pos, child) {
       this.children[pos][child.key] = child;
       return child;
     };
-
     CTree.prototype.flatten = function() {
       var node, nodes, p, result, _i, _len, _ref;
       result = "";
@@ -55,7 +48,6 @@
       }
       return result;
     };
-
     CTree.prototype.trace = function(pos) {
       var result;
       result = this._trace(pos);
@@ -64,7 +56,6 @@
       }
       return result;
     };
-
     CTree.prototype._trace = function(togo) {
       var k, pos, _i, _len, _ref, _ref2;
       for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
@@ -87,11 +78,9 @@
       }
       return togo;
     };
-
     CTree.prototype.get = function(pos, key) {
       return this.children[pos][key];
     };
-
     CTree.prototype.keys = function(pos) {
       var key;
       return ((function() {
@@ -103,7 +92,6 @@
         return _results;
       }).call(this)).sort();
     };
-
     CTree.prototype.kids = function(pos) {
       var key, _i, _len, _ref, _results;
       _ref = this.keys(pos);
@@ -114,15 +102,15 @@
       }
       return _results;
     };
-
     CTree.prototype.jump = function(pos, key) {
-      return [key](pos === this.length ? void 0 : [pos, key]);
+      if (pos === this.length) {
+        return [key];
+      } else {
+        return [pos, key];
+      }
     };
-
     return CTree;
-
   })();
-
   protostr = function(item) {
     if (typeof item === "string") {
       return item;
@@ -130,7 +118,6 @@
       return "";
     }
   };
-
   protoval = function(list) {
     var i;
     return ((function() {
@@ -143,7 +130,6 @@
       return _results;
     })()).join("");
   };
-
   this.CTreeFromProto = function(proto) {
     var deletions, i, pos, tree, value, _i, _j, _len, _len2;
     deletions = proto.pop();
@@ -164,7 +150,5 @@
     }
     return tree;
   };
-
   this.CTree = CTree;
-
 }).call(this);
