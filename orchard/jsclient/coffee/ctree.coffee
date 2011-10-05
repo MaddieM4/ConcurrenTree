@@ -18,7 +18,7 @@ class CTree
     insert: (pos, childtext) ->
         # insert and return a child tree
         child = new CTree childtext
-        @insert_obj pos child
+        @insert_obj pos, child
 
     delete: (pos) ->
         # mark a character in this tree as deleted
@@ -39,6 +39,24 @@ class CTree
           result += @value[p] if p<@length and not @deletions[p]
         result
 
+    trace: (pos) ->
+        # Returns an object with properties "address" and "pos" or throws error
+        result = @_trace(pos)
+        throw "CTree.trace: pos > this.flatten().length" if window.isInteger(result)
+        return result
+
+    _trace: (togo) ->
+        for pos in [0..@length]
+          for k in @kids(pos)
+            togo = k._trace(togo)
+            if not window.isNumber(togo)
+              togo.address = @jump(pos, k.key).concat(togo.address)
+              return togo
+          return {"address":[],"pos":pos} if togo is 0
+          if pos < @length and not @deletions[pos]
+            togo -= 1
+        togo
+
     get: (pos, key) ->
         @children[pos][key]
 
@@ -51,7 +69,7 @@ class CTree
         @get(pos,key) for key in @keys(pos)
 
     jump: (pos, key) ->
-        key if pos is @length
+        [key] if pos is @length
         else [pos, key]
 
 protostr = (item) ->

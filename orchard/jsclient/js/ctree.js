@@ -22,7 +22,7 @@
     CTree.prototype.insert = function(pos, childtext) {
       var child;
       child = new CTree(childtext);
-      return this.insert_obj(pos(child));
+      return this.insert_obj(pos, child);
     };
 
     CTree.prototype["delete"] = function(pos) {
@@ -56,6 +56,38 @@
       return result;
     };
 
+    CTree.prototype.trace = function(pos) {
+      var result;
+      result = this._trace(pos);
+      if (window.isInteger(result)) {
+        throw "CTree.trace: pos > this.flatten().length";
+      }
+      return result;
+    };
+
+    CTree.prototype._trace = function(togo) {
+      var k, pos, _i, _len, _ref, _ref2;
+      for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
+        _ref2 = this.kids(pos);
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          k = _ref2[_i];
+          togo = k._trace(togo);
+          if (!window.isNumber(togo)) {
+            togo.address = this.jump(pos, k.key).concat(togo.address);
+            return togo;
+          }
+        }
+        if (togo === 0) {
+          return {
+            "address": [],
+            "pos": pos
+          };
+        }
+        if (pos < this.length && !this.deletions[pos]) togo -= 1;
+      }
+      return togo;
+    };
+
     CTree.prototype.get = function(pos, key) {
       return this.children[pos][key];
     };
@@ -84,7 +116,7 @@
     };
 
     CTree.prototype.jump = function(pos, key) {
-      return key(pos === this.length ? void 0 : [pos, key]);
+      return [key](pos === this.length ? void 0 : [pos, key]);
     };
 
     return CTree;
