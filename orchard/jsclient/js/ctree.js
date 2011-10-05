@@ -4,6 +4,8 @@
   window = this;
   CTree = (function() {
     function CTree(value) {
+      this._trace = __bind(this._trace, this);
+      this.trace = __bind(this.trace, this);
       this.resolve = __bind(this.resolve, this);      this.value = value;
       this.length = value.length;
       this.key = serial.key(value);

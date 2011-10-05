@@ -50,13 +50,13 @@ class CTree
           key = addr.shift()
           child = @get(pos, key).resolve(addr)
 
-    trace: (pos) ->
+    trace: (pos) =>
         # Returns an object with properties "address" and "pos" or throws error
         result = @_trace(pos)
         throw "CTree.trace: pos > this.flatten().length" if window.isInteger(result)
         return result
 
-    _trace: (togo) ->
+    _trace: (togo) =>
         for pos in [0..@length]
           for k in @kids(pos)
             togo = k._trace(togo)

@@ -24,6 +24,7 @@ function insert(value){
     var pos, t, node;
     pos = cursors[0];
     t = tree.trace(pos);
+    log("tree.trace("+pos+") = "+JSON.stringify(t))
 
     // convert to operations system later
     node = tree.resolve(t.address);
@@ -69,6 +70,7 @@ function unlock() {
 
 onmessage = function(e){
     data = e.data;
+    log("Receiving: "+JSON.stringify(data));
     type = data[0];
     switch(type){
       case "cursor":
