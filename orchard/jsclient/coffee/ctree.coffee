@@ -54,6 +54,7 @@ class CTree
         # Returns an object with properties "address" and "pos" or throws error
         result = @_trace(pos)
         throw "CTree.trace: pos > this.flatten().length" if window.isInteger(result)
+        throw "CTree.trace: _trace returned bad object, type "+typeof result+", value "+JSON.stringify(result) if not (result.address? and result.pos?)
         return result
 
     _trace: (togo) =>

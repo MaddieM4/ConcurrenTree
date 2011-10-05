@@ -81,6 +81,9 @@ this.isBoolean = (obj) ->
     ###
     typeof obj is "boolean"
 
+this.isString = (obj) ->
+    typeof obj is "string"
+
 this.range = (start, end, step = 1) ->
     ### returns an array containing integers ranged between start and end,
         with a gap of step between each one.

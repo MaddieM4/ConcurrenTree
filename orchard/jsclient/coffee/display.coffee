@@ -70,7 +70,7 @@ class Display
 
     onwmessage: (e) =>
         data = e.data
-        console.log("Display worker output:"+data.toString())
+        console.log("Display worker output: "+JSON.stringify(data))
         type = data[0]
         switch type
           when "op"  then @internal data[1]
