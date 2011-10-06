@@ -45,6 +45,12 @@
       console.log("sending proto");
       return this.send(op.proto());
     };
+    BCP.prototype.foreign = function(op, name) {
+      /*
+              Process a remotely-generated op
+      */
+      return this.docssend(op, name);
+    };
     BCP.prototype.select = function(name) {
       assert(typeof name === "string", "Docnames must be a string");
       if (name === this.selected) return;
@@ -130,18 +136,44 @@
       "select": function(self, message) {
         return self.other.selected = message.docname;
       },
-      "hashvalue": function(self, message) {
-        return md5table[message.value] = message.hashvalue;
+      "op": function(self, message) {
+        var op;
+        op = new Operation(message.instructions);
+        return self.foreign(op, self.other.selected);
       },
-      "error": function(self, message) {
-        return self.errorhandle(message);
+      "ad": function(self, message) {
+        return this.send({
+          "type": "getop",
+          "hash": message.hash
+        });
       },
+      "getop": function(self, message) {
+        return this.error(502);
+      },
+      "check": function(self, message) {
+        return this.check(self.other.selected, message.address);
+      },
+      "tsum": function(self, message) {},
+      "get": function(self, message) {},
       "tree": function(self, message) {
         self.getcached[message.docname] = message.value;
         if (self.bflag[message.docname]) {
           self.broadcast(message.docname);
           return self.bflag[message.docname] = false;
         }
+      },
+      "subscribe": function(self, message) {},
+      "unsubscribe": function(self, message) {},
+      "token": function(self, message) {},
+      "login": function(self, message) {},
+      "logout": function(self, message) {},
+      "rtoken": function(self, message) {},
+      "token": function(self, message) {},
+      "lookup": function(self, message) {},
+      "metadata": function(self, message) {},
+      "part": function(self, message) {},
+      "error": function(self, message) {
+        return self.errorhandle(message);
       },
       0: function(self, message) {
         console.log("error: unknown message type");

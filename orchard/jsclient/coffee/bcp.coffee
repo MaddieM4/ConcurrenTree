@@ -38,6 +38,11 @@ class BCP
         @docssend op, name
         console.log "sending proto"
         @send op.proto()
+    foreign: (op, name) ->
+        ###
+        Process a remotely-generated op
+        ###
+        @docssend op, name
     select: (name) ->
         assert typeof name is "string", "Docnames must be a string"
         if name is @selected then return
@@ -99,15 +104,46 @@ class BCP
     handlers: 
         "select": (self, message) ->
             self.other.selected = message.docname
-        "hashvalue": (self, message) ->
-            md5table[message.value] = message.hashvalue
-        "error": (self, message) ->
-            self.errorhandle message
+        "op": (self, message) ->
+            op = new Operation(message.instructions)
+            self.foreign op, self.other.selected
+        "ad": (self, message) ->
+            @send {"type":"getop","hash":message.hash} # assume it's relevant
+        "getop": (self,message) ->
+            @error(502) # We don't store operations in JS client
+        "check": (self, message) ->
+            @check self.other.selected, message.address
+        "tsum": (self, message) ->
+            #placeholder
+        "get": (self, message) ->
+            #placeholder
         "tree": (self, message) ->
             self.getcached[message.docname] = message.value
             if self.bflag[message.docname]
                 self.broadcast message.docname
                 self.bflag[message.docname] = off
+        "subscribe": (self, message) ->
+            #placeholder
+        "unsubscribe": (self, message) ->
+            #placeholder
+        "token": (self, message) ->
+            #placeholder
+        "login": (self, message) ->
+            #placeholder
+        "logout": (self, message) ->
+            #placeholder
+        "rtoken": (self, message) ->
+            #placeholder
+        "token": (self, message) ->
+            #placeholder
+        "lookup": (self, message) ->
+            #placeholder
+        "metadata": (self, message) ->
+            #placeholder
+        "part": (self, message) ->
+            #placeholder
+        "error": (self, message) ->
+            self.errorhandle message
         0: (self, message) ->
             console.log "error: unknown message type"
             self.error 401
