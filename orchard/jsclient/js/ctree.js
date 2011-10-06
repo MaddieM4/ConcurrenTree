@@ -150,6 +150,10 @@
       }
     };
 
+    CTree.prototype.apply = function(obj) {
+      return obj.apply(this);
+    };
+
     return CTree;
 
   })();

@@ -23,13 +23,13 @@ function rewrite(){
 function insert(value){
     var pos, t, node;
     pos = cursors[0];
-    t = tree.trace(pos);
-    log("tree.trace("+pos+") = "+JSON.stringify(t))
 
-    // convert to operations system later
-    node = tree.resolve(t.address);
-    node.insert(t.pos, value);
+    op = new Operation([]);
+    op.pushflatinsert(pos, value, tree);
+    tree.apply(op);
+
     rewrite();
+    pushCursors();
 }
 
 function deleteone(pos) {

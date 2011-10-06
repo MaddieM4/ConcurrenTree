@@ -87,6 +87,9 @@ class CTree
           [key]
         else [pos, key]
 
+    apply: (obj) ->
+        obj.apply @
+
 protostr = (item) ->
     if typeof item is "string"
       item

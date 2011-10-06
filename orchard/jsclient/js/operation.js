@@ -32,13 +32,13 @@
     Operation.prototype.pushflatinsert = function(pos, value, tree) {
       var trace;
       trace = tree.trace(pos);
-      return this.pushinsert(trace.address, tree.pos, value);
+      return this.pushinsert(trace.address, trace.pos, value);
     };
 
     Operation.prototype.pushflatdelete = function(pos, tree) {
       var trace;
       trace = tree.trace(pos);
-      return this.pushdelete(trace.address, tree.pos);
+      return this.pushdelete(trace.address, trace.pos);
     };
 
     Operation.prototype.pushflatdeletes = function(pos, amount, tree) {
