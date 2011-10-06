@@ -28,8 +28,6 @@ class Operation(ModelBase):
 				tree = backup
 				traceback.print_exc()
 				raise OpApplyError()
-		#tree.operations[self.hash] = self
-		print "Tree '%s' modified: " % tree.name, tree.flatten()
 
 	@property
 	def inserts(self):

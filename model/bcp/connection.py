@@ -81,6 +81,7 @@ class BCPConnection(Connection):
 			# TODO: authorize
 			try:
 				op.apply(self.fdoc)
+				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
 			except operation.OpApplyError:
 				self.error(500) # General Local Error
 		elif obt=='ad':
