@@ -35,7 +35,7 @@ class BCP
         console.log "selecting"
         @select name
         console.log "sending local"
-        @docssend name, op
+        @docssend op, name
         console.log "sending proto"
         @send op.proto()
     select: (name) ->

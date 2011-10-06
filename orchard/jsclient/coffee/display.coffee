@@ -24,7 +24,7 @@ class Display
         @handler.register @
 
     external: (op, name) ->
-        @apply op if (name == @docname)
+        @apply op if (name is @docname)
 
     internal: (op) ->
         @handler.local op, @docname
@@ -73,7 +73,7 @@ class Display
         console.log("Display worker output: "+JSON.stringify(data))
         type = data[0]
         switch type
-          when "op"  then @internal data[1]
+          when "op"  then @internal new Operation data[1].instructions
           when "log" then console.log data[1]
           when "lock" then @_onlock()
           when "unlock" then @_onunlock()

@@ -20,16 +20,17 @@ function rewrite(){
     postMessage(["rewrite",tree.flatten()]);
 }
 
+function pushOp(op) {
+    postMessage(["op",op]);
+}
+
 function insert(value){
     var pos, t, node;
     pos = cursors[0];
 
     op = new Operation([]);
     op.pushflatinsert(pos, value, tree);
-    tree.apply(op);
-
-    rewrite();
-    pushCursors();
+    pushOp(op);
 }
 
 function deleteone(pos) {
@@ -56,6 +57,7 @@ function operate(op) {
     op = new this.Operation(op.instructions);
     op.apply(tree);
     rewrite();
+    pushCursors();
 }
 
 function lock() {
