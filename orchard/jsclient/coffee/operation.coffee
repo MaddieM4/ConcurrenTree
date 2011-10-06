@@ -79,8 +79,10 @@ class Operation
         for p in [0..tree.length]
           for key, node of tree.children[p]
             nodeaddr = address.concat tree.jump(p, key)
-            @pushinsert nodeaddr, p, node.value
-            @pushdelete nodeaddr, node.deletions
+            deletions = @victimize_deletions node.deletions
+            @pushinsert address, p, node.value
+            if deletions.length > 0
+              @pushdelete nodeaddr, deletions
             @fromTree nodeaddr, node
 
 this.Operation = Operation

@@ -110,7 +110,7 @@
       return JSON.stringify(this.proto());
     };
     Operation.prototype.fromTree = function(address, tree) {
-      var key, node, nodeaddr, p, _ref, _results;
+      var deletions, key, node, nodeaddr, p, _ref, _results;
       _results = [];
       for (p = 0, _ref = tree.length; 0 <= _ref ? p <= _ref : p >= _ref; 0 <= _ref ? p++ : p--) {
         _results.push((function() {
@@ -120,8 +120,9 @@
           for (key in _ref2) {
             node = _ref2[key];
             nodeaddr = address.concat(tree.jump(p, key));
-            this.pushinsert(nodeaddr, p, node.value);
-            this.pushdelete(nodeaddr, node.deletions);
+            deletions = this.victimize_deletions(node.deletions);
+            this.pushinsert(address, p, node.value);
+            if (deletions.length > 0) this.pushdelete(nodeaddr, deletions);
             _results2.push(this.fromTree(nodeaddr, node));
           }
           return _results2;
