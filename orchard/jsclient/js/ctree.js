@@ -88,13 +88,15 @@
             return togo;
           }
         }
-        if (togo === 0) {
-          return {
-            "address": [],
-            "pos": pos
-          };
+        if (pos < this.length && !this.deletions[pos]) {
+          if (togo === 0) {
+            return {
+              "address": [],
+              "pos": pos
+            };
+          }
+          togo -= 1;
         }
-        if (pos < this.length && !this.deletions[pos]) togo -= 1;
       }
       return togo;
     };

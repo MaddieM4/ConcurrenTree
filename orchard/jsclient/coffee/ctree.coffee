@@ -64,8 +64,9 @@ class CTree
             if not window.isNumber(togo)
               togo.address = @jump(pos, k.key).concat(togo.address)
               return togo
-          return {"address":[],"pos":pos} if togo is 0
           if pos < @length and not @deletions[pos]
+            if togo is 0
+              return {"address":[],"pos":pos}
             togo -= 1
         togo
 
