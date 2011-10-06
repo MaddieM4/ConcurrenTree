@@ -26,7 +26,7 @@ class Operation
 
     pushflatdeletes:(pos, amount, tree)->
         # Based on current tree state
-        @pushflatdelete(pos, tree) for i in [0...amount]
+        @pushflatdelete(pos+i, tree) for i in [0...amount]
 
     apply: (tree)->
         @apply_instruction(tree, i) for i in @instructions

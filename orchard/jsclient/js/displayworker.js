@@ -25,7 +25,7 @@ function pushOp(op) {
 }
 
 function insert(value){
-    var pos, t, node;
+    var pos, op;
     pos = cursors[0];
 
     op = new Operation([]);
@@ -33,24 +33,17 @@ function insert(value){
     pushOp(op);
 }
 
-function deleteone(pos) {
-    t = tree.trace(pos);
-
-    // convert to operations system later
-    node = tree.resolve(t.addr);
-    node.delete(t.pos);    
-}
-
 function deletemany(amount){
-    var start, times, pos;
+    var start, times, pos, op;
     pos = cursors[0];
+    op = new Operation([]);
+
     if (amount==0) return;
-    if (amount > 0) {start=pos, times=amount}
-    if (amount < 0) {start=pos+amount, times=-amount}
-    for (var i =0; i<times;i++){
-        deleteone(start);
-    }
-    rewrite();
+    if (amount > 0) {start=pos; times=amount}
+    if (amount < 0) {start=pos+amount; times=-amount}
+    log({"start":start, "times":times})
+    op.pushflatdeletes(start,times,tree);
+    pushOp(op);
 }
 
 function operate(op) {

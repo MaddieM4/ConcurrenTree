@@ -36,7 +36,7 @@
       var i, _results;
       _results = [];
       for (i = 0; 0 <= amount ? i < amount : i > amount; 0 <= amount ? i++ : i--) {
-        _results.push(this.pushflatdelete(pos, tree));
+        _results.push(this.pushflatdelete(pos + i, tree));
       }
       return _results;
     };

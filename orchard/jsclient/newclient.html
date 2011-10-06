@@ -97,6 +97,15 @@
 				prim.insert(value);
 			  });
 			}
+			this.delete = function(start, end) {
+			  var amount;
+			  start = parseInt(start);
+			  amount = parseInt(end)-start + 1;
+			  this.primitive.act(function(prim){
+				prim.cursor(0,start);
+				prim.delete(amount);
+			  });
+			}
 			this.clear();
 			this.primitive.onrewrite = self.rewrite;
 		}
@@ -125,13 +134,9 @@
 		}
 
 		function easy_delete(){
-			var start = int($('.deleter .start').val());
-			var end = int($('.deleter .end').val());
-			rootdisplay.lock(function(){
-				rootdisplay.cursor(0,start);
-				rootdisplay.delete(start-end);
-				rootdisplay.unlock();
-			});
+			var start = $('.deleter .start').val();
+			var end = $('.deleter .end').val();
+			rootdisplay.delete(start, end);
 		}
 	</script>
 	<style>
