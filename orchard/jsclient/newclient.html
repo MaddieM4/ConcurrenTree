@@ -93,7 +93,7 @@
 			}
 			this.insert = function(pos, value) {
 			  this.primitive.act(function(prim){
-				prim.cursor(0,pos);
+				prim.cursor(0,parseInt(pos));
 				prim.insert(value);
 			  });
 			}

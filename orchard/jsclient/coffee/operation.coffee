@@ -55,13 +55,29 @@ class Operation
            "instructions":@instructions,
         }
 
+    victimize_deletions:(deletions)->
+        # Turns a Tree.deletions into a set of victims for a deletion instruction
+        running = -1
+        result = []
+        for i in [0..deletions.length]
+          if not deletions[i]
+            if running isnt -1
+              if running is i-1
+                result.push(running) 
+              else
+                result.push([running, i-1]) 
+            running = -1
+          else
+            running = i if running is -1
+        result
+
     serialize:-> JSON.stringify(@proto())
 
     fromTree:(address, tree)->
         # Only handles children, to support immutable root node
         # Root is assumed to be the same
         for p in [0..tree.length]
-          for key, node in tree.children[p]
+          for key, node of tree.children[p]
             nodeaddr = address.concat tree.jump(p, key)
             @pushinsert nodeaddr, p, node.value
             @pushdelete nodeaddr, node.deletions

@@ -86,6 +86,26 @@
         "instructions": this.instructions
       };
     };
+    Operation.prototype.victimize_deletions = function(deletions) {
+      var i, result, running, _ref;
+      running = -1;
+      result = [];
+      for (i = 0, _ref = deletions.length; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
+        if (!deletions[i]) {
+          if (running !== -1) {
+            if (running === i - 1) {
+              result.push(running);
+            } else {
+              result.push([running, i - 1]);
+            }
+          }
+          running = -1;
+        } else {
+          if (running === -1) running = i;
+        }
+      }
+      return result;
+    };
     Operation.prototype.serialize = function() {
       return JSON.stringify(this.proto());
     };
@@ -94,11 +114,11 @@
       _results = [];
       for (p = 0, _ref = tree.length; 0 <= _ref ? p <= _ref : p >= _ref; 0 <= _ref ? p++ : p--) {
         _results.push((function() {
-          var _len, _ref2, _results2;
+          var _ref2, _results2;
           _ref2 = tree.children[p];
           _results2 = [];
-          for (node = 0, _len = _ref2.length; node < _len; node++) {
-            key = _ref2[node];
+          for (key in _ref2) {
+            node = _ref2[key];
             nodeaddr = address.concat(tree.jump(p, key));
             this.pushinsert(nodeaddr, p, node.value);
             this.pushdelete(nodeaddr, node.deletions);
