@@ -195,6 +195,27 @@
         return console.error("Server error: " + m);
       }
     };
+    BCP.prototype.subscribe = function(name, type) {
+      if (typeof name === "string") name = [name];
+      return this.send({
+        "type": "subscribe",
+        "subtype": type,
+        "docnames": name
+      });
+    };
+    BCP.prototype.unsubscribe = function(names) {
+      if (names.length === 0) throw "Use BCP.unsubscribe_all()";
+      return this.send({
+        "type": "unsubscribe",
+        "docnames": names
+      });
+    };
+    BCP.prototype.unsubscribe_all = function() {
+      return this.send({
+        "type": "unsubscribe",
+        "docnames": []
+      });
+    };
     BCP.prototype.send = function(obj) {
       var s;
       s = JSON.stringify(obj);

@@ -157,6 +157,16 @@ class BCP
             m = JSON.stringify message
             self.log "server error", m
             console.error "Server error: #{m}"
+    subscribe: (name, type) ->
+        if typeof name is "string"
+          name = [name]
+        @send {"type":"subscribe", "subtype":type, "docnames":name}
+    unsubscribe: (names) ->
+        if names.length is 0
+          throw "Use BCP.unsubscribe_all()"
+        @send {"type":"unsubscribe", "docnames":names}
+    unsubscribe_all: ->
+        @send {"type":"unsubscribe", "docnames":[]}
     send: (obj) ->
         s = JSON.stringify obj
         @log "sending", s
