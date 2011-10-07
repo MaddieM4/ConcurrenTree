@@ -49,7 +49,22 @@ class BCPConnection(Connection):
 
 	def outgoing(self, msg):
 		''' Accepts messages from pool '''
-		return json.dumps(msg)+nullbyte
+		if msg.type in ("ad", "op"):
+			if msg.docname in self.there.subscriptions:
+				subtype = self.there.subscriptions[msg.docname]
+				self.select(msg.docname)
+				if msg.type == "ad":
+					if subtype in ("live", "notify"):
+						self.send(msg)
+					else:
+						pass # TODO: get advertised op
+				else:
+					if subtype in ("live", "oponly"):
+						self.send(msg)
+					else:
+						pass # TODO: advertise op
+		else:
+			self.send(msg)
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
@@ -138,18 +153,16 @@ class BCPConnection(Connection):
 			node = addr.resolve(self.fdoc)
 			node.upgrade(obj['value'])
 		elif obt=='subscribe':
-			if "subtype" not in obj or obj['subtype']=="live":
+			if "subtype" not in obj
 				# live subscription
-				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("live",)
-			elif obj['subtype']=="notify":
-				# notify subscription (ad-only)
-				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("notify",)
-			elif obj['subtype']=="marked":
-				# notify subscription (read/unread)
-				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("marked", 0) # TODO use tree hash
+				subtype = "live"
+			elif obj['subtype'] in ("oponly", "live", "notify"):
+				subtype = obj['subtype']
+			else:
+				# Unknown subscription type
+				self.error(400,details="Bad subtype "+json.dumps(obj['subtype'])
+			for name in obj['docnames']:
+				self.there.subscriptions[name] = subtype
 
 		elif obt=='unsubscribe':
 			if "docnames" in obj and len(obj['docnames']) > 0:
