@@ -102,4 +102,7 @@ class Display
         @islocked = off
         @onunlock?()
 
+    close: ->
+        @worker.postMessage(["close"])
+
 context.Display = Display

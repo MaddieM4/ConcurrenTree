@@ -127,6 +127,9 @@
       this.islocked = false;
       return typeof this.onunlock === "function" ? this.onunlock() : void 0;
     };
+    Display.prototype.close = function() {
+      return this.worker.postMessage(["close"]);
+    };
     return Display;
   })();
   context.Display = Display;

@@ -79,6 +79,8 @@ onmessage = function(e){
         lock(); break;
       case "unlock":
         unlock(); break;
+      case "close":
+        this.close();
       default:
         return log("Unknown message type:"+type.toString());
     }
