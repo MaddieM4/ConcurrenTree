@@ -106,6 +106,9 @@
 				prim.delete(amount);
 			  });
 			}
+			this.close = function(){
+				this.primitive.close();
+			}
 			this.clear();
 			this.primitive.onrewrite = self.rewrite;
 		}
@@ -113,7 +116,7 @@
 		var rootdisplay;
 		function load_document(name){
 			$("#docname").html('Docname: "'+name+'"')
-			if (rootdisplay) {rootdisplay = null}
+			if (rootdisplay) {rootdisplay.close()}
 			rootdisplay = new my_display(name);
 			bcp.broadcast(name);
 			bcp.get(name);
