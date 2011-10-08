@@ -16,12 +16,12 @@ class Operation
 
     pushflatinsert:(pos, value, tree)->
         # Based on current tree state
-        trace = tree.trace(pos)
+        trace = tree.trace_index(pos)
         @pushinsert(trace.address, trace.pos, value)
 
     pushflatdelete:(pos, tree)->
         # Based on current tree state
-        trace = tree.trace(pos)
+        trace = tree.trace_char(pos)
         @pushdelete(trace.address, trace.pos)
 
     pushflatdeletes:(pos, amount, tree)->
