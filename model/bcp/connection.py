@@ -49,6 +49,7 @@ class BCPConnection(Connection):
 
 	def outgoing(self, msg):
 		''' Accepts messages from pool '''
+		print "Pool message:",msg
 		if msg.type in ("ad", "op"):
 			if msg.docname in self.there.subscriptions:
 				subtype = self.there.subscriptions[msg.docname]
@@ -65,6 +66,9 @@ class BCPConnection(Connection):
 						pass # TODO: advertise op
 		else:
 			self.send(msg)
+
+	def pool_push(self, msg):
+		self.queue.client_push(msg)
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
@@ -97,6 +101,8 @@ class BCPConnection(Connection):
 			try:
 				op.apply(self.fdoc)
 				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
+				obj['docname'] = self.there.selected
+				self.pool_push(obj)
 			except operation.OpApplyError:
 				self.error(500) # General Local Error
 		elif obt=='ad':
@@ -153,14 +159,14 @@ class BCPConnection(Connection):
 			node = addr.resolve(self.fdoc)
 			node.upgrade(obj['value'])
 		elif obt=='subscribe':
-			if "subtype" not in obj
+			if "subtype" not in obj:
 				# live subscription
 				subtype = "live"
 			elif obj['subtype'] in ("oponly", "live", "notify"):
 				subtype = obj['subtype']
 			else:
 				# Unknown subscription type
-				self.error(400,details="Bad subtype "+json.dumps(obj['subtype'])
+				self.error(400,details="Bad subtype "+json.dumps(obj['subtype']))
 			for name in obj['docnames']:
 				self.there.subscriptions[name] = subtype
 
