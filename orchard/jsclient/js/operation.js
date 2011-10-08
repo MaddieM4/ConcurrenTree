@@ -24,12 +24,12 @@
     };
     Operation.prototype.pushflatinsert = function(pos, value, tree) {
       var trace;
-      trace = tree.trace(pos);
+      trace = tree.trace_index(pos);
       return this.pushinsert(trace.address, trace.pos, value);
     };
     Operation.prototype.pushflatdelete = function(pos, tree) {
       var trace;
-      trace = tree.trace(pos);
+      trace = tree.trace_char(pos);
       return this.pushdelete(trace.address, trace.pos);
     };
     Operation.prototype.pushflatdeletes = function(pos, amount, tree) {

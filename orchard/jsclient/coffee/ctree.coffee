@@ -56,9 +56,8 @@ class CTree
     trace_char: (pos) ->
         @trace_verify @_trace_char pos
 
-    trace_verify: (pos, func) =>
+    trace_verify: (result) =>
         # Returns an object with properties "address" and "pos" or throws error
-        result = func(pos)
         throw "CTree.trace: pos > this.flatten().length" if window.isInteger(result)
         throw "CTree.trace: _trace returned bad object, type "+typeof result+", value "+JSON.stringify(result) if not (result.address? and result.pos?)
         return result
@@ -66,20 +65,20 @@ class CTree
     _trace_index: (togo) =>
         for pos in [0..@length]
           for k in @kids(pos)
-            togo = k._trace(togo)
+            togo = k._trace_index(togo)
             if not window.isNumber(togo)
               togo.address = @jump(pos, k.key).concat(togo.address)
               return togo
+          if togo is 0
+            return {"address":[],"pos":pos}
           if pos < @length and not @deletions[pos]
-            if togo is 0
-              return {"address":[],"pos":pos}
             togo -= 1
         togo
 
     _trace_char: (togo) =>
         for pos in [0..@length]
           for k in @kids(pos)
-            togo = k._trace(togo)
+            togo = k._trace_char(togo)
             if not window.isNumber(togo)
               togo.address = @jump(pos, k.key).concat(togo.address)
               return togo

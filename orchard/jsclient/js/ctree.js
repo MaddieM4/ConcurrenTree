@@ -4,8 +4,9 @@
   window = this;
   CTree = (function() {
     function CTree(value) {
-      this._trace = __bind(this._trace, this);
-      this.trace = __bind(this.trace, this);
+      this._trace_char = __bind(this._trace_char, this);
+      this._trace_index = __bind(this._trace_index, this);
+      this.trace_verify = __bind(this.trace_verify, this);
       this.resolve = __bind(this.resolve, this);      this.value = value;
       this.length = value.length;
       this.key = serial.key(value);
@@ -65,9 +66,13 @@
         return child = this.get(pos, key).resolve(addr);
       }
     };
-    CTree.prototype.trace = function(pos) {
-      var result;
-      result = this._trace(pos);
+    CTree.prototype.trace_index = function(pos) {
+      return this.trace_verify(this._trace_index(pos));
+    };
+    CTree.prototype.trace_char = function(pos) {
+      return this.trace_verify(this._trace_char(pos));
+    };
+    CTree.prototype.trace_verify = function(result) {
       if (window.isInteger(result)) {
         throw "CTree.trace: pos > this.flatten().length";
       }
@@ -76,13 +81,35 @@
       }
       return result;
     };
-    CTree.prototype._trace = function(togo) {
+    CTree.prototype._trace_index = function(togo) {
       var k, pos, _i, _len, _ref, _ref2;
       for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
         _ref2 = this.kids(pos);
         for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
           k = _ref2[_i];
-          togo = k._trace(togo);
+          togo = k._trace_index(togo);
+          if (!window.isNumber(togo)) {
+            togo.address = this.jump(pos, k.key).concat(togo.address);
+            return togo;
+          }
+        }
+        if (togo === 0) {
+          return {
+            "address": [],
+            "pos": pos
+          };
+        }
+        if (pos < this.length && !this.deletions[pos]) togo -= 1;
+      }
+      return togo;
+    };
+    CTree.prototype._trace_char = function(togo) {
+      var k, pos, _i, _len, _ref, _ref2;
+      for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
+        _ref2 = this.kids(pos);
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          k = _ref2[_i];
+          togo = k._trace_char(togo);
           if (!window.isNumber(togo)) {
             togo.address = this.jump(pos, k.key).concat(togo.address);
             return togo;
