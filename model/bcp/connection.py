@@ -68,6 +68,7 @@ class BCPConnection(Connection):
 			self.send(msg)
 
 	def pool_push(self, msg):
+		print "Pool pushing",msg
 		self.queue.client_push(msg)
 
 	def push(self, msgtype, **kwargs):

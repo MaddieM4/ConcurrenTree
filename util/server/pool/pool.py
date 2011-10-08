@@ -74,7 +74,7 @@ class Pool:
 				while True:
 					try:
 						msg = conn.queue.server_pull(0)
-						#print "receiving message:  ", i, c, msg
+						print "Pool receiving message:  ", i, c, msg
 						policy.input(msg, conn, broadcast)
 					except Empty:
 						break

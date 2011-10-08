@@ -29,6 +29,7 @@ class Policy:
 		try:
 			func = ivo[message['type']]
 		except KeyError:
+			print "No default in subpolicy"
 			return None
 		return func(message, *args)
 
