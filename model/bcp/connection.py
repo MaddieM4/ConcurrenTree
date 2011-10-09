@@ -50,11 +50,11 @@ class BCPConnection(Connection):
 	def outgoing(self, msg):
 		''' Accepts messages from pool '''
 		print "Pool message:",msg
-		if msg.type in ("ad", "op"):
-			if msg.docname in self.there.subscriptions:
-				subtype = self.there.subscriptions[msg.docname]
-				self.select(msg.docname)
-				if msg.type == "ad":
+		if msg['type'] in ("ad", "op"):
+			if msg['docname'] in self.there.subscriptions:
+				subtype = self.there.subscriptions[msg['docname']]
+				self.select(msg['docname'])
+				if msg['type'] == "ad":
 					if subtype in ("live", "notify"):
 						self.send(msg)
 					else:
@@ -76,7 +76,7 @@ class BCPConnection(Connection):
 		self.send(kwargs)
 
 	def send(self, msg):
-		print "sending message:",msg
+		print "sending message:",msg, strict(msg)
 		self.ioqueue.client_push(strict(msg)+nullbyte)
 
 	def select(self, docname):

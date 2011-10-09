@@ -35,7 +35,9 @@ class Connection:
 			if type(out) == int:
 				self.close(out)
 			else:
-				self.ioqueue.put(self.outgoing(out))
+				result = self.outgoing(out)
+				if type(result) in (str, unicode):
+					self.ioqueue.client_push(result)
 			return True
 		except Empty:
 			return False

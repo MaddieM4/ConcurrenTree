@@ -64,12 +64,16 @@ class Pool:
 		for conn in self.server(i).starting():
 			self.connect(i, conn)
 		def broadcast(msg):
+			print "Appending message to buffer"
 			self.buffer.append(msg)
 		# Scan through connections
 		c = 0
 		while c < len(self.connections(i)):
 			try:
 				conn = self.connections(i)[c]
+				for msg in self.lastbuffer:
+					print "Exporting from lastbuffer: ",msg
+					policy.output(msg, conn, broadcast)
 				# Do something with the input, according to policy
 				while True:
 					try:
@@ -78,8 +82,6 @@ class Pool:
 						policy.input(msg, conn, broadcast)
 					except Empty:
 						break
-				for msg in self.lastbuffer:
-					policy.output(msg, conn, broadcast)
 				if conn.closed:
 					del self.servers[i][2][c]
 				else:
@@ -114,7 +116,7 @@ class Pool:
 		return self.env[1]
 
 	def buffer_flip(self):
-		self.env = [self.env[1], []]
+		self.env = [[], self.buffer]
 
 	def properties(self):
 		with self.lock:

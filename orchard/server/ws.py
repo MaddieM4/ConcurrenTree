@@ -33,7 +33,7 @@ class WebSocketServer(Server):
 		self.port = port
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
 		self.server.docs = docs
-		self._policy = Policy()
+		self._policy = WSPolicy()
 
 	def run(self):
 		startmessage("WebSocket", self.port)
@@ -63,3 +63,9 @@ class WebSocketServer(Server):
 			"port":self.port,
 			"closed":self.closed
 		}
+
+class WSPolicy(Policy):
+	def __init__(self):
+		Policy.__init__(self)
+		self.inputs.default = lambda msg, conn, bcast: bcast(msg)
+		self.outputs.default = lambda msg, conn, bcast: conn.queue.server_push(msg)
