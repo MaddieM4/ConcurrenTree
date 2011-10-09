@@ -49,7 +49,6 @@ class BCPConnection(Connection):
 
 	def outgoing(self, msg):
 		''' Accepts messages from pool '''
-		print "Pool message:",msg
 		if msg['type'] in ("ad", "op"):
 			if msg['docname'] in self.there.subscriptions:
 				subtype = self.there.subscriptions[msg['docname']]
@@ -76,7 +75,7 @@ class BCPConnection(Connection):
 		self.send(kwargs)
 
 	def send(self, msg):
-		print "sending message:",msg, strict(msg)
+		print "sending message:",msg
 		self.ioqueue.client_push(strict(msg)+nullbyte)
 
 	def select(self, docname):

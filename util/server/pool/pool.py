@@ -37,7 +37,8 @@ class Pool:
 			self.buffer_flip()
 			if not self.buffer:
 				# wait for new inputs
-				self.inputevent.wait(timeout=1)
+				if self.inputevent.wait(timeout=1):
+					self.inputevent.clear()
 			with self.lock:
 				s = 0
 				while s < len(self.servers):
@@ -49,7 +50,6 @@ class Pool:
 						except Exception as e:
 							self.crash(e)
 						s += 1
-			self.inputevent.clear()
 			if self._close_signal:
 				self.close()
 
@@ -65,6 +65,7 @@ class Pool:
 			self.connect(i, conn)
 		def broadcast(msg):
 			print "Appending message to buffer"
+			self.inputevent.set()
 			self.buffer.append(msg)
 		# Scan through connections
 		c = 0
