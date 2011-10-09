@@ -9,6 +9,7 @@ class Connection:
 
 	def cycle(self):
 		''' Read queues and process data '''
+		print "cycle"
 		flag = True
 		while flag:
 			if self.closed: return
@@ -16,11 +17,14 @@ class Connection:
 
 	def read(self):
 		''' Read from ioqueue and process buffer '''
+		if self.closed:
+			return False
 		try:
 			new = self.ioqueue.client_pull(0)
 			if type(new) == int:
 				self.close(new)
 			else:
+				self.cycleflag()
 				buffer = self.incoming(self.buffer+new)
 			return True
 		except Empty:
@@ -35,6 +39,7 @@ class Connection:
 			if type(out) == int:
 				self.close(out)
 			else:
+				self.cycleflag()
 				result = self.outgoing(out)
 				if type(result) in (str, unicode):
 					self.ioqueue.client_push(result)
@@ -49,6 +54,10 @@ class Connection:
 	def outgoing(self, msg):
 		''' Analyze pool message, return string for IO '''
 		raise NotImplementedError("Subclasses of Connection must define outgoing()")
+
+	def cycleflag(self):
+		# override with function to request more cycles
+		return True
 
 	def close(self, code):
 		self.closed = True

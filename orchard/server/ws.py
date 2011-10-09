@@ -13,6 +13,7 @@ class WSConnection(websocket.WebSocket):
 	def onmessage(self, data):
 		print "Websocket receiving data:", data
 		self.dq.server_push(data)
+		self.server.cycleflag()
 
 	def onsweep(self):
 		while True:
@@ -20,7 +21,6 @@ class WSConnection(websocket.WebSocket):
 				self.send(self.dq.server_pull(timeout=0))
 			except dq.Empty:
 				break
-		self.connection.cycle()
 
 	def close(self):
 		super(WSConnection, self).close()
@@ -37,6 +37,7 @@ class WebSocketServer(Server):
 
 	def run(self):
 		startmessage("WebSocket", self.port)
+		self.server.cycleflag = self.cycleflag
 		#print "WebSocket server starting on port %d" % self.port
 		self.server.listen(5)
 		print "WebSocket server terminating"

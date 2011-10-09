@@ -32,3 +32,7 @@ class Server:
 			if name != "properties":
 				result[name] = getattr(self, name)
 		return result
+
+	def cycleflag(self):
+		''' Externally overrided function to request a Pool cycle '''
+		return None

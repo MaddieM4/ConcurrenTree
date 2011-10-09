@@ -20,6 +20,7 @@ class Pool:
 		''' Add a server to the pool '''
 		try:
 			server = cls(*args, **kwargs)
+			server.cycleflag = self.cycleflag
 			thread = Thread(target=server.run)
 			thread.start()
 			with self.lock:
@@ -37,8 +38,8 @@ class Pool:
 			self.buffer_flip()
 			if not self.buffer:
 				# wait for new inputs
-				if self.inputevent.wait(timeout=1):
-					self.inputevent.clear()
+				self.inputevent.wait(timeout=12)
+				self.inputevent.clear()
 			with self.lock:
 				s = 0
 				while s < len(self.servers):
@@ -83,6 +84,7 @@ class Pool:
 						policy.input(msg, conn, broadcast)
 					except Empty:
 						break
+				conn.cycle()
 				if conn.closed:
 					del self.servers[i][2][c]
 				else:
@@ -90,11 +92,17 @@ class Pool:
 			except Exception as e:
 				self.crash(e)
 
+	def cycleflag(self):
+		print "cycleflag"
+		self.inputevent.set()
+
 	def connect(self, server, conn):
 		print "New connection:",server
 		if not isinstance(conn, connection.Connection):
 			raise TypeError("Server %s passing connection objects that are not subclasses of Connection" % repr(server))
-		conn.queue.server_notify(self.inputevent.set) # Set pool notification callback
+		conn.queue.server_notify(self.cycleflag) # Set pool notification callback
+		conn.queue.client_notify(self.cycleflag) # Set pool notification callback
+		conn.cycleflag = self.cycleflag
 		self.servers[server][2].append(conn)
 
 	def server(self, index):
