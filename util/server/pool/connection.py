@@ -9,7 +9,6 @@ class Connection:
 
 	def cycle(self):
 		''' Read queues and process data '''
-		print "cycle"
 		flag = True
 		while flag:
 			if self.closed: return

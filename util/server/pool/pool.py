@@ -38,7 +38,7 @@ class Pool:
 			self.buffer_flip()
 			if not self.buffer:
 				# wait for new inputs
-				self.inputevent.wait(timeout=12)
+				self.inputevent.wait(timeout=1)
 				self.inputevent.clear()
 			with self.lock:
 				s = 0
@@ -93,7 +93,7 @@ class Pool:
 				self.crash(e)
 
 	def cycleflag(self):
-		print "cycleflag"
+		#print "cycleflag"
 		self.inputevent.set()
 
 	def connect(self, server, conn):
