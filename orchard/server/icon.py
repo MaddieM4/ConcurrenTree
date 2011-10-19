@@ -48,6 +48,7 @@ class Icon(StatusIcon):
 			self.item("New Window", self.server.newwindow, "gtk-add"),
 			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
+			self.item("Connect to peer", self.server.info, "gtk-network"),
 			gtk.SeparatorMenuItem(),
 			self.item("Configure", self.server.configure, "gtk-preferences"),
 			gtk.SeparatorMenuItem(),
@@ -98,7 +99,7 @@ class IconServer(Server):
 		properties = [
 			"HTTP port: "+str(poolprops['HTTP']['port']),
 			"WebSocket port: "+str(poolprops['WebSocket']['port']),
-			"Peer port: "+str(poolprops['PeerServer']['port'])
+			"Peer address: "+str(poolprops['PeerServer']['address'])
 		]
 		dialog.set_property("secondary-text", "\n".join(properties))
 		#dialog.set_property("use-markup", True)
