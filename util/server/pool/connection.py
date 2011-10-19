@@ -5,6 +5,7 @@ class Connection:
 		self.queue = DQ()
 		self.ioqueue = DQ()
 		self.buffer = ""
+		self.uniquesource = None
 		self.closed = False
 
 	def cycle(self):
@@ -53,6 +54,12 @@ class Connection:
 	def outgoing(self, msg):
 		''' Analyze pool message, return string for IO '''
 		raise NotImplementedError("Subclasses of Connection must define outgoing()")
+
+	def getunique(self, key):
+		if self.uniquesource:
+			return self.uniquesource.getunique(key)
+		else:
+			raise NameError("No uniquesource defined for connection")
 
 	def cycleflag(self):
 		# override with function to request more cycles

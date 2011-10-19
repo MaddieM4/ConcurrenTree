@@ -49,18 +49,21 @@ class BCPConnection(Connection):
 
 	def outgoing(self, msg):
 		''' Accepts messages from pool '''
-		if msg['type'] in ("ad", "op"):
-			if msg['docname'] in self.there.subscriptions:
-				subtype = self.there.subscriptions[msg['docname']]
-				self.select(msg['docname'])
-				if msg['type'] == "ad":
+		mtype = msg['type']
+		mname = msg['docname']
+
+		if mtype in ("ad", "op"):
+			if mname in self.there.subscriptions:
+				subtype = self.there.subscriptions[mname]
+				self.select(mname)
+				if mtype == "ad":
 					if subtype in ("live", "notify"):
 						self.send(msg)
 					else:
 						pass # TODO: get advertised op
-				else:
+				else: # Operation
 					if subtype in ("live", "oponly"):
-						self.send(msg)
+						self.send(msg['value'].proto())
 					else:
 						pass # TODO: advertise op
 		else:
@@ -101,8 +104,11 @@ class BCPConnection(Connection):
 			try:
 				op.apply(self.fdoc)
 				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
-				obj['docname'] = self.there.selected
-				self.pool_push(obj)
+				self.pool_push({
+					"type":"op",
+					"docname":self.there.selected,
+					"value":op
+				})
 			except operation.OpApplyError:
 				self.error(500) # General Local Error
 		elif obt=='ad':
