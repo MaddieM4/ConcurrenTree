@@ -71,17 +71,16 @@ if args.portset:
 	default("wsport")
 	default("http")
 
-from ConcurrenTree.model.bcp.serverpool import ServerPool
+from ConcurrenTree.util.server.pool import *
 from server import http, ws, peers, icon
-from ConcurrenTree.util import storage
+from ConcurrenTree.util.storage import Storage
 
-doc = storage.Storage()
-auth = None
-pool = ServerPool(doc, auth)
+pool = pool.Pool()
+docs = Storage()
 
 # add interface servers
 s_http = pool.start(http.HTTP, port=args.http)
-s_ws   = pool.start(ws.WebSocketServer, port=args.wsport)
+s_ws   = pool.start(ws.WebSocketServer, port=args.wsport, docs=docs)
 # Start browser
 if not args.browser:
 	s_http.open("/newclient#ws=" + str(s_ws.port))
@@ -89,9 +88,7 @@ if not args.browser:
 pool.start(icon.IconServer, pool)
 
 # start background servers
-peerserver = pool.start(peers.Peers, port=args.peers)
-#pool.start(orchardserver.HALP)
-#pool.start(orchardserver.DHT)
+peerserver = pool.start(peers.Peers, port=args.peers, docs = docs)
 
 # Connect to cmdline peers
 for peer in startpeers:

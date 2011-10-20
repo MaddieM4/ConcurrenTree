@@ -10,7 +10,7 @@ class Operation(ModelBase):
 	''' A collection of instructions '''
 
 	def __init__(self, instructions = [], protostring = None):
-		''' If protostring is present, uses that existing serialized instructions. If not, use instructions. '''
+		''' If protostring is present, uses that existing serialized instruction set. If not, use instructions. '''
 		if protostring:
 			self.instructions = json.loads(protostring)
 		else:
@@ -28,8 +28,6 @@ class Operation(ModelBase):
 				tree = backup
 				traceback.print_exc()
 				raise OpApplyError()
-		tree.operations[self.hash] = self
-		print "Tree '%s' modified: " % tree.name, tree.flatten()
 
 	@property
 	def inserts(self):
@@ -42,7 +40,7 @@ class Operation(ModelBase):
 	@property
 	def dep_provides(self):
 		''' The dependencies that this operation provides to the tree '''
-		return set([str(i.address_object.proto()+[[i.position, i.value]]) for i in self.inserts])
+		return set([str(i.address_object.proto()+[i.position, i.value]) for i in self.inserts])
 
 	@property
 	def dep_requires(self):

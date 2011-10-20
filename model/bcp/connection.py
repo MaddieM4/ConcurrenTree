@@ -1,115 +1,88 @@
-import Queue
 import json
 import traceback
 
-from ConcurrenTree.model import operation
+from ConcurrenTree.util.hasher import strict
+from ConcurrenTree.model import operation, address
+from ConcurrenTree.util.server.pool.connection import Connection
 from peer import Peer
 from errors import errors
 
 nullbyte = "\x00"
 
-class Connection:
+class BCPConnection(Connection):
 	''' A connection between two Peers '''
-	def __init__(self, docHandler, authHandler, queue, extensions = {}, log=[]):
-		self.docs = docHandler
-		self.auth = authHandler
-		self.queue = queue # must be a BCP.doublequeue
-		self.extensions = extensions
-		self.logtypes = log
+	def __init__(self, docs, auth):
+		Connection.__init__(self)
+		self.docs = docs
+		self.auth = auth
 
-		self.buffer = ""
-		self.log = Queue.Queue()
 		self.here = Peer()
 		self.there = Peer()
-		self.closed = False
 
-	def recv(self):
-		''' 
-			Returns True if there was data to read,
-			False if there was a timeout.
-		'''
-		if self.closed: return False
+	def incoming(self, value):
+		''' Processes IO buffer '''
+		if nullbyte in value:
+			length = value.index(nullbyte)
+			try:
+				self.recv(value[:length])
+			finally:
+				return value[length+1:]
+		else:
+			return value
+
+	def recv(self, msg):
+		''' Takes a textual BCP message of unknown validity '''
+		print "recving message:",msg
 		try:
-			self.feed(self.queue.server_pull(timeout=0))
-			return True
-		except Queue.Empty:
-			return False
-
-	def send(self):
-		return False
-
-	def exchange(self):
-		flag = True
-		while flag:
-			flag = self.recv() or self.send()
-
-	def feed(self, string=""):
-		''' Read a string into the buffer and process it '''
-		#print "BCP.Connection receiving %s:" % type(string), string
-		if type(string)==int:
-			# close this connection
-			self.close(string)
+			obj = json.loads(msg)
+		except ValueError:
+			self.error(451) # Bad JSON
 			return
-		self.buffer += string
-		if nullbyte in self.buffer:
-			length = self.buffer.index(nullbyte)
-			msg, self.buffer = self.buffer[:length], self.buffer[length+1:]
-			print "recving message:",msg
-			try:
-				obj = json.loads(msg)
-			except ValueError:
-				self.error(451) # Bad JSON
-				return
-			if type(obj)!=dict:
-				self.error(454) # Wrong root type
-				return
-			try:
-				self.analyze(obj, msg)
-			except:
-				traceback.print_exc()
-				self.error(500)
-			self.feed()
+		if type(obj)!=dict:
+			self.error(454) # Wrong root type
+			return
+		try:
+			self.analyze(obj, msg)
+		except:
+			traceback.print_exc()
+			self.error(500)
 
-	def extend(self, name, callback):
-		self.extensions[name] = callback
+	def outgoing(self, msg):
+		''' Accepts messages from pool '''
+		if msg['type'] in ("ad", "op"):
+			if msg['docname'] in self.there.subscriptions:
+				subtype = self.there.subscriptions[msg['docname']]
+				self.select(msg['docname'])
+				if msg['type'] == "ad":
+					if subtype in ("live", "notify"):
+						self.send(msg)
+					else:
+						pass # TODO: get advertised op
+				else:
+					if subtype in ("live", "oponly"):
+						self.send(msg)
+					else:
+						pass # TODO: advertise op
+		else:
+			self.send(msg)
 
-	def is_extended(self, name):
-		return name in self.extensions
-
-	def unextend(self, name):
-		del self.extensions[name]
+	def pool_push(self, msg):
+		print "Pool pushing",msg
+		self.queue.client_push(msg)
 
 	def push(self, msgtype, **kwargs):
 		kwargs['type'] = msgtype
-		print "sending message:",kwargs
-		self.queue.server_push(json.dumps(kwargs)+"\x00 ")
+		self.send(kwargs)
+
+	def send(self, msg):
+		print "sending message:",msg
+		self.ioqueue.client_push(strict(msg)+nullbyte)
 
 	def select(self, docname):
 		if self.here.selected != docname:
 			self.push("select", docname=docname)
 
 	def analyze(self, obj, objstring):
-		if not "type" in obj:
-			self.error(452, 'Missing required argument: "type"')
-			return
-		obt = obj['type']
-		# log
-		if self.logtypes == "*" or obt in self.logtypes:
-			obj["selected"] = self.there.selected
-			self.log.put(obj)
-		# Check extensions for override on type
-		def broadcast(msg):
-			self.log.put(msg)
-		if obt in self.extensions:
-			return self.extensions[obt](obj, self, broadcast)
-		elif "*" in self.extensions:
-			# Global extension on all message types
-			return self.extensions["*"](obj, self, broadcast)
-		else:
-			# No extension, do normal stuff
-			self.apply(obj, objstring)
-
-	def apply(self, obj, objstring):
 		''' 
 			Apply a message as a piece of remote communication.
 		'''
@@ -127,6 +100,9 @@ class Connection:
 			# TODO: authorize
 			try:
 				op.apply(self.fdoc)
+				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
+				obj['docname'] = self.there.selected
+				self.pool_push(obj)
 			except operation.OpApplyError:
 				self.error(500) # General Local Error
 		elif obt=='ad':
@@ -148,30 +124,51 @@ class Connection:
 					"operation":obj['hash']
 				}) # Resource not found
 		elif obt=='check':
-			pass
-		elif obt=='thash':
-			pass
+			# TODO - error testing
+			if not self.check_selected():return
+			if not self.require("address", obj):return
+			addr = address.Address(obj['address'])
+			sum = addr.resolve(self.fdoc).treesum
+			self.select(self.there.selected)
+			self.push("tsum",address=addr.proto(), value=sum)
+		elif obt=='tsum':
+			if not self.check_selected():return
+			if not self.require("address", obj):return
+			if not self.require("value", obj):return
+			# Compare to our own treesum
+			addr = address.Address(obj['address'])
+			sum = addr.resolve(self.fdoc).treesum
+			if sum != obj['value']:
+				self.push("get", address=addr.proto(), depth=1)
 		elif obt=='get':
 			if not self.check_selected():return
-			if "tree" in obj:
-				self.push("era",
-					docname = self.there.selected,
-					tree = self.fdoc.proto())
-		elif obt=='era':
-			pass
+			if not self.require("address", obj):return
+			addr = address.Address(obj['address'])
+			node = addr.resolve(self.fdoc)
+			if "depth" in obj:
+				result = node.proto(obj['depth'])
+			else:
+				result = node.proto()
+			self.select(self.there.selected)
+			self.push("tree", address = addr.proto(), value=result)
+		elif obt=='tree':
+			if not self.check_selected():return
+			if not self.require("address", obj):return
+			if not self.require("value", obj):return
+			addr = address.Address(obj['address'])
+			node = addr.resolve(self.fdoc)
+			node.upgrade(obj['value'])
 		elif obt=='subscribe':
-			if "subtype" not in obj or obj['subtype']=="live":
+			if "subtype" not in obj:
 				# live subscription
-				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("live")
-			elif obj['subtype']=="notify":
-				# notify subscription (ad-only)
-				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("notify")
-			elif obj['subtype']=="marked":
-				# notify subscription (read/unread)
-				for name in obj['docnames']:
-					self.there.subscriptions[name] = ("marked", 0) # TODO use tree hash
+				subtype = "live"
+			elif obj['subtype'] in ("oponly", "live", "notify"):
+				subtype = obj['subtype']
+			else:
+				# Unknown subscription type
+				self.error(400,details="Bad subtype "+json.dumps(obj['subtype']))
+			for name in obj['docnames']:
+				self.there.subscriptions[name] = subtype
 
 		elif obt=='unsubscribe':
 			if "docnames" in obj and len(obj['docnames']) > 0:
@@ -214,6 +211,3 @@ class Connection:
 	def ldoc(self):
 		''' Locally selected document '''
 		return self.docs[self.here.selected]
-
-	def close(self, error=0):
-		self.closed = True

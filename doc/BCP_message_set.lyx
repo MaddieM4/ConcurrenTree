@@ -269,25 +269,8 @@ check
 \end_layout
 
 \begin_layout Standard
-Request for hashes of eras of the currently selected tree.
- The 
-\begin_inset Quotes eld
-\end_inset
-
-eras
-\begin_inset Quotes erd
-\end_inset
-
- property may be an int or a range (2-element array).
- -1 is a special value that means 
-\begin_inset Quotes eld
-\end_inset
-
-the highest era you know is in the document
-\begin_inset Quotes erd
-\end_inset
-
-.
+Request for the checksum of a node of the currently selected tree.
+ Allows you to quickly check syncronicity.
 \end_layout
 
 \begin_layout Quote
@@ -311,50 +294,30 @@ check
 \begin_inset Quotes eld
 \end_inset
 
-eras
+address
 \begin_inset Quotes erd
 \end_inset
 
-:5}
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-check
-\begin_inset Quotes erd
-\end_inset
-
-, 
+: [[
 \begin_inset Quotes eld
 \end_inset
 
-eras
-\begin_inset Quotes erd
+You're a 
+\begin_inset Quotes eld
 \end_inset
 
-:[1,2]}
+]] }
 \end_layout
 
 \begin_layout Section
-thash
+tsum
 \end_layout
 
 \begin_layout Standard
 \begin_inset Quotes eld
 \end_inset
 
-Tree hash,
+Tree sum,
 \begin_inset Quotes erd
 \end_inset
 
@@ -367,18 +330,7 @@ check
 \end_inset
 
 .
- 
-\begin_inset Quotes eld
-\end_inset
-
-eras
-\begin_inset Quotes erd
-\end_inset
-
- will always be a dictionary with era numbers for keys and int checksums
- for values.
- Any ranges will be expanded by the server into individual era numbers.
- The checksums are of Era objects, as described in Part IV of this document.
+ Returns the treesum for an address.
 \end_layout
 
 \begin_layout Quote
@@ -394,7 +346,7 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-thash
+tsum
 \begin_inset Quotes erd
 \end_inset
 
@@ -402,19 +354,27 @@ thash
 \begin_inset Quotes eld
 \end_inset
 
-eras
+address
 \begin_inset Quotes erd
 \end_inset
 
-:{
+:[[
+\begin_inset Quotes eld
+\end_inset
+
+You're a
 \begin_inset Quotes erd
 \end_inset
 
-1
+]], 
+\begin_inset Quotes eld
+\end_inset
+
+value
 \begin_inset Quotes erd
 \end_inset
 
-:44263...}}
+:656172}
 \end_layout
 
 \begin_layout Section
@@ -426,64 +386,24 @@ A request for one or more
 \begin_inset Quotes eld
 \end_inset
 
-era
+tree
 \begin_inset Quotes erd
 \end_inset
 
  responses.
- This can either be a 
+ The optional 
 \begin_inset Quotes eld
 \end_inset
 
-flat
+depth
 \begin_inset Quotes erd
 \end_inset
 
- or a 
-\begin_inset Quotes eld
-\end_inset
-
-tree
-\begin_inset Quotes erd
-\end_inset
-
-, denoting whether to send the flattened result of all previous eras, or
- send the actual eras themselves.
- If the property 
-\begin_inset Quotes eld
-\end_inset
-
-flat
-\begin_inset Quotes erd
-\end_inset
-
- is used, it must be an int.
- If the property 
-\begin_inset Quotes eld
-\end_inset
-
-tree
-\begin_inset Quotes erd
-\end_inset
-
- is used, it's in the same format as the 
-\begin_inset Quotes eld
-\end_inset
-
-eras
-\begin_inset Quotes erd
-\end_inset
-
- property for the 
-\begin_inset Quotes eld
-\end_inset
-
-check
-\begin_inset Quotes erd
-\end_inset
-
- message.
- Both can be used in the same message.
+ property specifies how many layers deep the response should be in real
+ nodes (anything deeper than that in the response is implied to be a flat
+ node).
+ For example, if depth=1, the response should be just the requested node,
+ and flat versions of its children.
 \end_layout
 
 \begin_layout Quote
@@ -507,115 +427,36 @@ get
 \begin_inset Quotes eld
 \end_inset
 
-flat
+address
 \begin_inset Quotes erd
 \end_inset
 
-:5}
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-get
-\begin_inset Quotes erd
-\end_inset
-
-, 
+:[[
 \begin_inset Quotes eld
 \end_inset
 
-tree
+Barney th
 \begin_inset Quotes erd
 \end_inset
 
-:[9,-1]}
-\end_layout
-
-\begin_layout Quote
-// or, as a single message
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-get
-\begin_inset Quotes erd
-\end_inset
-
-, 
+], [1, 
 \begin_inset Quotes eld
 \end_inset
 
-flat
+l
 \begin_inset Quotes erd
 \end_inset
 
-:5,
-\begin_inset Quotes eld
-\end_inset
-
-tree
-\begin_inset Quotes erd
-\end_inset
-
-:[9,-1]}
+]]}
 \end_layout
 
 \begin_layout Section
-era
+tree
 \end_layout
 
 \begin_layout Standard
-A concisely-constructed representation of an era.
- While this 
-\emph on
-can
-\emph default
- be expressed as an operation, this would be fairly bulky compared to a
- purely structural view.
- It's a right-tool-for-the-right-job situation.
- Ops modify, eras declare.
-\end_layout
-
-\begin_layout Standard
-While a 
-\begin_inset Quotes eld
-\end_inset
-
-get
-\begin_inset Quotes erd
-\end_inset
-
- can request a lot of stuff at once, each 
-\begin_inset Quotes eld
-\end_inset
-
-era
-\begin_inset Quotes erd
-\end_inset
-
- response can only send one thing at a time.
+A concisely-constructed representation of a tree.
+ See the object reference in Part VI for more information.
 \end_layout
 
 \begin_layout Quote
@@ -624,74 +465,6 @@ era
 \end_inset
 
 type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-era
-\begin_inset Quotes erd
-\end_inset
-
-,
-\begin_inset Quotes erd
-\end_inset
-
-subtype
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-flat
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-layer
-\begin_inset Quotes erd
-\end_inset
-
-:5,
-\begin_inset Quotes erd
-\end_inset
-
-flat
-\begin_inset Quotes erd
-\end_inset
-
-:[...]}
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-era
-\begin_inset Quotes erd
-\end_inset
-
-,
-\begin_inset Quotes erd
-\end_inset
-
-subtype
 \begin_inset Quotes erd
 \end_inset
 
@@ -707,19 +480,32 @@ tree
 \begin_inset Quotes erd
 \end_inset
 
-layer
+address
 \begin_inset Quotes erd
 \end_inset
 
-:9,
+[[
+\begin_inset Quotes eld
+\end_inset
+
+Barney th
 \begin_inset Quotes erd
 \end_inset
 
-era
+], [1, 
+\begin_inset Quotes eld
+\end_inset
+
+l
 \begin_inset Quotes erd
 \end_inset
 
-:{...}}
+]], value
+\begin_inset Quotes erd
+\end_inset
+
+: ...
+ }
 \end_layout
 
 \begin_layout Part
@@ -916,18 +702,34 @@ Authorization
 \end_layout
 
 \begin_layout Section
-login
+token
 \end_layout
 
 \begin_layout Standard
-The BCP authorization system uses, for the most part, the private/public
- key model.
- The login message is provided as an alternative for more traditional username/p
-assword scenarios.
+The thing you actually authorize with.
+ There are two types so far, but OpenID support is expected to expand this
+ at some point in the future.
 \end_layout
 
-\begin_layout Standard
-The response to a correct login is an authok with no 
+\begin_layout Description
+local tokens are session tokens specific to the site you're logging into.
+ Further details are arbitrary, although a simple unsigned int session identifie
+r is a practical option for most implementations.
+ Should either include an expiration date or imply one from the date it
+ is issued.
+ Servers must support multiple logins with a single token simultaneously.
+\end_layout
+
+\begin_layout Description
+identity tokens have the properties 
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+, 
 \begin_inset Quotes eld
 \end_inset
 
@@ -935,8 +737,45 @@ key
 \begin_inset Quotes erd
 \end_inset
 
- property.
- Incorrect logins should trigger an error.
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+sigs
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Address is a valid MCP address, 
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+ is the corresponding public key, and 
+\begin_inset Quotes eld
+\end_inset
+
+sigs
+\begin_inset Quotes erd
+\end_inset
+
+ is a list of address/signature pairs expressed as a mapping ({}).
+\end_layout
+
+\begin_layout Section
+login
+\end_layout
+
+\begin_layout Standard
+A local token request.
+ The response should be an rtoken message.
+ Username and password are standard arguments but this can be as application-spe
+cific as you need it to be, although if you're going really off the wall
+ you can always make up a proprietary token type, expand the message set,
+ whatever you need.
 \end_layout
 
 \begin_layout Quote
@@ -992,13 +831,20 @@ bukket
 \end_layout
 
 \begin_layout Section
-auth
+logout
 \end_layout
 
 \begin_layout Standard
-A request for an MEL of a random string.
- A live BCP node can only authorize for documents it's a part of/knows the
- participants of.
+Ends a local token session.
+ Returns an rtoken with property 
+\begin_inset Quotes eld
+\end_inset
+
+valid
+\begin_inset Quotes erd
+\end_inset
+
+ set to false.
 \end_layout
 
 \begin_layout Quote
@@ -1014,38 +860,38 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-auth
+logout
 \begin_inset Quotes erd
 \end_inset
 
-,
+, 
 \begin_inset Quotes erd
 \end_inset
 
-docname
+token
 \begin_inset Quotes erd
 \end_inset
 
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-}
+: ...
+ }
 \end_layout
 
 \begin_layout Section
-authmel
+rtoken
 \end_layout
 
 \begin_layout Standard
-The response to an auth request.
- It's a random string encoded into an MEL (multiply-encoded list, where
- each element is the plaintext data encoded in a different participant's
- public key).
+A server-provided local token in response to a login request (response token
+ -> rtoken).
+ May include 
+\begin_inset Quotes eld
+\end_inset
+
+valid
+\begin_inset Quotes erd
+\end_inset
+
+ property when it would be true, must include it when it is false.
 \end_layout
 
 \begin_layout Quote
@@ -1061,23 +907,7 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-authmel
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes erd
-\end_inset
-
-docname
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
+rtoken
 \begin_inset Quotes erd
 \end_inset
 
@@ -1085,129 +915,24 @@ willynelson
 \begin_inset Quotes eld
 \end_inset
 
-mel
+token
 \begin_inset Quotes erd
 \end_inset
 
-:[ ...
- ]}
-\end_layout
-
-\begin_layout Section
-authmd
-\end_layout
-
-\begin_layout Standard
-Response to authmel.
- It's a list of decrypted strings, one of which hopefully will match the
- random string.
- It stands for Authorization MEL Decrypted.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-authmd
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes erd
-\end_inset
-
-docname
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-, 
+: ...
+ , 
 \begin_inset Quotes eld
 \end_inset
 
-mel
+valid
 \begin_inset Quotes erd
 \end_inset
 
-:[ ...
- ]}
+:true}
 \end_layout
 
-\begin_layout Section
-authok
-\end_layout
-
-\begin_layout Standard
-The final part of the auth dance.
- The server sends the client the symmetric key of the document.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-authok
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-docname
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
-}
+\begin_layout Part
+Meta
 \end_layout
 
 \begin_layout Section
@@ -1218,7 +943,7 @@ lookup
 Look up metadata about something, found by an identifier.
  The identifier will vary in type and format based on how you're using BCP,
  it can be whatever you want as long as you're consistent.
- In ECP, for example, we use a public key for finding people.
+ In ECP, for example, we use an email address for finding people.
  Example subtypes are 
 \emph on
 person
@@ -1318,22 +1043,47 @@ name
 
 \begin_layout Quote
 {
-\begin_inset Quotes erd
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
 \end_inset
 
 type
 \begin_inset Quotes erd
 \end_inset
 
-:
-\begin_inset Quotes erd
+ : 
+\begin_inset Quotes eld
 \end_inset
 
 metadata
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+ : 
+\begin_inset Quotes eld
+\end_inset
+
+person
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
 \begin_inset Quotes eld
 \end_inset
 
@@ -1341,15 +1091,18 @@ id
 \begin_inset Quotes erd
 \end_inset
 
-:
-\begin_inset Quotes erd
+ : 
+\begin_inset Quotes eld
 \end_inset
 
 philip.horger
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
+\end_layout
+
+\begin_layout Quote
 \begin_inset Quotes eld
 \end_inset
 
@@ -1462,23 +1215,6 @@ Collecting decapitated teddy bears
 }
 \end_layout
 
-\begin_layout Part
-Meta
-\end_layout
-
-\begin_layout Standard
-Messages that contain messages.
- Well, except for 
-\begin_inset Quotes eld
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
-, but it still seemed like the right place to put that one, so hush.
-\end_layout
-
 \begin_layout Section
 part
 \end_layout
@@ -1497,27 +1233,6 @@ Multipart messages are a simple way to send large messages without clogging
  The contained message is treated like a big string and will be evaluated
  as soon as a piece is sent with the property done set to true (this can
  be ommitted in any non-final piece).
-\end_layout
-
-\begin_layout Standard
-While it supports the hashalgorithm property used for the 
-\begin_inset Quotes eld
-\end_inset
-
-encrypted
-\begin_inset Quotes erd
-\end_inset
-
- message type, such precautions are much less likely to be necessary for
- the 
-\begin_inset Quotes eld
-\end_inset
-
-part
-\begin_inset Quotes erd
-\end_inset
-
- message type.
 \end_layout
 
 \begin_layout Quote
@@ -1572,217 +1287,6 @@ contents
 }
 \end_layout
 
-\begin_layout Section
-encrypted
-\end_layout
-
-\begin_layout Standard
-Ideally, you should run a BCP stream inside an encrypted connection (preferably
- point-to-point), instead of running encrypted messages over an unencrypted
- channel.
- Sometimes, though, that's not an option, and we want to make a standard
- mechanism for encryption in those use cases.
-\end_layout
-
-\begin_layout Standard
-When there is a key for each end, the sender always encrypts with their
- private key first, then with the recipient's public key (the recipient
- decrypts this in reverse order).
- If the docname selected by the sending end refers to an encrypted document,
- they must add a layer of encryption with the document's symettric key beneath
- the endpoint encryption layers.
-\end_layout
-
-\begin_layout Standard
-If you're using cryptography on your connection, you probably have support
- for advanced hashing algorithms on both ends, too.
- Not only that, but this is one of the few cases where the hashes actually
- need to be cryptographically secure.
- Therefore we give you a 
-\begin_inset Quotes eld
-\end_inset
-
-hashalgorithm
-\begin_inset Quotes erd
-\end_inset
-
- property to indicate what you're encoding in, which the remote end can
- accept, or respond with an error that contains a list of all supported
- algorithms.
- 
-\begin_inset Quotes eld
-\end_inset
-
-default
-\begin_inset Quotes erd
-\end_inset
-
- is the BCP sum() function and should not be used for this.
- However, it is what will be assumed if you do not specify the algorithm
- (hashalgorithm is an optional property).
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-encrypted
-\begin_inset Quotes erd
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes erd
-\end_inset
-
-hash
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-0b00411f
-\begin_inset Quotes erd
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-hashalgorithm
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-md5
-\begin_inset Quotes erd
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Quote
-\begin_inset Quotes eld
-\end_inset
-
-contents
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
-}
-\end_layout
-
-\begin_layout Section
-key
-\end_layout
-
-\begin_layout Standard
-You probably noticed that there was no key exchange in the 
-\begin_inset Quotes eld
-\end_inset
-
-encrypted
-\begin_inset Quotes erd
-\end_inset
-
- message.
- That's because we do that with 
-\begin_inset Quotes eld
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
- messages, which work a bit like 
-\begin_inset Quotes eld
-\end_inset
-
-select
-\begin_inset Quotes erd
-\end_inset
-
- messages.
- Key messages exchange public keys between ends of a connection, and are
- also used to acknowledge that a key has been recieved.
- A key can be set to a string or to null.
-\end_layout
-
-\begin_layout Standard
-Encryption should not be used on a key until it has been acknowledged.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-key
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-mine
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-yours
-\begin_inset Quotes erd
-\end_inset
-
-:null}
-\end_layout
-
 \begin_layout Part
 Objects
 \end_layout
@@ -1797,7 +1301,7 @@ Addresses are
 the
 \emph default
  way to specify which tree in a document you're talking about.
- Addresses are arrays, with an optional shortcut as the first element.
+ Addresses are arrays of shortcut chains and steps.
 \end_layout
 
 \begin_layout Quote
@@ -1806,14 +1310,31 @@ the
 
 \begin_deeper
 \begin_layout Quote
+[
 \begin_inset Quotes eld
 \end_inset
 
-2#5235
+re
 \begin_inset Quotes erd
 \end_inset
 
-,
+, 
+\begin_inset Quotes eld
+\end_inset
+
+quest
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+ some 
+\begin_inset Quotes erd
+\end_inset
+
+],
 \end_layout
 
 \begin_layout Quote
@@ -1828,15 +1349,8 @@ the
 \begin_layout Quotation
 
 \emph on
-A 2-element address starting at shortcut 
-\begin_inset Quotes eld
-\end_inset
-
-2#5235
-\begin_inset Quotes erd
-\end_inset
-
- and progressing to a subtree in 5235 (position 4, key 
+A 2-element address starting with a shortcut chain, and then progressing
+ to a subtree (position 4, key 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1856,27 +1370,10 @@ carbide manufacturing
 \end_layout
 
 \begin_layout Standard
-When no shortcut address is given, special address 
-\begin_inset Quotes eld
-\end_inset
-
-0#root
-\begin_inset Quotes erd
-\end_inset
-
- is assumed.
- This refers to the single root element (which has value 
-\begin_inset Quotes eld
-\end_inset
-
-
-\begin_inset Quotes erd
-\end_inset
-
-) every BCP document has.
- So in these cases, the very first element progresses down the tree from
- the root node.
- Regular elements are in the form of 2-element arrays of [pos, key].
+A step is an index/key pair that indicates moving from a parent to a child.
+ A shortcut chain is a list of strings only - specifically, keys.
+ The position for each key is assumed to be the highest/last possible position
+ in the node in question.
 \end_layout
 
 \begin_layout Section
@@ -1891,7 +1388,7 @@ ly) thousands of instructions.
 \end_layout
 
 \begin_layout Quote
-[0, [[0,
+[0, [[
 \begin_inset Quotes erd
 \end_inset
 
@@ -1903,7 +1400,7 @@ Have you e51685
 \end_layout
 
 \begin_layout Quote
-[1, [[0,
+[1, [[
 \begin_inset Quotes erd
 \end_inset
 
@@ -1968,12 +1465,12 @@ Used in
 \begin_inset Quotes eld
 \end_inset
 
-era
+tree
 \begin_inset Quotes erd
 \end_inset
 
- messages, tree structures describe a tree and its descendents in a structurally
- minimalist way.
+ messages, tree structures serialize a tree and its descendents in a structurall
+y minimalist way.
 \end_layout
 
 \begin_layout Quote
@@ -2071,51 +1568,14 @@ The strings represent pieces of the tree's immutable string.
 \end_layout
 
 \begin_layout Section
-Era
-\end_layout
-
-\begin_layout Standard
-An era is a container for trees.
- It's nothing more than a dict keyed on shortcut address, with Tree arrays
- as values (see above).
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-1288
-\begin_inset Quotes erd
-\end_inset
-
-:[ 
-\emph on
-...tree data...
-
-\emph default
- ]}
-\end_layout
-
-\begin_layout Standard
-Era messages use these to relate trees that are on the same layer, but with
- no other guarantees of being related.
-\end_layout
-
-\begin_layout Section
 Flat
 \end_layout
 
 \begin_layout Standard
-A flat gives an era its context, usually for rendering more than correctness.
- An era is a set of trees on the same layer, but without a basic tree describing
- all previous layers and how they connect to the era, it's kinda useless
- information.
-\end_layout
-
-\begin_layout Standard
-A flat is a compressed description of zero or more eras that you can plug
- an era into, without having to actually know what's in those eras.
+A Flat is included in a tree structure, and represents a collapsed version
+ of a node.
+ It's a three element list: key, value, and treesum.
+ It's distinguishable from trees by its ending with an int (versus an array).
 \end_layout
 
 \begin_layout Quote
@@ -2123,42 +1583,68 @@ A flat is a compressed description of zero or more eras that you can plug
 \begin_inset Quotes eld
 \end_inset
 
-A
+sterisk
 \begin_inset Quotes erd
 \end_inset
 
-, 45899,
-\begin_inset Quotes erd
-\end_inset
-
- example of a 
-\begin_inset Quotes erd
-\end_inset
-
-, 112,
+, 
 \begin_inset Quotes eld
 \end_inset
 
-flat.
+asterisks can hide a whole lot of
 \begin_inset Quotes erd
 \end_inset
 
-]
+, 56123]
 \end_layout
 
-\begin_layout Quotation
-
-\emph on
-All the tree data in era 0 has been flattened into a compact representation
- that includes shortcut references in the correct order and positions.
+\begin_layout Section
+Summable
 \end_layout
 
 \begin_layout Standard
-The Flat is very similar to the tree, except instead of child trees, it
- has integer references to shortcuts.
- The main part of the shortcut is always an int, so we just express shortcut
- refs as ints, and use the type to imply that they're not part of the Flat's
+A single node representation used by the treesum algorithm.
+ It's like the tree representation, but where there are children, they're
+ expressed as a dict keyed on child key, with that node's treesum as the
  value.
+ The treesum of a node is the sum of the strict of its summable.
+\end_layout
+
+\begin_layout Standard
+You might ask why we have two ways to represent nodes.
+ The answer is efficiency.
+ The Tree is good for serializing all information about a tree in a way
+ that can be unpacked later, while the Summable is intended to have as few
+ and easy knowledge dependencies as possible, conveying the minimum amount
+ of information necessary to check equivalence.
+\end_layout
+
+\begin_layout Quote
+[
+\begin_inset Quotes eld
+\end_inset
+
+Tokyo D
+\begin_inset Quotes erd
+\end_inset
+
+, {
+\begin_inset Quotes erd
+\end_inset
+
+ri
+\begin_inset Quotes erd
+\end_inset
+
+:5460}, 
+\begin_inset Quotes erd
+\end_inset
+
+irft
+\begin_inset Quotes erd
+\end_inset
+
+, [7,8]]
 \end_layout
 
 \begin_layout Part
@@ -2333,6 +1819,8 @@ ee was originally invented for).
  clearly been run over by a truck and inedible (unparsable), and a nice,
  friendly-looking pie with a bunch of razor blades in it (parsable, but
  with bad data inside).
+ Well-formed messages will not trigger parsing errors, and valid data will
+ not trigger semantic errors.
 \end_layout
 
 \begin_layout Description

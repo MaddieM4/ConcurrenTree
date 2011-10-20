@@ -1,40 +1,43 @@
 import ConcurrenTree.util.hasher as hasher
 import ConcurrenTree.util.server.websocket as websocket
+from ConcurrenTree.model.bcp.connection import BCPConnection
 
 from server import *
 
 class WSConnection(websocket.WebSocket):
 	def __init__(self, client, server):
 		super(WSConnection, self).__init__(client, server)
-		self.dq = dq.DQ()
+		self.connection = BCPConnection(server.docs, None)
+		self.dq = self.connection.ioqueue
 
 	def onmessage(self, data):
-		self.dq.client_push(data)
+		print "Websocket receiving data:", data
+		self.dq.server_push(data)
+		self.server.cycleflag()
 
 	def onsweep(self):
 		while True:
 			try:
-				self.send(self.dq.client_pull(timeout=0))
+				self.send(self.dq.server_pull(timeout=0))
 			except dq.Empty:
 				break
 
 	def close(self):
 		super(WSConnection, self).close()
-		self.dq.client_push(0)
+		self.dq.server_push(0)
 
-class WebSocketServer(PoolServer):
-	def __init__(self, port=9091):
+class WebSocketServer(Server):
+	def __init__(self, port=9091, docs = None):
+		self.docs = docs
 		self.closed = False
 		self.port = port
 		self.server = websocket.WebSocketServer('localhost',port, WSConnection)
-		self._policy = Policy()
-		#def hash(msg, conn, broadcast):
-		#	if not conn.require("value", msg): return
-		#	conn.push("hashvalue", value=msg['value'], hashvalue=hasher.make(msg['value']))
-		#self._policy.extensions['hash'] = hash
+		self.server.docs = docs
+		self._policy = WSPolicy()
 
 	def run(self):
 		startmessage("WebSocket", self.port)
+		self.server.cycleflag = self.cycleflag
 		#print "WebSocket server starting on port %d" % self.port
 		self.server.listen(5)
 		print "WebSocket server terminating"
@@ -43,7 +46,7 @@ class WebSocketServer(PoolServer):
 		news = []
 		while True:
 			try:
-				news.append(self.server.queue.get_nowait().dq)
+				news.append(self.server.queue.get_nowait().connection)
 			except dq.Empty:
 				break
 		return news
@@ -61,3 +64,9 @@ class WebSocketServer(PoolServer):
 			"port":self.port,
 			"closed":self.closed
 		}
+
+class WSPolicy(Policy):
+	def __init__(self):
+		Policy.__init__(self)
+		self.inputs.default = lambda msg, conn, bcast: bcast(msg)
+		self.outputs.default = lambda msg, conn, bcast: conn.queue.server_push(msg)

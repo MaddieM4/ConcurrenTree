@@ -12,10 +12,11 @@
 			"jquery.js",
 			//"textile.js",
 			"util.js",
-			"buffer.js",
 			"stream.js",
 			"ctree.js",
 			"operation.js",
+			"js/worker.js",
+			"js/display.js",
 			"bcp.js",
 			"view.js")
 
@@ -29,7 +30,7 @@
 			// Find port
 			wsport = get_url_variable("ws",9091)
 			// Start websocket
-			hostws = new ws_stream("ws://localhost:"+wsport+"/");
+			hostws = new Stream("websocket","ws://localhost:"+wsport+"/");
 		});
 
 		head.ready("bcp.js",function(){
@@ -38,9 +39,7 @@
 			}
 
 			// Start BCP processor
-			docs = new DocumentHandler();
-
-			bcp = new BCP(docs, hostws, null)
+			bcp = new BCP(hostws, null)
 			bcp.log = log;
 
 			function checkJSON(){
@@ -63,8 +62,10 @@
 			})
 		});
 
-		function my_display(){
+		function my_display(docname){
+			self = this;
 			this.text = "";
+			this.primitive = new Display(docname, bcp, true)
 			this.display = $("#display #screen");
 			this.buttons = $("#display input:button");
 			this.display.removeClass("loaded");
@@ -84,24 +85,42 @@
 				this.display.html(this.text);
 			}
 			this.rewrite = function(value){
-				this.write(value);
-				this.display.addClass("loaded");
+				self.write(value);
+				self.display.addClass("loaded");
 			}
 			this.clear = function(){
 				this.write("");
 			}
+			this.insert = function(pos, value) {
+			  this.primitive.act(function(prim){
+				prim.cursor(0,parseInt(pos));
+				prim.insert(value);
+			  });
+			}
+			this.delete = function(start, end) {
+			  var amount;
+			  start = parseInt(start);
+			  amount = parseInt(end)-start + 1;
+			  this.primitive.act(function(prim){
+				prim.cursor(0,start);
+				prim.delete(amount);
+			  });
+			}
+			this.close = function(){
+				this.primitive.close();
+			}
 			this.clear();
+			this.primitive.onrewrite = self.rewrite;
 		}
 
-		var rootview;
 		var rootdisplay;
 		function load_document(name){
 			$("#docname").html('Docname: "'+name+'"')
-			rootview = docs.get(name)[0]
-			rootdisplay = new my_display();
-			rootview.display = rootdisplay;
+			if (rootdisplay) {rootdisplay.close()}
+			rootdisplay = new my_display(name);
 			bcp.broadcast(name);
 			bcp.get(name);
+			bcp.subscribe(name);
 		}
 
 		function load_from_dni(){
@@ -115,15 +134,13 @@
 		function easy_insert(){
 			var pos = $('.inserter .pos').val();
 			var value = $('.inserter .value').val();
-			//rootdisplay.replace(pos,pos,value);
-			rootview.insert(pos, value);
+			rootdisplay.insert(pos, value);
 		}
 
 		function easy_delete(){
-			var start = int($('.deleter .start').val());
-			var end = int($('.deleter .end').val());
-			//rootdisplay.replace(start,end+1,"");
-			rootview.delete(start, end);
+			var start = $('.deleter .start').val();
+			var end = $('.deleter .end').val();
+			rootdisplay.delete(start, end);
 		}
 	</script>
 	<style>

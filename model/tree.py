@@ -1,18 +1,12 @@
 from ConcurrenTree.model import ModelBase
-from ConcurrenTree.util.hasher import key, sum
+from ConcurrenTree.util.hasher import key, sum, checksum
 
 import operation
-
-def sort(d):
-	k = d.keys()
-	k.sort()
-	return k
+from address import Address, BeyondFlatError
 
 class Tree(ModelBase):
-	def __init__(self, value="", name=''):
+	def __init__(self, value=""):
 		''' Do not manipulate children externally. Use class methods. '''
-		self.name = name
-		self.initroot()
 		self._value = value
 		self._length = len(value)
 		self._deletions = [False] * len(self)
@@ -20,33 +14,27 @@ class Tree(ModelBase):
 		for i in range(len(self)+1):
 			self._children.append(dict())
 
-	def initroot(self):
-		self.initplace(None, 0, "root")
-
-	def initplace(self, parent, level, shortcut):
-		self._parent = parent
-		self._level = level
-		self._shortcut = shortcut
-
-	def insert(self, pos, value):
+	def insert(self, pos, value, override=False):
 		''' Insert a child to the tree with string "value" at position "pos" '''
 		result = Tree(value)
-		self.insert_tree(pos, result)
+		self.insert_tree(pos, result, override)
 		return result
+
+	def insert_tree(self, pos, obj, override=True):
+		''' Insert an object as a child tree '''
+		if not obj.key in self._children[pos] or override:
+			self._children[pos][obj.key] = obj
 
 	def delete(self, pos):
 		''' Mark a character in a tree as deleted '''
 		del self[pos]
 
-	def insert_tree(self, pos, obj):
-		''' Insert an object as a child tree, setting its era properties '''
-		obj.initplace(self, self.level+1, self._shortcut)
-		obj.name = self.name
-		self._children[pos][obj.key] = obj
-
 	def get(self, pos, key):
 		''' Return the subtree with key "key" from position "pos" '''
-		return self._children[pos][key]
+		try:
+			return self._children[pos][key]
+		except BeyondFlatError as e:
+			e.propogate(pos, len(self), key)
 
 	def all_children(self):
 		''' 
@@ -81,70 +69,12 @@ class Tree(ModelBase):
 		''' Return the length of the internal immutable string '''
 		return self._length
 
-	# Era functions and utilities
-
-	def up(self, num):
-		if num==0:
-			return self
-		else:
-			return self._parent.up(num-1)
-
-	@property
-	def parent(self):
-		return self._parent
-
-	@property
-	def level(self):
-		return self._level
-
-	@property
-	def era(self):
-		return self.level // 16
-
-	@property
-	def shortcut(self):
-		return self.era, self._shortcut
-
-	@property
-	def shortcutparent(self):
-		return self.up(self.level % 16)
-
-	@property
-	def is_root(self):
-		return self.level==0
-
-	@property
-	def root(self):
-		return self.up(self.level)
-
-	def find(self, shortcut):
-		''' Resolve a shortcut into a tree. '''
-		if self.is_root:
-			shortcut = validate_shortcut(shortcut)
-			return self.shortcuts[shortcut]
-		else:
-			return self.parent.find(shortcut)
-
-	def register(self, shortcut, value):
-		''' Registers a shortcut with the root '''
-		if self.is_root:
-			shortcut = validate_shortcut(shortcut)
-			self.shortcuts[shortcut] = value
-		else:
-			self.parent.register(shortcut, value)
-
-	@property
-	def address(self):
-		sp = self.shortcutparent
-		if self.era == 0:
-			# no shortcut
-			pass
-		else:
-			# shortcut
-			pass
+	def __repr__(self):
+		classname = repr(self.__class__).split()[1]
+		return "<%s instance '%s' at %s>" % (classname, self.key, hex(long(id(self)))[:-1])
 
 	def flatten(self):
-		''' Returns a string that summarizes self and all descendants. Not backwards-compatible for applying ops. '''
+		''' Returns a string that summarizes self and all descendants. '''
 		rstring = ""
 		for i in range(self._length+1):
 			for c in self.children(i):
@@ -154,6 +84,14 @@ class Tree(ModelBase):
 				if not self._deletions[i]:
 					rstring += self._value[i]
 		return rstring
+
+	def flatnode(self):
+		''' Returns a Flat version of this node '''
+		return Flat(self.key, self.flatten(), self.treesum)
+
+	def flattenchild(self, pos, key):
+		newflat = self._children[pos][key].flatnode()
+		self.insert_tree(pos, newflat)
 
 	def trace(self, pos):
 		''' 
@@ -169,14 +107,17 @@ class Tree(ModelBase):
 		togo = pos
 		for i in range(len(self)+1):
 			for child in self.children(i):
-				x = child._trace(togo)
-				print "///",x
+				try:
+					x = child._trace(togo)
+				except BeyondFlatError as e:
+					e.propogate(i,len(self),child.key)
 				if type(x) == tuple:
-					return [[i, child.key]]+x[0], x[1]
+					x[0].prepend(x[0].jump(i, len(self), child.key))
+					return x
 				else:
-					togo -= x
+					togo = x
 			if togo == 0:
-				return ([],i)
+				return (Address(),i)
 			if i < len(self) and not self._deletions[i]:
 				togo -=1
 		return togo
@@ -200,196 +141,95 @@ class Tree(ModelBase):
 		return result
 
 	@property
+	def summable(self):
+		runningstring = ""
+		deletions = []
+		result = []
+		for i in range(len(self)+1):
+			kids = {}
+			for k in self._children[i]:
+				kids[k] = self._children[i][k].treesum
+			if kids:
+				result.append(runningstring)
+				runningstring = ""
+				result.append(kids)
+			if i < len(self):
+				runningstring += self._value[i]
+				if self._deletions[i]: deletions.append(i)
+		if runningstring: result.append(runningstring)
+		result.append(deletions)
+		return result
+
+	@property
+	def treesum(self):
+		''' Value used to check tree equivalence '''
+		return checksum(self.summable)
+
+	@property
 	def key(self):
 		return key(self._value)
 
 class Flat(Tree):
-	def __init__(self, value, level, protokids={}, name=''):
-		''' 
-			value: protocol flat (list of strings and ints)
-			level: int
-			protokids: protocol era (dict of prototrees keyed on shortcut)
-			name: docname
-		'''
-		strvalue = stringparse(value)
-		Tree.__init__(self, strvalue, name)
-		self.initplace(None, level, "flat")
-		self.childpositions = positionparse(value)
-		self.install(protokids)
+	def __init__(self, key, value, sum):
+		self._key = key
+		self._value = value
+		self._sum = sum
+		self._length = len(value)
 
-	@property
-	def parent(self):
-		raise BeyondFlatError(self.level-1)
+	def __getitem__(self, pos):
+		self.require()
 
-	@property
-	def root(self):
-		raise BeyondFlatError(0)
+	def __delitem__(self, pos):
+		self.require()
 
-	def position(self, shortcut):
-		for pos in childpositions:
-			if shortcut in pos:
-				return pos
-		raise KeyError("Shortcut not found in Flat definition")
+	def flatten(self):
+		return self._value
 
-	def install(self, protokids):
-		for shortcut in protokids:
-			pos = self.position(shortcut)
-			child = protokids[shortcut]
-			if type(child) == list: #prototree
-				child = tree_from_proto(child)
-			self.insert_tree(pos, child)
+	def flatnode(self):
+		return self
 
-class Document:
-	def __init__(self, docname, msgcallback):
-		''' 
-			msgcallback should be an asynchronous function
-			that accepts a BCP msgdict, to send it to the
-			network.
-
-			This function does not need to return anything. 
-		'''
-		self.name = docname
-		self.load = loadcallback
-		self.flat = Flat("", 0, name=self.name)
-		self.root = self.flat.insert(0, "")
-		self.opqueue = []
-		self.operations = {}
-		self.slidewant = 0
-
-	def load_proto(self, msgdict):
-		''' 
-			Accepts:
-				X op
-				* ad
-				* getop
-				* check
-				* thash
-				* get
-				X era
-		'''
-		t = msgdict['type']
-		if t=="era":
-			if msgdict['subtype']=="tree":
-				self.set_era(msgdict['layer'], msgdict['era'])
-			elif msgdict['subtype']=="flat":
-				self.set_flat(msgdict['layer'], msgdict['flat'])
-		elif t=="op":
-			self.apply(operation.Operation(msgdict['instructions']))
-
-	def get_era(self, num):
-		pass
-
-	def set_era(self, layer, proto):
-		pass
-
-	def get_flat(self, num):
-		pass
-
-	def set_flat(self, layer, proto):
-		pass
-
-	def apply(self, op):
-		try:
-			op.apply(self.root)
-		except:
-			pass
-
-	def __str__(self):
-		return self.flat.flatten()
-
-	@property
-	def era(self):
-		''' 
-			Lowest era in memory.
-		'''
-		return self.flat.era
-
-	@property
-	def maxera(self):
-		''' 
-			Highest era in memory.
-		'''
-		pass
-
-	def slide(self, num):
-		''' 
-			Adjust the era cutoff for storage. Use a positive number
-			to indicate the earliest era to store, or a negative
-			number to indicate how many eras to store (maximum era - num).
-		'''
-		era = self.era
-		if num<0:
-			num = self.maxera-num
-		if num==era:
-			return
-		elif num<era:
-			self.load(self.docname, "era", range(num,era))
-		elif num>era:
-			# forget
-			newflat = self.get_flat(num)
-			
-
-	@property
-	def slidewant(self):
-		''' 
-			Like slide, but indicates what number to slide to when the
-			opqueue is empty. It's configuration, as opposed to the actual
-			slide value, which changes as needed to apply ops or fulfill
-			requests.
-
-			Default is zero, which does not forget anything.
-		'''
-		return self.slidewant
-
-	@slidewant.setter
-	def slidewant(self, num):
-		if type(num)!=int:
-			raise TypeError("Document.slidewant must be of <type 'int'>")
-		self._slidewant = num
-
-class BeyondFlatError(Exception):
-	def __init__(self, level):
-		''' Level should indicate the level needed to load '''
-		Exception.__init__(self, "Target level not loaded: "+str(level))
-		self.level = level
-
-	@property
-	def era(self):
-		return self.level // 16
-
-def from_proto(obj, era=None):
-	''' 
-		Deprecated in this form, but we'll reuse this code
-		for a Document function.
-	'''
-	if type(obj)==dict:
-		value = None
-		shortcut = obj['address']
-		if "value" in obj:
-			value = tree_from_proto(obj['value'])
-		return TreeReference(era, [int(shortcut[0][1:]), shortcut[1]], value)
-	children = {}
-	value =""
-	deletions = obj.pop()
-	for x in obj:
-		if type(x)==str:
-			value+=x
+	def _trace(self, pos):
+		if pos > len(self):
+			return pos-len(self)
 		else:
-			pos = len(value)
-			if not pos in children:
-				children[pos]=[]
-			children[pos].append(from_proto(x, era))
-	tree = Tree(value)
-	for pos in children:
-		for child in children[pos]:
-			tree.insert_tree(pos, child)
-	return tree
+			self.require()
+
+	def proto(self):
+		return [self._key, self._value, self._sum]
+
+	@property
+	def _children(self):
+		self.require()
+
+	@property
+	def _deletions(self):
+		self.require()
+
+	@property
+	def summable(self):
+		self.require()
+
+	@property
+	def treesum(self):
+		return self._sum
+
+	@property
+	def key(self):
+		return self._key
+
+	def require(self):
+		raise BeyondFlatError(Address())
+
+def sort(d):
+	k = d.keys()
+	k.sort()
+	return k
 
 def stringparse(l):
 	''' 
 		Return a concatenation of all strings in a list
 	'''
-	return "".join([x for x in value if type(x)==str])
+	return "".join([x for x in l if type(x)==str])
 
 def positionparse(l):
 	''' 

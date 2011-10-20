@@ -1,38 +1,42 @@
 from server import *
 from threading import Lock
+from ConcurrenTree.model.bcp.connection import BCPConnection
 
 import socket
 import select
 
 class PeerSocket:
-	def __init__(self, socket):
+	def __init__(self, socket, docs):
 		self.closed = False
 		self.socket = socket
-		self.dq = dq.DQ()
+		
+		self.connection = BCPConnection(docs, None)
+		self.dq = self.connection.ioqueue
 
 	def recv(self):
 		data = self.socket.recv(1024)
 		if data:
-			self.dq.client_push(data)
+			self.dq.server_push(data)
 		else:
 			self.close()
 
 	def process(self):
 		while True:
 			try:
-				self.socket.sendall(self.dq.client_pull(timeout=0))
+				self.socket.sendall(self.dq.server_pull(timeout=0))
 			except dq.Empty:
 				break
+		self.connection.cycle()
 
 	def close(self):
 		print "Peersocket closing itself"
 		#self.process()
-		self.dq.client_push(0)
+		self.dq.server_push(0)
 		self.socket.close()
 		self.closed = True
 
-class Peers(PoolServer):
-	def __init__(self, port=9090):
+class Peers(Server):
+	def __init__(self, port=9090, docs = None):
 		self.lock = Lock()
 		with self.lock:
 			self.socket = socket.socket() # defaults to needed properties
@@ -42,6 +46,7 @@ class Peers(PoolServer):
 			self.peers = {}
 			self.unread = []
 			self._policy = Policy()
+			self.docs = docs
 
 	def run(self):
 		startmessage('Peer', self.socket.getsockname()[1])
@@ -54,7 +59,7 @@ class Peers(PoolServer):
 			for ready in Rlist:
 				if ready == self.socket:
 					client, address = self.socket.accept()
-					newpeer = self.peers[client.fileno()] = PeerSocket(client)
+					newpeer = self.peers[client.fileno()] = PeerSocket(client, self.docs)
 					print "New peer connection (%d)" % client.fileno()
 					with self.lock:
 						self.unread.append(newpeer.dq)

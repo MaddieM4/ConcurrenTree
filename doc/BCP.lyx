@@ -134,8 +134,20 @@ n.
 
 \end_inset
 
- in the parent tree, and it can be found again given the hash of its original
- value and the index it's attached to.
+ in the parent tree, and it can be found again given the key
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Here meaning the key algorithm, which shortens long strings by turning any
+ characters beyond them into the sum of that section of the string.
+ Sum is another algorithm.
+ There's a bunch of textual algorithms.
+\end_layout
+
+\end_inset
+
+ of its original value and the index it's attached to.
 \end_layout
 
 \begin_layout Standard
@@ -145,7 +157,7 @@ Using these properties, we have a working plaintext model for which we can
 \begin_inset Quotes eld
 \end_inset
 
-export
+flatten
 \begin_inset Quotes erd
 \end_inset
 
@@ -156,63 +168,29 @@ export
  concept and the right tool for this kind of job.
 \end_layout
 
-\begin_layout Standard
-Finally, we have markers.
- Markers handle formatting in a way that gets out of the way of regular
- text (important for concurrently edited documents) and makes a very simple
- kind of sense.
- Things get a bit nastier and dirtier under the hood to maintain eventual
- consistency though, which is one of the key properties of ConcurrenTree.
- So we'll get into the inner workings a bit later, but for now, here's markers
- in a nutshell: a marker has a type, a value, and a position, and it applies
- to everything to the right of it in the resultant text, at least until
- another marker of the same type shows up.
-\end_layout
-
 \begin_layout Section
 Addresses
 \end_layout
 
 \begin_layout Standard
-There are two types of addresses, 
+Addresses are really a set of directions that take you down through the
+ descendants of a node.
+ An address is a list of ints and strings.
+ An int 
 \emph on
-absolute
+p 
 \emph default
- and 
+means that the following key string refers to a child at position 
 \emph on
-shorthand
+p
 \emph default
-.
- Absolute addresses are conceptually simpler, so you can learn those now,
- build on that knowledge, and then learn the shorthand variation later on
- when you learn about eras.
-\end_layout
-
-\begin_layout Standard
-The basic idea of an address is not as complicated as it sounds.
- We want to be able to reference any node in a complex tree with a string.
- And we can! The best part is we borrow a little syntax from filesystem
- syntax to make it intuitive and familiar.
-\end_layout
-
-\begin_layout Quote
-0:a98321/4:393bf8/1:de73c0
-\end_layout
-
-\begin_layout Standard
-As you might have guessed from our example, each node is referenced with
- an index:hash combination, the / denotes a parent-child relationship, and
- we can see that a tree with a hash of 393bf8 is a child of root node 0:a98321
- at index 4.
-\end_layout
-
-\begin_layout Standard
-Here's how it works.
- Any node can find any of its children given an index and a hash.
- A recursive algorithm can pass a request down a tree and bring the answer
- to the top by having each node pop a child off the front of it, so each
- node gets an address to resolve that's a little shorter, until finally
- the correct node is found and passed back up with return statements.
+, otherwise, 
+\emph on
+p
+\emph default
+ is assumed to be the length of the parent (that is, the child is assumed
+ to be at the last possible index position).
+ So while multiple adjacent strings are okay, adjacent ints don't make sense.
 \end_layout
 
 \begin_layout Section
@@ -230,7 +208,7 @@ very
 \begin_inset Quotes eld
 \end_inset
 
-tranformed
+transformed
 \begin_inset Quotes erd
 \end_inset
 
@@ -292,7 +270,7 @@ There's also a built-in transactional benefit to operations, letting you
 \end_layout
 
 \begin_layout Section
-Eras
+Incremental collapsation/expansion
 \end_layout
 
 \begin_layout Standard
@@ -320,164 +298,31 @@ Yeah, that look of horror and the memory usage panics running through your
 
 \begin_layout Standard
 Well, the good news is that we fixed it.
- The bad news is that the fix is one of the more difficult concepts in Concurren
-Tree.
- It's called an 
-\begin_inset Quotes eld
-\end_inset
-
-era.
-\begin_inset Quotes erd
-\end_inset
-
-
+ It's not even all that complicated.
+ Each node can be flattened down temporarily to free up memory, and the
+ lost information retrieved from another source if necessary.
+ The data structure for a flat node is just the key, the flattened value,
+ and the treesum of the original tree.
+ We'll get into the details of the treesum algorithm in Part IV, but it's
+ used to test equivalence/syncronicity between copies of a tree even if
+ it or its descendants have been flattened.
 \end_layout
 
 \begin_layout Standard
-Every tree heirarchy can be thought of as being in layers.
- Let's use directories as an example.
- 
-\emph on
-/
-\emph default
- is at layer 0, 
-\emph on
-/dev
-\emph default
- and 
-\emph on
-/bin
-\emph default
- are on layer 2, and 
-\emph on
-/var/lib/alsa
-\emph default
- is on the same layer as 
-\emph on
-/home/philip/documents
-\emph default
- even though they're distantly diverged in the tree.
+Be aware that if you simplify your local data this way, and are unable to
+ get a nonflattened copy of the node later, you won't be able to apply operation
+s that address the data you simplified away.
+ Only collapse nodes into flats if you're sure you'll be able to reconstitute
+ them when you need to.
 \end_layout
 
 \begin_layout Standard
-In the same way, you can think of CTree documents as having layers (although
- unlike our directory example, layer zero can have as many nodes as you
- want, there is no top-level node).
- For every 16 layers
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-Why 16? Well, it was an arbitrary decision.
- We decided it was a nice power of two about the right size for it.
- Theoretically, we could use any era size, but then you wouldn't have the
- nice symmetry with hexadecimal numbers (for example, era 0 starts at 00,
- era 1 starts at 10, era 2 at 20, and so on).
-\end_layout
-
-\end_inset
-
- in a document, there's an era.
- Layer 15 is the last layer in era 0, layer 16 is the first in era 1.
- Or, if you like hexadecimal, layer 0F is the last layer in era 0, and layer
- 10 is the first in era 1.
-\end_layout
-
-\begin_layout Standard
-So, we've organized our layers into bigger segments, but we haven't solved
- any memory crises quite yet.
- But we're getting there.
- You see, at each era border, we can collapse all previous eras into a single
- 
-\begin_inset Quotes eld
-\end_inset
-
-virtual node
-\begin_inset Quotes erd
-\end_inset
-
- called a flat, allowing us to treat unlimited structural data like a single
- node.
-\end_layout
-
-\begin_layout Standard
-This voodoo is accomplished with more or less the same algorithms used to
- convert a tree into a resultant string.
- This lets us scale 
-\emph on
-down
-\emph default
- our memory usage.
- We can also scale it back 
-\emph on
-up
-\emph default
- as needed if we get an operation that operates on nodes above our copy's
- flatline, by requesting that information from the hard drive cache or the
- web.
- Era algorithms let us plug in higher eras to our stack and move the flatline
- in either direction at will.
-\end_layout
-
-\begin_layout Section
-Shorthand Addresses
-\end_layout
-
-\begin_layout Standard
-So now that you understand eras (or at least enough to nod your head and
- pretend you do), you can now understand shorthand addresses.
-\end_layout
-
-\begin_layout Standard
-On deep trees (let's say, 80 layers deep), absolute addresses are just gonna
- be unmanageably large.
- With about 12 characters per layer minimum...
- that's 96 characters.
- Not so bad on its own, but addresses are used everywhere, and that's a
- lot of overhead, and it's assuming fairly short hashes.
-\end_layout
-
-\begin_layout Standard
-The answer to this is a special type of address that lets us shortcut to
- certain nodes - say, any node on the first layer of any era.
- It's not too complicated to do this.
-\end_layout
-
-\begin_layout Standard
-The shortcut format is 
-\begin_inset Quotes eld
-\end_inset
-
-#738bbe95
-\begin_inset Quotes erd
-\end_inset
-
-, where the number is the hash of it's shortcut address from the next shortcut
- up the tree.
- For era 1 shortcuts, this is just their absolute address, for era 2 it's
- the shortcut from their era 1 ancestor, etc.
- From there you can add on normal 
-\begin_inset Quotes eld
-\end_inset
-
-/index:hash
-\begin_inset Quotes erd
-\end_inset
-
- segments to move further down the tree.
-\end_layout
-
-\begin_layout Standard
-This is a little more complicated than always using the absolute address,
- but it allows for gradual 
-\begin_inset Quotes eld
-\end_inset
-
-forgetting
-\begin_inset Quotes erd
-\end_inset
-
- of ancient eras.
+Other than that, flat nodes are quite useful.
+ They let you send a remote entity the flat version of a document first,
+ and then supply them with more detailed data as they need and request it
+ - in turn, allowing the remote end to immediately load and visualize, while
+ collecting the detailed information needed to create and apply operations
+ in the background.
 \end_layout
 
 \begin_layout Part
@@ -487,7 +332,7 @@ Tree Algorithms
 \begin_layout Standard
 The ConcurrenTree model is designed so that you can figure out algorithms
  from scratch correctly without a reference, but it's still useful to have
- some examples, especially for stuff like markers.
+ some examples.
  These algorithms to not do any sanity or validity checking, for the sake
  of simplicity, so while they may be easier to read than the source code
  in the repository, they're also a bit brittle, and for educational purposes
@@ -1094,18 +939,6 @@ on state, and optionally, the op hashes you know have been applied at that
  end.
 \end_layout
 
-\begin_layout Standard
-The auth state is surprisingly simple to store.
- You simply need a dictionary keyed on docname, containing random strings,
- generated as needed during auth dances.
- Store entries when you need to remember the random source of an MEL, free
- the memory after you check the appropriate 
-\emph on
-authmd
-\emph default
- response for your original source (whether it validates or not).
-\end_layout
-
 \begin_layout Part
 Hash algorithms
 \end_layout
@@ -1438,5 +1271,16 @@ return sum(strict(obj))
 \end_layout
 
 \end_deeper
+\begin_layout Section
+treesum
+\end_layout
+
+\begin_layout Standard
+The treesum of a tree node is the checksum of its Summable representation
+ (see BCP Message Set documenation).
+ The treesum is specific to trees, but is also the best way to equivalence
+ test them since Summables can be generated with very little child data.
+\end_layout
+
 \end_body
 \end_document

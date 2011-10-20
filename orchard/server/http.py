@@ -5,7 +5,7 @@ import ConcurrenTree
 
 import webbrowser
 
-class HTTP(PoolServer):
+class HTTP(Server):
 	def __init__(self, port=8080):
 		self.closed = False
 		self.port = port
@@ -18,16 +18,20 @@ class HTTP(PoolServer):
 		self.server = hfs.Server(('',port), [
 			hfs.File(jsclient,"client.html",["/","/index.htm","/index.html"],'text/html'),
 			hfs.File(jsclient,"newclient.html", "/newclient", "text/html"),
-			hfs.File(jsclient,"util.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"buffer.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"ctree.js", mimetype="text/javascript", preload=True),
-			hfs.File(jsclient,"operation.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"bcp.js", mimetype="text/javascript", preload=True),
-			hfs.File(jsclient,"view.js", mimetype="text/javascript", preload=True),
-			hfs.File(jsclient,"stream.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),
-			hfs.File(jsclient,"textile-editor.min.js", ["/textile.js", "/textile-editor.min.js"],"text/javascript"),
-			hfs.File(jsclient,"head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
+			hfs.File(jsclient,"js/util.js", ["/util.js", "/js/util.js"],mimetype="text/javascript"),
+			hfs.File(jsclient,"js/buffer.js", ["/buffer.js", "/js/buffer.js"], mimetype="text/javascript"),
+			hfs.File(jsclient,"js/ctree.js", ["/ctree.js", "/js/ctree.js"],mimetype="text/javascript", preload=True),
+			hfs.File(jsclient,"js/operation.js", ["/operation.js","/js/operation.js"],mimetype="text/javascript"),
+			hfs.File(jsclient,"js/bcp.js", ["/bcp.js", "/js/bcp.js"], mimetype="text/javascript", preload=True),
+			hfs.File(jsclient,"js/view.js", ["/view.js", "/js/view.js"], mimetype="text/javascript", preload=True),
+			hfs.File(jsclient,"js/worker.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"js/display.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"js/displayworker.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"js/stream.js", ["/stream.js", "/js/stream.js"], mimetype="text/javascript"),
+			hfs.File(jsclient,"js/ws.js", "/js/stream/ws.js", mimetype="text/javascript"),
+			hfs.File(jsclient,"js/jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),
+			hfs.File(jsclient,"js/textile-editor.min.js", ["/textile.js", "/textile-editor.min.js"],"text/javascript"),
+			hfs.File(jsclient,"js/head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
 			hfs.File(img,"logos/OrchardLogo.svg", ["/img/logo.svg", "/OrchardLogo.svg"],"image/svg+xml", browsercache=True),
 			hfs.File(img,"logos/OrchardBigLogo.svg", ["/img/biglogo.svg", "/OrchardBigLogo.svg"],"image/svg+xml", browsercache=True),
 			hfs.File(img,"logos/Orchard32.ico", "/favicon.ico","image", browsercache=True)

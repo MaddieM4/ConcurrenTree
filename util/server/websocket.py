@@ -131,7 +131,7 @@ class WebSocketServer(object):
         while self.running:
             for conn in self.connections:
                 self.connections[conn].onsweep()
-            rList, wList, xList = select(self.listeners, [], self.listeners, 1)
+            rList, wList, xList = select(self.listeners, [], self.listeners, .05)
             for ready in rList:
                 if ready == self.socket:
                     logging.debug("New client connection")
