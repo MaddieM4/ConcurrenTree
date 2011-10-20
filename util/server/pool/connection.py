@@ -5,6 +5,7 @@ class Connection:
 		self.queue = DQ()
 		self.ioqueue = DQ()
 		self.buffer = ""
+		self.uniquesource = None
 		self.closed = False
 
 	def cycle(self):
@@ -53,6 +54,10 @@ class Connection:
 	def outgoing(self, msg):
 		''' Analyze pool message, return string for IO '''
 		raise NotImplementedError("Subclasses of Connection must define outgoing()")
+
+	def getunique(self, key):
+		# override with function to request a unique ID in a key
+		raise NotImplementedError("No source for unique IDs")
 
 	def cycleflag(self):
 		# override with function to request more cycles

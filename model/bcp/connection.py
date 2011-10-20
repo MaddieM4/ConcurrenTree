@@ -13,6 +13,9 @@ class BCPConnection(Connection):
 	''' A connection between two Peers '''
 	def __init__(self, docs, auth):
 		Connection.__init__(self)
+		self._id = None
+		self.poolsubs = [{},{}]
+
 		self.docs = docs
 		self.auth = auth
 
@@ -26,7 +29,7 @@ class BCPConnection(Connection):
 			try:
 				self.recv(value[:length])
 			finally:
-				return value[length+1:]
+				return self.incoming(value[length+1:])
 		else:
 			return value
 
@@ -49,20 +52,33 @@ class BCPConnection(Connection):
 
 	def outgoing(self, msg):
 		''' Accepts messages from pool '''
-		if msg['type'] in ("ad", "op"):
-			if msg['docname'] in self.there.subscriptions:
-				subtype = self.there.subscriptions[msg['docname']]
-				self.select(msg['docname'])
-				if msg['type'] == "ad":
+		mtype = msg['type']
+		mname = msg['docname']
+
+		if mtype in ("ad", "op"):
+			if mname in self.there.subscriptions:
+				subtype = self.there.subscriptions[mname]
+				self.select(mname)
+				if mtype == "ad":
 					if subtype in ("live", "notify"):
 						self.send(msg)
 					else:
 						pass # TODO: get advertised op
-				else:
+				else: # Operation
 					if subtype in ("live", "oponly"):
-						self.send(msg)
+						self.send(msg['value'].proto())
 					else:
 						pass # TODO: advertise op
+		elif mtype == "subscribe":
+			timeout = msg['timeout']
+			subtype = msg['subtype']
+
+			s = int(subtype=="op")
+			if not mname in self.poolsubs[s]:
+				self.poolsubs[s][mname] = 0
+				self.push("subscribe", docnames=[mname], subtype=subtype)
+			self.poolsubs[s][mname] = max(self.poolsubs[s][mname], timeout)
+			# TODO: Expire subscriptions
 		else:
 			self.send(msg)
 
@@ -98,13 +114,20 @@ class BCPConnection(Connection):
 			except operation.ParseError:
 				return self.error(453)
 			# TODO: authorize
-			try:
-				op.apply(self.fdoc)
-				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
-				obj['docname'] = self.there.selected
-				self.pool_push(obj)
-			except operation.OpApplyError:
-				self.error(500) # General Local Error
+			if not op.applied(self.fdoc):
+				try:
+					op.apply(self.fdoc)
+					print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
+					self.pool_push({
+						"type":"op",
+						"docname":self.there.selected,
+						"value":op
+					})
+				except operation.OpApplyError:
+					self.error(500) # General Local Error
+			else:
+				print "Op was already applied"
+
 		elif obt=='ad':
 			if not self.require("hash", obj): return
 			elif not obj['hash'] in self.here.ops:
@@ -168,6 +191,12 @@ class BCPConnection(Connection):
 				# Unknown subscription type
 				self.error(400,details="Bad subtype "+json.dumps(obj['subtype']))
 			for name in obj['docnames']:
+				self.pool_push({
+					"type":"subscribe",
+					"docname":name,
+					"subtype":subtype,
+					"timeout":30
+				})
 				self.there.subscriptions[name] = subtype
 
 		elif obt=='unsubscribe':
@@ -211,3 +240,9 @@ class BCPConnection(Connection):
 	def ldoc(self):
 		''' Locally selected document '''
 		return self.docs[self.here.selected]
+
+	@property
+	def id(self):
+		if self._id == None:
+			self._id = self.getunique("conn")
+		return self._id

@@ -6,9 +6,10 @@ import socket
 import select
 
 class PeerSocket:
-	def __init__(self, socket, docs):
+	def __init__(self, socket, docs, cycleflag):
 		self.closed = False
 		self.socket = socket
+		self.cycleflag = cycleflag
 		
 		self.connection = BCPConnection(docs, None)
 		self.dq = self.connection.ioqueue
@@ -16,17 +17,21 @@ class PeerSocket:
 	def recv(self):
 		data = self.socket.recv(1024)
 		if data:
+			print "Peer receiving:",repr(data)
 			self.dq.server_push(data)
+			self.cycleflag()
 		else:
 			self.close()
 
 	def process(self):
 		while True:
 			try:
-				self.socket.sendall(self.dq.server_pull(timeout=0))
+				data = self.dq.server_pull(timeout=0)
+				print "Peer sending:",repr(data)
+				self.socket.sendall(data)
+				self.cycleflag()
 			except dq.Empty:
 				break
-		self.connection.cycle()
 
 	def close(self):
 		print "Peersocket closing itself"
@@ -43,9 +48,9 @@ class Peers(Server):
 		        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.socket.bind(('',port))
 			self.closed = False
-			self.peers = {}
 			self.unread = []
-			self._policy = Policy()
+			self.peers = {}
+			self._policy = PeerPolicy()
 			self.docs = docs
 
 	def run(self):
@@ -59,10 +64,7 @@ class Peers(Server):
 			for ready in Rlist:
 				if ready == self.socket:
 					client, address = self.socket.accept()
-					newpeer = self.peers[client.fileno()] = PeerSocket(client, self.docs)
-					print "New peer connection (%d)" % client.fileno()
-					with self.lock:
-						self.unread.append(newpeer.dq)
+					self.connect_socket(client)
 				else:
 					print "PeerSocket ready for reading (%d)" % ready
 					self.peers[ready].recv()
@@ -73,13 +75,24 @@ class Peers(Server):
 		print "Peer Server shutting down"
 
 	def connect(self, address):
+		if type(address)==str:
+			address = address.split(':')
+			address[1] = int(address[1])
+		address = tuple(address)
+		print "Connecting to peer:", address
+		newsock = socket.socket()
+		newsock.connect(address)
+		self.connect_socket(newsock)
+
+	def connect_socket(self, client):
+		newpeer = self.peers[client.fileno()] = PeerSocket(client, self.docs, self.cycleflag)
+		print "New peer connection:", client.getpeername()
 		with self.lock:
-			print "Connecting to peer:", address
+			self.unread.append(newpeer.connection)
 
 	def starting(self):
 		with self.lock:
-			unread = self.unread
-			self.unread = []
+			unread, self.unread = self.unread, []
 			return unread
 
 	def policy(self):
@@ -116,9 +129,14 @@ class Peers(Server):
 		while i<len(keys):
 			if self.peers[keys[i]].closed:
 				del self.peers[keys[i]]
-			else:
-				i+=1
+			i+=1
 
 	@property
 	def listeners(self):
 		return [self.socket]+[x for x in self.peers]
+
+class PeerPolicy(Policy):
+	def __init__(self):
+		Policy.__init__(self)
+		self.inputs.default = lambda msg, conn, bcast: bcast(msg)
+		self.outputs.default = lambda msg, conn, bcast: conn.queue.server_push(msg)

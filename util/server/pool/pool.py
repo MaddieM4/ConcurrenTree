@@ -16,6 +16,9 @@ class Pool:
 		self._close_signal = False
 		self.env = [[],[]]
 
+		self.uniquelock = Lock()
+		self.unique = {}
+
 	def start(self, cls, *args, **kwargs):
 		''' Add a server to the pool '''
 		try:
@@ -103,6 +106,7 @@ class Pool:
 		conn.queue.server_notify(self.cycleflag) # Set pool notification callback
 		conn.queue.client_notify(self.cycleflag) # Set pool notification callback
 		conn.cycleflag = self.cycleflag
+		conn.getunique = self.getunique
 		self.servers[server][2].append(conn)
 
 	def server(self, index):
@@ -178,3 +182,10 @@ class Pool:
 	def check_closed(self):
 		if self.closed:
 			raise ClosedError("Pool is closed")
+
+	def getunique(self, key):
+		with self.uniquelock:
+			if not key in self.unique:
+				self.unique[key] = 0
+			self.unique[key] += 1
+			return self.unique[key]
