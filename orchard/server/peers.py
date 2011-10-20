@@ -17,7 +17,7 @@ class PeerSocket:
 	def recv(self):
 		data = self.socket.recv(1024)
 		if data:
-			print "Peer receiving:",data
+			print "Peer receiving:",repr(data)
 			self.dq.server_push(data)
 			self.cycleflag()
 		else:
@@ -27,7 +27,7 @@ class PeerSocket:
 		while True:
 			try:
 				data = self.dq.server_pull(timeout=0)
-				print "Peer sending:",data
+				print "Peer sending:",repr(data)
 				self.socket.sendall(data)
 				self.cycleflag()
 			except dq.Empty:
@@ -129,8 +129,7 @@ class Peers(Server):
 		while i<len(keys):
 			if self.peers[keys[i]].closed:
 				del self.peers[keys[i]]
-			else:
-				i+=1
+			i+=1
 
 	@property
 	def listeners(self):
