@@ -12,12 +12,11 @@ class Operation(ModelBase):
 	def __init__(self, instructions = [], protostring = None):
 		''' If protostring is present, uses that existing serialized instruction set. If not, use instructions. '''
 		if protostring:
-			self.instructions = json.loads(protostring)
-		else:
-			try:
-				self.instructions = instruction.set(instructions)
-			except:
-				raise ParseError()
+			instructions = json.loads(protostring)
+		try:
+			self.instructions = instruction.set(instructions)
+		except:
+			raise ParseError()
 
 	def apply(self, tree):
 		backup = deepcopy(tree)
@@ -28,6 +27,7 @@ class Operation(ModelBase):
 				tree = backup
 				traceback.print_exc()
 				raise OpApplyError()
+		tree.applied.add(self.hash)
 
 	@property
 	def inserts(self):
@@ -56,6 +56,10 @@ class Operation(ModelBase):
 				traceback.print_exc()
 				return False
 		return True
+
+	def applied(self, tree):
+		''' Returns whether or not this op has been applied to the tree '''
+		return self.hash in tree.applied
 
 	def compress(self):
 		# Todo - op compression (combining deletion instructions together)

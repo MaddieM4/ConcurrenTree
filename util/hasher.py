@@ -1,7 +1,7 @@
 from hashlib import new
 import json
 
-HASH_FUNCTION = 'sha256' # was md5
+HASH_FUNCTION = 'sha1' # was md5
 
 def make(string):
 	return new(HASH_FUNCTION, string).hexdigest()
@@ -12,15 +12,9 @@ def make6(string):
 def maken(string, n):
 	return make(string)[:n]
 
-modulo = 2**16
-
 def sum(string, verbose = False):
-	''' Create a semi-hash of the string '''
-	s = 0
-	for i in string:
-		if verbose: print s
-		s = (s*s + ord(i)) % modulo
-	return int(s)
+	''' Create a hash of the string '''
+	return make(string)
 
 def strict(obj):
 	''' Convert an object into a strict JSON string '''
@@ -49,6 +43,6 @@ def checksum(obj):
 
 def key(string):
 	if len(string)>10:
-		return string[:10]+str(sum(string[10:]))
+		return string[:10]+make6(string[10:])
 	else:
 		return string

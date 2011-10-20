@@ -29,7 +29,7 @@ class BCPConnection(Connection):
 			try:
 				self.recv(value[:length])
 			finally:
-				return value[length+1:]
+				return self.incoming(value[length+1:])
 		else:
 			return value
 
@@ -114,16 +114,20 @@ class BCPConnection(Connection):
 			except operation.ParseError:
 				return self.error(453)
 			# TODO: authorize
-			try:
-				op.apply(self.fdoc)
-				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
-				self.pool_push({
-					"type":"op",
-					"docname":self.there.selected,
-					"value":op
-				})
-			except operation.OpApplyError:
-				self.error(500) # General Local Error
+			if not op.applied(self.fdoc):
+				try:
+					op.apply(self.fdoc)
+					print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
+					self.pool_push({
+						"type":"op",
+						"docname":self.there.selected,
+						"value":op
+					})
+				except operation.OpApplyError:
+					self.error(500) # General Local Error
+			else:
+				print "Op was already applied"
+
 		elif obt=='ad':
 			if not self.require("hash", obj): return
 			elif not obj['hash'] in self.here.ops:

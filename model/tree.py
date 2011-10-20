@@ -11,6 +11,7 @@ class Tree(ModelBase):
 		self._length = len(value)
 		self._deletions = [False] * len(self)
 		self._children = []
+		self.applied = set()
 		for i in range(len(self)+1):
 			self._children.append(dict())
 
