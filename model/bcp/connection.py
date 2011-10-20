@@ -76,8 +76,8 @@ class BCPConnection(Connection):
 			s = int(subtype=="op")
 			if not mname in self.poolsubs[s]:
 				self.poolsubs[s][mname] = 0
+				self.push("subscribe", docnames=[mname], subtype=subtype)
 			self.poolsubs[s][mname] = max(self.poolsubs[s][mname], timeout)
-			self.push("subscribe", docnames=[mname], subtype=subtype)
 			# TODO: Expire subscriptions
 		else:
 			self.send(msg)
