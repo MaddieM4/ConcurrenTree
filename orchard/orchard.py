@@ -83,7 +83,7 @@ s_http = pool.start(http.HTTP, port=args.http)
 s_ws   = pool.start(ws.WebSocketServer, port=args.wsport, docs=docs)
 # Start browser
 if not args.browser:
-	s_http.open("/newclient#ws=" + str(s_ws.port))
+	s_http.open("/newclient?ws=" + str(s_ws.port))
 # start notification icon
 pool.start(icon.IconServer, pool)
 
