@@ -56,10 +56,8 @@ class Connection:
 		raise NotImplementedError("Subclasses of Connection must define outgoing()")
 
 	def getunique(self, key):
-		if self.uniquesource:
-			return self.uniquesource.getunique(key)
-		else:
-			raise NameError("No uniquesource defined for connection")
+		# override with function to request a unique ID in a key
+		raise NotImplementedError("No source for unique IDs")
 
 	def cycleflag(self):
 		# override with function to request more cycles

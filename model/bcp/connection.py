@@ -13,6 +13,9 @@ class BCPConnection(Connection):
 	''' A connection between two Peers '''
 	def __init__(self, docs, auth):
 		Connection.__init__(self)
+		self._id = None
+		self.poolsubs = [{},{}]
+
 		self.docs = docs
 		self.auth = auth
 
@@ -66,6 +69,16 @@ class BCPConnection(Connection):
 						self.send(msg['value'].proto())
 					else:
 						pass # TODO: advertise op
+		elif mtype == "subscribe":
+			timeout = msg['timeout']
+			subtype = msg['subtype']
+
+			s = int(subtype=="op")
+			if not mname in self.poolsubs[s]:
+				self.poolsubs[s][mname] = 0
+			self.poolsubs[s][mname] = max(self.poolsubs[s][mname], timeout)
+			self.push("subscribe", docnames=[mname], subtype=subtype)
+			# TODO: Expire subscriptions
 		else:
 			self.send(msg)
 
@@ -174,6 +187,12 @@ class BCPConnection(Connection):
 				# Unknown subscription type
 				self.error(400,details="Bad subtype "+json.dumps(obj['subtype']))
 			for name in obj['docnames']:
+				self.pool_push({
+					"type":"subscribe",
+					"docname":name,
+					"subtype":subtype,
+					"timeout":30
+				})
 				self.there.subscriptions[name] = subtype
 
 		elif obt=='unsubscribe':
@@ -217,3 +236,9 @@ class BCPConnection(Connection):
 	def ldoc(self):
 		''' Locally selected document '''
 		return self.docs[self.here.selected]
+
+	@property
+	def id(self):
+		if self._id == None:
+			self._id = self.getunique("conn")
+		return self._id
