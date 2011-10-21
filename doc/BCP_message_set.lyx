@@ -144,31 +144,24 @@ instructions
 \end_layout
 
 \begin_layout Section
-ad
+subscribe
 \end_layout
 
 \begin_layout Standard
-A message that tells other clients that it has an operation ready to read.
- This is more time- and bandwidth-efficient than broadcasting an op to machines
- that likely already have it.
- For this reason, clients 
-\emph on
-should
-\emph default
- straight-broadcast ops that originate from them, and advertise ops from
- other sources.
- 
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-Be advised that this, like all references to hashing in this document, refers
- to the checksum() function described in the general BCP documentation.
-\end_layout
-
+Subscribing to a document indicates to the remote to forward any ops on
+ that docname to you.
+ The 
+\begin_inset Quotes eld
 \end_inset
 
+docnames
+\begin_inset Quotes erd
+\end_inset
 
+ parameter is an optional list of docnames, if it is not present, the currently
+ selected docname is used.
+ You will not recieve op messages for a docname if you do not subscribe
+ to it.
 \end_layout
 
 \begin_layout Quote
@@ -184,7 +177,7 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-ad
+subscribe
 \begin_inset Quotes erd
 \end_inset
 
@@ -192,7 +185,27 @@ ad
 \begin_inset Quotes eld
 \end_inset
 
-hash
+docnames
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\begin_inset Quotes eld
+\end_inset
+
+willynelson
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
 \begin_inset Quotes erd
 \end_inset
 
@@ -200,7 +213,7 @@ hash
 \begin_inset Quotes erd
 \end_inset
 
-7344
+subscribe
 \begin_inset Quotes erd
 \end_inset
 
@@ -208,20 +221,16 @@ hash
 \end_layout
 
 \begin_layout Section
-getop
+unsubscribe
 \end_layout
 
 \begin_layout Standard
-The reaction message to 
-\begin_inset Quotes eld
-\end_inset
-
-ad
-\begin_inset Quotes erd
-\end_inset
-
-.
- As you might guess, it requests an op message by a hash.
+Disable any subscription on the given docnames.
+ 
+\emph on
+Warning: sending an empty list will disable all subscriptions from the remote
+ end to you, so never send this if you don't mean it! This is very different
+ from omitting the parameter, which unsubscribes you from the selected docname.
 \end_layout
 
 \begin_layout Quote
@@ -237,7 +246,7 @@ type
 \begin_inset Quotes erd
 \end_inset
 
-getop
+unsubscribe
 \begin_inset Quotes erd
 \end_inset
 
@@ -245,7 +254,35 @@ getop
 \begin_inset Quotes eld
 \end_inset
 
-hash
+docnames
+\begin_inset Quotes erd
+\end_inset
+
+:[
+\begin_inset Quotes eld
+\end_inset
+
+The Event
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+Smallville
+\begin_inset Quotes erd
+\end_inset
+
+]}
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
 \begin_inset Quotes erd
 \end_inset
 
@@ -253,11 +290,39 @@ hash
 \begin_inset Quotes erd
 \end_inset
 
-7344
+unsubscribe
 \begin_inset Quotes erd
 \end_inset
 
-}
+, 
+\begin_inset Quotes eld
+\end_inset
+
+docnames
+\begin_inset Quotes erd
+\end_inset
+
+:[]} // unsubscribes you from everything
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+unsubscribe
+\begin_inset Quotes erd
+\end_inset
+
+} // unsubscribes you from currently selected docname
 \end_layout
 
 \begin_layout Part
@@ -456,7 +521,7 @@ tree
 
 \begin_layout Standard
 A concisely-constructed representation of a tree.
- See the object reference in Part VI for more information.
+ See the object reference in Part V for more information.
 \end_layout
 
 \begin_layout Quote
@@ -506,195 +571,6 @@ l
 
 : ...
  }
-\end_layout
-
-\begin_layout Part
-Notifications
-\end_layout
-
-\begin_layout Standard
-There is a bit of functional overlap between this and Part I (live transfer).
- Just remember that you still have to subscribe to a document for other
- machines to send live updates of any kind to you.
-\end_layout
-
-\begin_layout Section
-subscribe
-\end_layout
-
-\begin_layout Standard
-There are different levels of subscription: 
-\emph on
-oponly, live
-\emph default
-, and 
-\emph on
-notify
-\emph default
-.
- A document can only be subscribed as one at a time, so subscribing to something
- twice will put it in whatever level was used the second time, overwriting
- the level of the previous subscription.
-\end_layout
-
-\begin_layout Description
-oponly is exactly what it sounds like.
- Don't bother sending ads, always send the operation directly and save a
- round trip by assuming the op has not been recieved from another source.
-\end_layout
-
-\begin_layout Description
-live means that the remote end will send operations (or ads) as soon as
- they happen, and ads when the operation is secondhand.
- This is the default mode, and will be assumed if no 
-\begin_inset Quotes eld
-\end_inset
-
-subtype
-\begin_inset Quotes erd
-\end_inset
-
- argument is present.
-\end_layout
-
-\begin_layout Description
-notify means that only ads will be sent.
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-subscribe
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-subtype
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-live
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-docnames
-\begin_inset Quotes erd
-\end_inset
-
-:[
-\begin_inset Quotes eld
-\end_inset
-
-willynelson
-\begin_inset Quotes erd
-\end_inset
-
-]}
-\end_layout
-
-\begin_layout Section
-unsubscribe
-\end_layout
-
-\begin_layout Standard
-Disable any subscription on the given docnames.
- 
-\emph on
-Warning: sending an empty list will disable all subscriptions from the remote
- end to you, so never send this if you don't mean it!
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-unsubscribe
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-docnames
-\begin_inset Quotes erd
-\end_inset
-
-:[
-\begin_inset Quotes eld
-\end_inset
-
-The Event
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-Smallville
-\begin_inset Quotes erd
-\end_inset
-
-]}
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-unsubscribe
-\begin_inset Quotes erd
-\end_inset
-
-, 
-\begin_inset Quotes eld
-\end_inset
-
-docnames
-\begin_inset Quotes erd
-\end_inset
-
-:[]} // unsubscribes you from everything
 \end_layout
 
 \begin_layout Part
@@ -763,6 +639,174 @@ sigs
 \end_inset
 
  is a list of address/signature pairs expressed as a mapping ({}).
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+token
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+local
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+something
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+somethingelse
+\begin_inset Quotes erd
+\end_inset
+
+}
+\end_layout
+
+\begin_layout Quote
+{
+\begin_inset Quotes erd
+\end_inset
+
+type
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+token
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+subtype
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+identity
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+address
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+philip.horger@orchard.com
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+key
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+<some pgp public key>
+\begin_inset Quotes erd
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+sigs
+\begin_inset Quotes erd
+\end_inset
+
+:{
+\end_layout
+
+\begin_deeper
+\begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
+nat.abbots@orchard.com
+\begin_inset Quotes erd
+\end_inset
+
+:
+\begin_inset Quotes erd
+\end_inset
+
+<philip's public key signed with nat's private key>
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
+\end_layout
+
+\end_deeper
+\begin_layout Quote
+}
 \end_layout
 
 \begin_layout Section
@@ -933,6 +977,11 @@ valid
 
 \begin_layout Part
 Meta
+\end_layout
+
+\begin_layout Standard
+These messages are not part of core BCP, they're simply a standard starting
+ point for extensions.
 \end_layout
 
 \begin_layout Section
@@ -1212,78 +1261,6 @@ Collecting decapitated teddy bears
 \end_layout
 
 \begin_layout Quote
-}
-\end_layout
-
-\begin_layout Section
-part
-\end_layout
-
-\begin_layout Standard
-In order to keep large messages from hanging a connection interminably,
- BCP enforces a very strict character limit: 2048 characters per message.
- This is more than enough for most messages, but for larger messages, it's
- the grim reaper.
-\end_layout
-
-\begin_layout Standard
-Multipart messages are a simple way to send large messages without clogging
- the pipe or hitting the character limit.
- The example below is a segment of a large segmented message.
- The contained message is treated like a big string and will be evaluated
- as soon as a piece is sent with the property done set to true (this can
- be ommitted in any non-final piece).
-\end_layout
-
-\begin_layout Quote
-{
-\begin_inset Quotes erd
-\end_inset
-
-type
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-part
-\begin_inset Quotes erd
-\end_inset
-
-,
-\begin_inset Quotes erd
-\end_inset
-
-hash
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-44385
-\begin_inset Quotes erd
-\end_inset
-
-,
-\begin_inset Quotes erd
-\end_inset
-
-contents
-\begin_inset Quotes erd
-\end_inset
-
-:
-\begin_inset Quotes erd
-\end_inset
-
-...
-\begin_inset Quotes erd
-\end_inset
-
 }
 \end_layout
 
