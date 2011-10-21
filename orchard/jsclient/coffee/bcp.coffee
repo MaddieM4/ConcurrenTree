@@ -107,12 +107,6 @@ class BCP
         "op": (self, message) ->
             op = new Operation(message.instructions)
             self.foreign op, self.other.selected
-        "check": (self, message) ->
-            @check self.other.selected, message.address
-        "tsum": (self, message) ->
-            #placeholder
-        "get": (self, message) ->
-            #placeholder
         "tree": (self, message) ->
             self.getcached[message.docname] = message.value
             if self.bflag[message.docname]
