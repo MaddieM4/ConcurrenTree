@@ -14,7 +14,7 @@ class BCPConnection(Connection):
 	def __init__(self, docs, auth):
 		Connection.__init__(self)
 		self._id = None
-		self.poolsubs = [{},{}]
+		self.poolsubs = {}
 
 		self.docs = docs
 		self.auth = auth
@@ -55,32 +55,17 @@ class BCPConnection(Connection):
 		mtype = msg['type']
 		mname = msg['docname']
 
-		if mtype in ("ad", "op"):
+		if mtype == "op":
 			if mname in self.there.subscriptions:
-				subtype = self.there.subscriptions[mname]
 				self.select(mname)
-				if mtype == "ad":
-					if subtype in ("live", "notify"):
-						self.send(msg)
-					else:
-						pass # TODO: get advertised op
-				else: # Operation
-					if subtype in ("live", "oponly"):
-						self.send(msg['value'].proto())
-					else:
-						pass # TODO: advertise op
+				self.send(msg['value'].proto())
 		elif mtype == "subscribe":
 			timeout = msg['timeout']
-			subtype = msg['subtype']
-
-			s = int(subtype=="op")
-			if not mname in self.poolsubs[s]:
-				self.poolsubs[s][mname] = 0
-				self.push("subscribe", docnames=[mname], subtype=subtype)
-			self.poolsubs[s][mname] = max(self.poolsubs[s][mname], timeout)
+			if not mname in self.poolsubs:
+				self.poolsubs[mname] = 0
+				self.subscribe([mname])
+			self.poolsubs[mname] = max(self.poolsubs[mname], timeout)
 			# TODO: Expire subscriptions
-		else:
-			self.send(msg)
 
 	def pool_push(self, msg):
 		print "Pool pushing",msg
@@ -97,6 +82,18 @@ class BCPConnection(Connection):
 	def select(self, docname):
 		if self.here.selected != docname:
 			self.push("select", docname=docname)
+		self.here.selected = docname
+
+	def subscribe(self, docnames=None):
+		if docnames==None:
+			if self.here.selected:
+				self.push("subscribe")
+			else:
+				raise ValueError("Cannot subscribe to selected with no document selected")
+		else:
+			docnames = list(docnames)
+			self.push("subscribe", docnames=docnames)
+			self.here.subscriptions.update(docnames)
 
 	def analyze(self, obj, objstring):
 		''' 
@@ -127,25 +124,6 @@ class BCPConnection(Connection):
 					self.error(500) # General Local Error
 			else:
 				print "Op was already applied"
-
-		elif obt=='ad':
-			if not self.require("hash", obj): return
-			elif not obj['hash'] in self.here.ops:
-				self.select(self.there.selected)
-				self.push("getop", hash=obj['hash'])
-		elif obt=='getop':
-			if not self.check_selected():
-				return
-			if not self.require("hash", obj): return
-			try:
-				op = self.fdoc.operations[obj['hash']]
-				self.push(str(op))
-			except KeyError:
-				self.error(502, data={
-					"type":"operation",
-					"docname":self.there.selected,
-					"operation":obj['hash']
-				}) # Resource not found
 		elif obt=='check':
 			# TODO - error testing
 			if not self.check_selected():return
@@ -182,29 +160,26 @@ class BCPConnection(Connection):
 			node = addr.resolve(self.fdoc)
 			node.upgrade(obj['value'])
 		elif obt=='subscribe':
-			if "subtype" not in obj:
-				# live subscription
-				subtype = "live"
-			elif obj['subtype'] in ("oponly", "live", "notify"):
-				subtype = obj['subtype']
-			else:
-				# Unknown subscription type
-				self.error(400,details="Bad subtype "+json.dumps(obj['subtype']))
+			if "docnames" not in obj:
+				if not self.check_selected(): return
+				obj[docnames] = [self.there.selected]
 			for name in obj['docnames']:
 				self.pool_push({
 					"type":"subscribe",
 					"docname":name,
-					"subtype":subtype,
 					"timeout":30
 				})
-				self.there.subscriptions[name] = subtype
-
+				self.there.subscriptions.add(name)
 		elif obt=='unsubscribe':
-			if "docnames" in obj and len(obj['docnames']) > 0:
-				for name in obj['docnames']:
-					del self.there.subscriptions[name]
+			if "docnames" in obj:
+				if len(obj['docnames']) > 0:
+					for name in obj['docnames']:
+						self.there.subscriptions.discard(name)
+				else:
+					self.there.subscriptions.clear()
 			else:
-				self.there.subscriptions.clear()
+				if not self.check_selected(): return
+				self.there.subscriptions.discard(self.there.selected)
 		elif obt=='error':
 			print obj
 		else:

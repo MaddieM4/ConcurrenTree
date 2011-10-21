@@ -107,10 +107,6 @@ class BCP
         "op": (self, message) ->
             op = new Operation(message.instructions)
             self.foreign op, self.other.selected
-        "ad": (self, message) ->
-            @send {"type":"getop","hash":message.hash} # assume it's relevant
-        "getop": (self,message) ->
-            @error(502) # We don't store operations in JS client
         "check": (self, message) ->
             @check self.other.selected, message.address
         "tsum": (self, message) ->
@@ -125,22 +121,6 @@ class BCP
         "subscribe": (self, message) ->
             #placeholder
         "unsubscribe": (self, message) ->
-            #placeholder
-        "token": (self, message) ->
-            #placeholder
-        "login": (self, message) ->
-            #placeholder
-        "logout": (self, message) ->
-            #placeholder
-        "rtoken": (self, message) ->
-            #placeholder
-        "token": (self, message) ->
-            #placeholder
-        "lookup": (self, message) ->
-            #placeholder
-        "metadata": (self, message) ->
-            #placeholder
-        "part": (self, message) ->
             #placeholder
         "error": (self, message) ->
             self.errorhandle message
