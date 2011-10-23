@@ -3,6 +3,8 @@ from ConcurrenTree.model import ModelBase
 class Node(ModelBase):
 	''' Base class for all node types. '''
 
+	# Stuff to be filled in by subclass
+
 	@property
 	def value(self):
 		''' Immutable value used to generate keys '''
@@ -25,6 +27,15 @@ class Node(ModelBase):
 		''' Apply an instruction '''
 		raise NotImplementedError("Subclasses of Node must provide function 'instruct'")
 
+	def proto(self):
+		ModelBase.proto(self)
+
+	# Provided by base class
+
+	def apply(self, op):
+		''' For operations, instructions, and anything else that takes self.apply(tree) '''
+		op.apply(self)
+
 class ChildSet:
 	def __init__(self, types=None):
 		if types != None:
@@ -40,7 +51,7 @@ class ChildSet:
 		if type(key) != str or len(key)<1 or len(key)>16:
 			raise KeyError("Key must be a string of 1-16 characters")
 		if key != value.key:
-			raise ValueError("Key mismatch: cannot insert object with key %s as key %s" % (repr(value.key), repr(key))
+			raise ValueError("Key mismatch: cannot insert object with key %s as key %s" % (repr(value.key), repr(key)))
 		self.children[key] = value
 
 	def __getitem__(self, key):
