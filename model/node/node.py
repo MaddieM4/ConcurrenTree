@@ -1,4 +1,5 @@
 from ConcurrenTree.model import ModelBase
+from ConcurrenTree.util import hasher
 
 class Node(ModelBase):
 	''' Base class for all node types. '''
@@ -23,6 +24,10 @@ class Node(ModelBase):
 		''' Retrieves child at position "pos" and key "key" '''
 		raise NotImplementedError("Subclasses of Node must provide function 'get'")
 
+	def put(self, pos, obj):
+		''' Set a child at pos, acquiring the key from the object's .key property '''
+		raise NotImplementedError("Subclasses of Node must provide function 'put'")
+
 	def instruct(self, instruction):
 		''' Apply an instruction '''
 		raise NotImplementedError("Subclasses of Node must provide function 'instruct'")
@@ -36,6 +41,9 @@ class Node(ModelBase):
 		''' For operations, instructions, and anything else that takes self.apply(tree) '''
 		op.apply(self)
 
+	def keysum(self, string):
+		return hasher.key(string)
+
 class ChildSet:
 	def __init__(self, types=None):
 		if types != None:
@@ -43,10 +51,12 @@ class ChildSet:
 				self.types = tuple(types)
 			except TypeError:
 				self.types = (types,)
+		else:
+			self.types = None
 		self.children = {}
 
 	def __setitem__(self, key, value):
-		if types != None and type(value) not in self.types:
+		if self.types != None and type(value) not in self.types:
 			raise TypeError("Must be of one of the types: "+repr(self.types))
 		if type(key) != str or len(key)<1 or len(key)>16:
 			raise KeyError("Key must be a string of 1-16 characters")
@@ -80,9 +90,9 @@ class ChildSet:
 	@property
 	def head(self):
 		''' Child with highest key '''
-		return self.sorted_values[-1]
+		return self.values[-1]
 
 	@property
 	def tail(self):
 		''' Child with lowest key '''
-		return self.sorted_values[0]
+		return self.values[0]
