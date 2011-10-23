@@ -1,2 +1,2 @@
 from node import Node
-from string import StringNode
+from map import MapNode
