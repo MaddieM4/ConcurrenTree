@@ -113,9 +113,20 @@ class BCP
                 self.broadcast message.docname
                 self.bflag[message.docname] = off
         "subscribe": (self, message) ->
-            #placeholder
+            if message.docnames.length is 0
+              self.other.subscriptions[self.other.selected]=true
+            else
+              for i in message.docnames
+                self.other.subscriptions[i] = true
         "unsubscribe": (self, message) ->
-            #placeholder
+            if messages.docnames?
+              if messages.docnames.length is 0
+                self.other.subscriptions = {}
+              else
+                for i in messages.docnames
+                  self.other.subscriptions[i] = false
+            else
+              self.other.subscriptions[self.other.selected]=false
         "error": (self, message) ->
             self.errorhandle message
         0: (self, message) ->
@@ -131,16 +142,21 @@ class BCP
             m = JSON.stringify message
             self.log "server error", m
             console.error "Server error: #{m}"
-    subscribe: (name, type) ->
+    subscribe: (name, type) =>
         if typeof name is "string"
           name = [name]
         @send {"type":"subscribe", "subtype":type, "docnames":name}
-    unsubscribe: (names) ->
+        for i in name
+          @subscriptions[i] = true
+    unsubscribe: (names) =>
         if names.length is 0
           throw "Use BCP.unsubscribe_all()"
         @send {"type":"unsubscribe", "docnames":names}
+        for i in names
+          @subscriptions[i] = false
     unsubscribe_all: ->
         @send {"type":"unsubscribe", "docnames":[]}
+        @subscriptions = {}
     send: (obj) ->
         s = JSON.stringify obj
         @log "sending", s
