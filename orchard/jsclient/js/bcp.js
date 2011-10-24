@@ -1,11 +1,12 @@
 (function() {
   var BCP, context;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   context = window;
+
   BCP = (function() {
+
     function BCP(stream, auth) {
-      this.unsubscribe = __bind(this.unsubscribe, this);
-      this.subscribe = __bind(this.subscribe, this);
       this._handle = __bind(this._handle, this);
       this.errorhandle = __bind(this.errorhandle, this);
       this.handle = __bind(this.handle, this);
@@ -22,6 +23,7 @@
       };
       this.getcached = {};
     }
+
     BCP.prototype.recieve = function(message) {
       var msg;
       message = message.slice(0, -1);
@@ -36,23 +38,24 @@
       }
       this.handle(msg);
     };
+
     BCP.prototype.local = function(op, name) {
       /*
               Process a locally-generated op
-      */
-      console.log("selecting");
+      */      console.log("selecting");
       this.select(name);
       console.log("sending local");
       this.docssend(op, name);
       console.log("sending proto");
       return this.send(op.proto());
     };
+
     BCP.prototype.foreign = function(op, name) {
       /*
               Process a remotely-generated op
-      */
-      return this.docssend(op, name);
+      */      return this.docssend(op, name);
     };
+
     BCP.prototype.select = function(name) {
       assert(typeof name === "string", "Docnames must be a string");
       if (name === this.selected) return;
@@ -62,12 +65,12 @@
       });
       return this.selected = name;
     };
+
     BCP.prototype.get = function(name) {
       /*
               recieve or sync a document
               does not broadcast
-      */
-      if (name === void 0) name = this.selected;
+      */      if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string");
       if (this.getcached[name] === void 0) {
         this.getcached[name] = [[]];
@@ -76,6 +79,7 @@
         return this.sync(name);
       }
     };
+
     BCP.prototype.load = function(name) {
       this.select(name);
       return this.send({
@@ -83,12 +87,12 @@
         address: []
       });
     };
+
     BCP.prototype.broadcast = function(name) {
       /*
               Send a loaded document to docs as an operation, 
               or flag for it to happen when get returns
       */
-
       var op;
       if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string.");
@@ -100,6 +104,7 @@
         return this.docssend(op, name);
       }
     };
+
     BCP.prototype.sync = function(name) {
       if (name === void 0) name = this.selected;
       this.select(name);
@@ -108,6 +113,7 @@
         "eras": 0
       });
     };
+
     BCP.prototype.docssend = function(op, name) {
       var doc, _i, _len, _ref, _results;
       _ref = this.docs;
@@ -118,15 +124,19 @@
       }
       return _results;
     };
+
     BCP.prototype.register = function(display) {
       return this.docs.push(display);
     };
+
     BCP.prototype.handle = function(message) {
       return this._handle(message, message.type, this.handlers);
     };
+
     BCP.prototype.errorhandle = function(message) {
       return this._handle(message, message.code, this.ehandlers);
     };
+
     BCP.prototype._handle = function(message, type, handlerset) {
       var f;
       f = handlerset[type];
@@ -134,6 +144,7 @@
       if (!(message.docname != null)) message.docname = this.other.selected;
       return f(this, message);
     };
+
     BCP.prototype.handlers = {
       "select": function(self, message) {
         return self.other.selected = message.docname;
@@ -143,6 +154,20 @@
         op = new Operation(message.instructions);
         return self.foreign(op, self.other.selected);
       },
+      "ad": function(self, message) {
+        return this.send({
+          "type": "getop",
+          "hash": message.hash
+        });
+      },
+      "getop": function(self, message) {
+        return this.error(502);
+      },
+      "check": function(self, message) {
+        return this.check(self.other.selected, message.address);
+      },
+      "tsum": function(self, message) {},
+      "get": function(self, message) {},
       "tree": function(self, message) {
         self.getcached[message.docname] = message.value;
         if (self.bflag[message.docname]) {
@@ -150,38 +175,16 @@
           return self.bflag[message.docname] = false;
         }
       },
-      "subscribe": function(self, message) {
-        var i, _i, _len, _ref, _results;
-        if (message.docnames.length === 0) {
-          return self.other.subscriptions[self.other.selected] = true;
-        } else {
-          _ref = message.docnames;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            i = _ref[_i];
-            _results.push(self.other.subscriptions[i] = true);
-          }
-          return _results;
-        }
-      },
-      "unsubscribe": function(self, message) {
-        var i, _i, _len, _ref, _results;
-        if (messages.docnames != null) {
-          if (messages.docnames.length === 0) {
-            return self.other.subscriptions = {};
-          } else {
-            _ref = messages.docnames;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              i = _ref[_i];
-              _results.push(self.other.subscriptions[i] = false);
-            }
-            return _results;
-          }
-        } else {
-          return self.other.subscriptions[self.other.selected] = false;
-        }
-      },
+      "subscribe": function(self, message) {},
+      "unsubscribe": function(self, message) {},
+      "token": function(self, message) {},
+      "login": function(self, message) {},
+      "logout": function(self, message) {},
+      "rtoken": function(self, message) {},
+      "token": function(self, message) {},
+      "lookup": function(self, message) {},
+      "metadata": function(self, message) {},
+      "part": function(self, message) {},
       "error": function(self, message) {
         return self.errorhandle(message);
       },
@@ -190,6 +193,7 @@
         return self.error(401);
       }
     };
+
     BCP.prototype.ehandlers = {
       100: function(self, message) {
         self.log("connection", "broken");
@@ -205,59 +209,55 @@
         return console.error("Server error: " + m);
       }
     };
+
     BCP.prototype.subscribe = function(name, type) {
-      var i, _i, _len, _results;
       if (typeof name === "string") name = [name];
-      this.send({
+      return this.send({
         "type": "subscribe",
         "subtype": type,
         "docnames": name
       });
-      _results = [];
-      for (_i = 0, _len = name.length; _i < _len; _i++) {
-        i = name[_i];
-        _results.push(this.subscriptions[i] = true);
-      }
-      return _results;
     };
+
     BCP.prototype.unsubscribe = function(names) {
-      var i, _i, _len, _results;
       if (names.length === 0) throw "Use BCP.unsubscribe_all()";
-      this.send({
+      return this.send({
         "type": "unsubscribe",
         "docnames": names
       });
-      _results = [];
-      for (_i = 0, _len = names.length; _i < _len; _i++) {
-        i = names[_i];
-        _results.push(this.subscriptions[i] = false);
-      }
-      return _results;
     };
+
     BCP.prototype.unsubscribe_all = function() {
-      this.send({
+      return this.send({
         "type": "unsubscribe",
         "docnames": []
       });
-      return this.subscriptions = {};
     };
+
     BCP.prototype.send = function(obj) {
       var s;
       s = JSON.stringify(obj);
       this.log("sending", s);
       return this.stream.send(s);
     };
+
     BCP.prototype.error = function(code) {
       return this.send({
         "type": "error",
         "code": code
       });
     };
+
     BCP.prototype.log = function(headline, detail) {};
+
     BCP.prototype.reconnect = function() {
       return this.stream.reconnect();
     };
+
     return BCP;
+
   })();
+
   context.BCP = BCP;
+
 }).call(this);
