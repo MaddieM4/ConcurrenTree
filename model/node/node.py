@@ -28,9 +28,9 @@ class Node(ModelBase):
 		''' Set a child at pos, acquiring the key from the object's .key property '''
 		raise NotImplementedError("Subclasses of Node must provide function 'put'")
 
-	def instruct(self, instruction):
-		''' Apply an instruction '''
-		raise NotImplementedError("Subclasses of Node must provide function 'instruct'")
+	def delete(self, pos):
+		''' Mark value[pos] as deleted '''
+		raise NotImplementedError("Subclasses of Node must provide function 'delete'")
 
 	def proto(self):
 		ModelBase.proto(self)
@@ -44,6 +44,12 @@ class Node(ModelBase):
 	def keysum(self, string):
 		return hasher.key(string)
 
+class UnsupportedInstructionError(Exception): pass
+
+class Unputable(UnsupportedInstructionError): pass
+class Ungetable(UnsupportedInstructionError): pass
+class Undelable(UnsupportedInstructionError): pass
+
 class ChildSet:
 	def __init__(self, types=None):
 		if types != None:
@@ -54,6 +60,9 @@ class ChildSet:
 		else:
 			self.types = None
 		self.children = {}
+
+	def insert(self, obj):
+		self[obj.key] = obj
 
 	def __setitem__(self, key, value):
 		if self.types != None and type(value) not in self.types:
@@ -72,6 +81,9 @@ class ChildSet:
 
 	def __iter__(self):
 		return self.sorted.__iter__()
+
+	def __len__(self):
+		return __len__(self.children)
 
 	@property
 	def sorted(self):

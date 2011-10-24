@@ -7,6 +7,8 @@ class TrinaryNode(node.Node):
 		else:
 			raise ValueError("A TrinaryNode can only represent True, False, or None")
 
+	# Node interface
+
 	@property
 	def value(self):
 		return self._value
@@ -24,13 +26,13 @@ class TrinaryNode(node.Node):
 		return self.value
 
 	def get(self, pos, key):
-		raise IndexError("TrinaryNodes can contain no children")
+		raise node.Ungetable("TrinaryNodes can contain no children")
 
 	def put(self, pos, obj):
-		raise IndexError("TrinaryNodes can contain no children")
+		raise node.Unputable("TrinaryNodes can contain no children")
 
-	def instruct(self):
-		pass
+	def delete(self):
+		raise node.Undelable("TrinaryNodes can contain no children")
 
 	def proto(self):
 		return self.value
