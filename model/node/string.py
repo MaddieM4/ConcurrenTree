@@ -7,7 +7,7 @@ class StringNode(LinearNode):
 			value = str(value)
 		except:
 			raise TypeError("ListNode value must str, or something that can be turned into one")
-		LinearNode.__init__(self, value)
+		LinearNode.__init__(self, value, StringNode) # can only contain other StringNodes
 
 	def encapsulate(self, obj):
 		return str(obj)
