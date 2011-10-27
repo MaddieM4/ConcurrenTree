@@ -1,6 +1,10 @@
 from node import Node
-from map import MapNode
-from trinary import TrinaryNode
+
+# Core types
+
 from string import StringNode
+from map import MapNode
 from list import ListNode
+from number import NumberNode
 from single import SingleNode
+from trinary import TrinaryNode
