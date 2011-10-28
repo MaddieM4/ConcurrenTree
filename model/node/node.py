@@ -64,8 +64,13 @@ class ChildSet:
 	def insert(self, obj):
 		self[obj.key] = obj
 
+	def validtype(self, value):
+		for i in self.types:
+			if isinstance(value, i): return True
+		return False
+
 	def __setitem__(self, key, value):
-		if self.types != None and type(value) not in self.types:
+		if self.types != None and not self.validtype(value):
 			raise TypeError("Must be of one of the types: "+repr(self.types))
 		if type(key) != str or len(key)<1 or len(key)>16:
 			raise KeyError("Key must be a string of 1-16 characters")

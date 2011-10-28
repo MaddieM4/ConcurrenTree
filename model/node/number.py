@@ -18,7 +18,7 @@ class NumberNode(node.Node):
 	def key(self):
 		return keysum("n"+str(
 			int(json.loads(self.value)) + self.unique
-		)
+		))
 
 	def flatten(self):
 		result = json.loads(self.value)
