@@ -19,6 +19,8 @@ class Operation(ModelBase):
 			raise ParseError()
 
 	def apply(self, tree):
+		#self.sanitycheck(tree)
+
 		backup = deepcopy(tree)
 		for i in self.instructions:
 			try:
@@ -27,25 +29,24 @@ class Operation(ModelBase):
 				tree = backup
 				traceback.print_exc()
 				raise OpApplyError()
-		tree.applied.add(self.hash)
 
 	@property
 	def inserts(self):
 		results = []
 		for i in self.instructions:
-			if isinstance(i,instruction.Insertion):
+			if i.isinsert:
 				results.append(i)
 		return results
 
 	@property
 	def dep_provides(self):
 		''' The dependencies that this operation provides to the tree '''
-		return set([str(i.address_object.proto()+[i.position, i.value]) for i in self.inserts])
+		return set([str(i.address.proto()+[i.position, i.value]) for i in self.inserts])
 
 	@property
 	def dep_requires(self):
 		''' The dependencies that this operation requires before it can be applied '''
-		return set([str(i.address_object) for i in self.instructions]) - self.dep_provides
+		return set([str(i.address) for i in self.instructions]) - self.dep_provides
 
 	def ready(self, tree):
 		''' Checks a tree for existence of all dependencies '''
@@ -57,9 +58,15 @@ class Operation(ModelBase):
 				return False
 		return True
 
+	def sanitycheck(self, tree):
+		if not self.ready(tree): return False
+
 	def applied(self, tree):
 		''' Returns whether or not this op has been applied to the tree '''
-		return self.hash in tree.applied
+		if hasattr(tree, "applied"):
+			return self.hash in tree.applied
+		else:
+			return False
 
 	def compress(self):
 		# Todo - op compression (combining deletion instructions together)
