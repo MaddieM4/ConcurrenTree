@@ -16,8 +16,7 @@ class HTTP(Server):
 		img = ConcurrenTree.file("img/")
 
 		self.server = hfs.Server(('',port), [
-			hfs.File(jsclient,"client.html",["/","/index.htm","/index.html"],'text/html'),
-			hfs.File(jsclient,"newclient.html", "/newclient", "text/html"),
+			hfs.File(jsclient,"newclient.html",["/","/index.htm","/index.html", "newclient"],'text/html'),
 			hfs.File(jsclient,"js/util.js", ["/util.js", "/js/util.js"],mimetype="text/javascript"),
 			hfs.File(jsclient,"js/buffer.js", ["/buffer.js", "/js/buffer.js"], mimetype="text/javascript"),
 			hfs.File(jsclient,"js/ctree.js", ["/ctree.js", "/js/ctree.js"],mimetype="text/javascript", preload=True),
@@ -32,6 +31,7 @@ class HTTP(Server):
 			hfs.File(jsclient,"js/jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),
 			hfs.File(jsclient,"js/textile-editor.min.js", ["/textile.js", "/textile-editor.min.js"],"text/javascript"),
 			hfs.File(jsclient,"js/head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
+			hfs.File(jsclient,"bootstrap/bootstrap.min.css", "/bootstrap.css", mimetype="text/css", browsercache=True, cache=True, preload=True),
 			hfs.File(img,"logos/OrchardLogo.svg", ["/img/logo.svg", "/OrchardLogo.svg"],"image/svg+xml", browsercache=True),
 			hfs.File(img,"logos/OrchardBigLogo.svg", ["/img/biglogo.svg", "/OrchardBigLogo.svg"],"image/svg+xml", browsercache=True),
 			hfs.File(img,"logos/Orchard32.ico", "/favicon.ico","image", browsercache=True)
