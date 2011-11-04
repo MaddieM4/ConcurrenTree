@@ -5,9 +5,10 @@ class MapContext(Context):
 	def extend(self, newvalues = {}):
 		if len(node.extension) > 0:
 			# extend child
+			node.extension.head.
 		else:
 			# extend self
-			inst = instruction.Instruction([])
+			return makenode(self, values)
 
 	def makenode(self, values):
 		# Create base instruction
