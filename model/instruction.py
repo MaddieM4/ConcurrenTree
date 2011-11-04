@@ -77,17 +77,17 @@ class Instruction(ModelBase):
 	@property
 	def value_node(self):
 		''' Generates a node for self.value on the fly. '''
-		if self.code = 1:
+		if self.code == 1:
 			return node.StringNode(self.value)
-		elif self.code = 2:
+		elif self.code == 2:
 			return node.MapNode(self.value)
-		elif self.code = 3:
+		elif self.code == 3:
 			return node.ListNode(self.value)
-		elif self.code = 4:
+		elif self.code == 4:
 			return node.NumberNode(self.value, self.additional[2])
-		elif self.code = 5:
+		elif self.code == 5:
 			return node.SingleNode()
-		elif self.code = 6:
+		elif self.code == 6:
 			return node.TrinaryNode(self.value)
 		else:
 			raise TypeError("Unknown instruction code, or does not have a value node")
@@ -106,22 +106,28 @@ def set(array):
 	return [Instruction(x) for x in array]
 
 def InsertText(address, pos, value):
+	''' Accepts value type str or unicode '''
 	return Instruction([1, address, pos, value])
 
 def InsertMap(address, pos, value):
+	''' Accepts list of sorted keys as value '''
 	return Instruction([2, address, pos, value])
 
 def InsertList(address, pos, value):
+	''' Accepts list of descendant node keys as value '''
 	return Instruction([3, address, pos, value])
 
 def InsertNumber(address, pos, value, unique):
+	''' Accepts list of sorted keys as value '''
 	return Instruction([4, address, pos, value, unique])
 
 def InsertSingle(address, pos):
+	''' Accepts no value '''
 	return Instruction([5, address, pos])
 
 def InsertTrinary(address, pos, value):
+	''' Accepts True, False, or None as value '''
 	return Instruction([6, address, pos, value])
 
-def Delete(address, positions*):
+def Delete(address, *positions):
 	return Instruction([0]+positions)

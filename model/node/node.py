@@ -1,5 +1,6 @@
 from ConcurrenTree.model import ModelBase
 from ConcurrenTree.util import hasher
+from ConcurrenTree.model.address import Address
 
 class Node(ModelBase):
 	''' Base class for all node types. '''
@@ -32,6 +33,10 @@ class Node(ModelBase):
 		''' Mark value[pos] as deleted '''
 		raise NotImplementedError("Subclasses of Node must provide function 'delete'")
 
+	def make_flatcontext(self, addr):
+		''' Return a context object for self that prefixes instructions with addr '''
+		raise NotImplementedError("Subclasses of Node must provide function 'make_flatcontext'")
+
 	def proto(self):
 		ModelBase.proto(self)
 
@@ -43,6 +48,10 @@ class Node(ModelBase):
 
 	def keysum(self, string):
 		return hasher.key(string)
+
+	def flatcontext(self, address=[]):
+		addr = Address(address)
+		return addr.resolve(self).make_flatcontext(addr)
 
 class UnsupportedInstructionError(Exception): pass
 

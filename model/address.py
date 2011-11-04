@@ -46,6 +46,10 @@ class Address(ModelBase):
 	def proto(self):
 		return expand(self.layers)
 
+	def append(self, value):
+		''' Value may be a 2-tuple or a string '''
+		self.layers.append(value)
+
 	def prepend(self, value):
 		''' Value may be a 2-tuple or a string '''
 		self.layers.insert(0,value)
