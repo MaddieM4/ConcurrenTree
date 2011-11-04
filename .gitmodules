@@ -1,0 +1,3 @@
+[submodule "orchard/jsclient/bootstrap"]
+	path = orchard/jsclient/bootstrap
+	url = git://github.com/twitter/bootstrap.git
