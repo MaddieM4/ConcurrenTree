@@ -16,7 +16,8 @@ class HTTP(Server):
 		img = ConcurrenTree.file("img/")
 
 		self.server = hfs.Server(('',port), [
-			hfs.File(jsclient,"newclient.html",["/","/index.htm","/index.html", "newclient"],'text/html'),
+			hfs.File(jsclient,"newclient.html",["/","/index.htm","/index.html", "/newclient"],'text/html'),
+			hfs.File(jsclient,"facelift.html", "/facelift",'text/html'),
 			hfs.File(jsclient,"js/util.js", ["/util.js", "/js/util.js"],mimetype="text/javascript"),
 			hfs.File(jsclient,"js/buffer.js", ["/buffer.js", "/js/buffer.js"], mimetype="text/javascript"),
 			hfs.File(jsclient,"js/ctree.js", ["/ctree.js", "/js/ctree.js"],mimetype="text/javascript", preload=True),
