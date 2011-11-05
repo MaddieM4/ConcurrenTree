@@ -33,6 +33,7 @@ class HTTP(Server):
 			hfs.File(jsclient,"js/textile-editor.min.js", ["/textile.js", "/textile-editor.min.js"],"text/javascript"),
 			hfs.File(jsclient,"js/head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
 			hfs.File(jsclient,"bootstrap/bootstrap.min.css", "/bootstrap.css", mimetype="text/css", browsercache=True, cache=True, preload=True),
+			hfs.File(jsclient,"bootstrap/js/bootstrap-dropdown.js", "/js/bootstrap/dropdown.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
 			hfs.File(img,"logos/OrchardLogo.svg", ["/img/logo.svg", "/OrchardLogo.svg"],"image/svg+xml", browsercache=True),
 			hfs.File(img,"logos/OrchardBigLogo.svg", ["/img/biglogo.svg", "/OrchardBigLogo.svg"],"image/svg+xml", browsercache=True),
 			hfs.File(img,"logos/Orchard32.ico", "/favicon.ico","image", browsercache=True)

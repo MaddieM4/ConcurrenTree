@@ -3,7 +3,12 @@
 
 <head>
 	<title>Facelift - no working parts, just fancy graphics.</title>
+
 	<link rel="stylesheet" href="bootstrap.css">
+
+	<script src="jquery.js"></script>
+	<script src="js/bootstrap/dropdown.js"></script>
+
 	<style type="text/css">
 
 	html, body {
@@ -30,6 +35,13 @@
 	}
 
 	</style>
+
+	<script>
+
+	$(document).ready( function() {
+		$('.topbar').dropdown();
+	});
+	</script>
 </head>
 
 <body>
@@ -38,6 +50,21 @@
   <div class="topbar-inner">
     <div class="container-fluid">
       <a class="brand" href="http://orchard.com/">Orchard</a>
+      <ul class="nav">
+        <li class="active"><a href="/facelift">Welcome</a></li>
+        <li><a href="/facelift/home">Home</a></li>
+        <li><a href="/facelift/settings">Settings</a></li>
+      </ul>
+      <ul class="nav secondary-nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle">Log In</a>
+          <ul class="dropdown-menu">
+            <li><a href="#">No users registered</a></li>
+            <li class="divider"></li>
+            <li><a href="#"> + New User</a></li>
+          </ul>
+        </li>
+      </ul>
     </div>
   </div>
 </div>
