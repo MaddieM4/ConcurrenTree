@@ -22,6 +22,7 @@
 	.toplevel {
 		background-color:#fff;
 		padding: 20px;
+		border-color: #ddd;
 		-webkit-border-radius: 6px 6px 6px 6px;
 		  -moz-border-radius: 6px 6px 6px 6px;
 		     border-radius: 6px 6px 6px 6px;
@@ -32,6 +33,33 @@
 
 	.toplevel.content {
 		margin-left: 280px;
+		-webkit-border-radius: 0px 6px 6px 6px;
+		  -moz-border-radius: 0px 6px 6px 6px;
+		     border-radius: 0px 6px 6px 6px;
+		padding-top:0px;
+	}
+
+	.tabs-main {
+		margin: 0px 0px 0px 280px;
+	}
+
+	.tabs-main, .tabs-main > li.active, .tabs-main > li.active > a {
+		border-color: transparent;
+		color: #888;
+	}
+
+	.tabs-main > li > a {
+		color: #444;
+		background-color: #CCA;
+	}
+
+	.tabs-main > li > a:hover {
+		background-color: #DDB;
+		border-color: #CCA;
+	}
+
+	.tabs-main > li.active > a:hover {
+		border-color: #CCA;
 	}
 
 	</style>
@@ -71,11 +99,25 @@
 
 <div class="container-fluid">
   <div class="sidebar toplevel">
-    Sidebar
+    <h3>People</h3>
+    <h3>Documents</h3>
+    <h3>Tags</h3>
+    <hr/>
+    Click on one of the categories above to open a dynamic tab in the editor window.
   </div>
+
+  <ul class="tabs tabs-main" data-tabs="tabs">
+    <li class="active"><a href="#welcome">Welcome</a></li>
+    <li><a href="#welcome"> + New Document</a></li>
+  </ul>
+
   <div class="content toplevel">
-    <img src="OrchardBigLogo.svg" alt="Orchard Logo" height="120px" width="530px"/><br>
-    A testing ground for Bootstrap and the final Orchard client layout. We'll merge it together with the technical parts later, this is a purely UI venture here.
+    <div class="tab-content">
+      <div id="welcome">
+        <img src="OrchardBigLogo.svg" alt="Orchard Logo" height="120px" width="530px"/><br>
+        A testing ground for Bootstrap and the final Orchard client layout. We'll merge it together with the technical parts later, this is a purely UI venture here.
+      </div>
+    </div>
   </div>
 </div>
 
