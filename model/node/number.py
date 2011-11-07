@@ -16,7 +16,7 @@ class NumberNode(node.Node):
 
 	@property
 	def key(self):
-		return keysum("n"+str(
+		return self.keysum("n"+str(
 			int(json.loads(self.value)) + self.unique
 		))
 

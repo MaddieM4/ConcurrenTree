@@ -1,7 +1,7 @@
 import node
 
 class MapNode(node.Node):
-	def __init__(self, keys=[], source={}):
+	def __init__(self, source={}, keys=[]):
 		self._value = list(set(keys).union(set(source.keys()))) # unique all the keys
 		self._value = [str(x) for x in self.value] # convert them to strings
 		self._value.sort()
@@ -9,6 +9,9 @@ class MapNode(node.Node):
 		self._children = [node.ChildSet() for i in range(0, len(self))]
 		self._deletions = [False for i in range(0, len(self))]
 		self.extension = node.ChildSet(MapNode)
+		for i in source:
+			# Will throw exception if fed non-Node contents, use ConcurrenTree.model.node.make()
+			self[str(i)] = source[i]
 
 	# Node interface
 
@@ -20,7 +23,11 @@ class MapNode(node.Node):
 	def key(self):
 		return self.keysum("{%s}" % ",".join(self.value))
 
-	def flatten(self, existing = {}):
+	def flatten(self, existing = None):
+		# Having existing = {} in function definition leads to weird persistance bug
+		# that uses the same dict every call.
+		if existing == None:
+			existing = {}
 		result = existing
 		for k in self:
 			i = self.index(k)

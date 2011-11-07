@@ -12,6 +12,9 @@ class StringNode(LinearNode):
 	def encapsulate(self, obj):
 		return str(obj)
 
+	def flatitem(self, i):
+		return self[i]
+
 	@property
 	def key(self):
 		return self.keysum("t"+self.value)

@@ -22,7 +22,7 @@ class LinearNode(node.Node):
 			for child in self._children[i].values:
 				result += self.encapsulate(child.flatten())
 			if i < len(self) and not self._deletions[i]:
-				result += self.encapsulate(self[i])
+				result += self.encapsulate(self.flatitem(i))
 		return result
 
 	def get(self, pos, key):
@@ -39,6 +39,10 @@ class LinearNode(node.Node):
 	def encapsulate(self, obj):
 		''' Create an object of self.type from obj '''
 		raise NotImplementedError("Subclasses of LinearNode must define function 'encapsulate'")
+
+	def flatitem(self, i):
+		''' Python object for self[i] '''
+		raise NotImplementedError("Subclasses of LinearNode must define function 'flatitem'")
 
 	@property
 	def key(self, obj):

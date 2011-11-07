@@ -97,7 +97,7 @@ class ChildSet:
 		return self.sorted.__iter__()
 
 	def __len__(self):
-		return __len__(self.children)
+		return len(self.children)
 
 	@property
 	def sorted(self):

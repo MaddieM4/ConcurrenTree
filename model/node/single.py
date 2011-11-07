@@ -15,7 +15,10 @@ class SingleNode(node.Node):
 		return "/single"
 
 	def flatten(self):
-		return self.children.head.flatten()
+		if len(self.children) > 0:
+			return self.children.head.flatten()
+		else:
+			return None
 
 	def get(self, pos, key):
 		if pos != 0:
