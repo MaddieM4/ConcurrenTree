@@ -19,17 +19,28 @@ class Address(ModelBase):
 			raise TypeError("Expected list or address.Address, got "+str(type(target)))
 
 	def parse(self, l):
-		''' Does not check for syntax errors yet '''
+		''' Reads and processes a list '''
 		pos = None
+		progress = list(self.layers)
 		for i in expand(l):
 			if type(i)==int:
-				pos = i
-			else:
 				if pos==None:
-					self.layers.append(i)
+					pos = i
 				else:
-					self.layers.append((pos,i))
+					raise ValueError("Address list cannot contain consecutive ints")
+
+			elif type(i) in (str, unicode):
+				if pos==None:
+					progress.append(i)
+				else:
+					progress.append((pos,i))
 					pos = None
+			else:
+				raise TypeError("Address cannot parse element %s" % str(i))
+		if pos == None:
+			self.layers = progress
+		else:
+			raise ValueError("Address list cannot end with int")
 
 	def resolve(self, tree):
 		x = tree
