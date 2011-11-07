@@ -1,27 +1,20 @@
 from ConcurrenTree.model.node.context import *
+from ConcurrenTree.model.node import make
 
 class MapContext(Context):
 
 	def extend(self, newvalues = {}):
-		if len(node.extension) > 0:
+		''' Return op extending the map '''
+
+		newmap = make(newvalues)
+
+		if len(self.node.extension) > 0:
 			# extend child
-			node.extension.head.
+			headkey = self.node.extension.head.key
+			op = self.node.make_flatcontext(self.addr+[len(self.node), headkey]).extend(newvalues)
+			return op
 		else:
 			# extend self
-			return makenode(self, values)
-
-	def makenode(self, values):
-		# Create base instruction
-		keys = values.keys()
-		keys.sort()
-		op = operation.Operation()
-		op += instruction.InsertMap(self.addr, len(self.node), keys)
-
-		# Derive child address
-		childkey = None
-		childaddr = address.Address(self.addr.proto()+[len(self.node), childkey])
-
-		# Insert values
-		for i in range(len(keys)):
-			k = keys[i]
-			op += instruction.InsertString(childaddr, k, values[k])
+			op = newmap.op(len(self.node))
+			op.prefix(self.addr)
+			return op
