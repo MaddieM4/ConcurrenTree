@@ -2,14 +2,17 @@ from ConcurrenTree.model import ModelBase
 import re
 import json
 
+# Internal storage format: assorted strings and (int, str) tuples.
+
 class Address(ModelBase):
 	''' Address format: [4,"hello"," dolly"] '''
 
 	def __init__(self, target=[]):
 		if type(target)==list:
+			self.layers = []
 			self.parse(target)
 		elif isinstance(target, Address):
-			self.layers = target.layers
+			self.layers = list(target.layers) # copies data, not ref
 		elif type(target) in (str, unicode):
 			self.layers = json.loads(target)
 		else:
@@ -17,7 +20,6 @@ class Address(ModelBase):
 
 	def parse(self, l):
 		''' Does not check for syntax errors yet '''
-		self.layers = []
 		pos = None
 		for i in expand(l):
 			if type(i)==int:
@@ -60,11 +62,33 @@ class Address(ModelBase):
 		else:
 			return pos, key
 
+	# Plumbing
+
 	def __eq__(self, other):
 		return self.layers == other.layers
 
 	def __ne__(self, other):
 		return self.layers != other.layers
+
+	def __add__(self, other):
+		new = Address(self) # Copy layers
+		new += other
+		return new
+
+	def __iadd__(self, other):
+		if type(other) == list:
+			self.parse(other)
+		elif isinstance(other, Address):
+			self.layers += other.layers
+		else:
+			self += [other]
+		return self
+
+	def __radd__(self, other):
+		if type(other) == list:
+			return Address(other) + self
+		else:
+			return [other] + self
 
 	__hash__ = None
 
