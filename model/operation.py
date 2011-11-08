@@ -1,4 +1,4 @@
-from ConcurrenTree.model import ModelBase
+from ConcurrenTree.model import ModelBase, node
 import ConcurrenTree.util.hasher as hasher
 import instruction
 from address import Address
@@ -29,6 +29,11 @@ class Operation(ModelBase):
 				tree = backup
 				traceback.print_exc()
 				raise OpApplyError()
+
+	def prefix(self, addr):
+		''' Prepend all instruction addresses with addr '''
+		for i in self.instructions:
+			i.address = addr + i.address
 
 	@property
 	def inserts(self):
@@ -75,6 +80,40 @@ class Operation(ModelBase):
 	def proto(self):
 		''' Returns a protocol operation object '''
 		return {"type":"op","instructions":[i.proto() for i in self.instructions]}
+
+	# Plumbing
+
+	def __len__(self):
+		return len(self.instructions)
+
+	def __add__(self, other):
+		new = Operation(self)
+		new += other
+		return new
+
+	def __radd__(self, other):
+		# Instruction
+		if isinstance(other, instruction.Instruction):
+			self.instructions = [other] + self.instructions
+
+		# Address
+		elif isinstance(other, Address):
+			self.prefix(other)		
+
+	def __iadd__(self, other):
+		# Operation
+		if isinstance(other, Operation):
+			self.instructions += other.instructions
+
+		# Instruction
+		elif isinstance(other, instruction.Instruction):
+			self.instructions.append(other)
+
+		# Address
+		elif isinstance(other, Address):
+			self.prefix(other)
+
+		return self
 
 class ParseError(SyntaxError): pass
 class OpApplyError(SyntaxError): pass
