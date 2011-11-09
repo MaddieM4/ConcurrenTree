@@ -49,10 +49,7 @@ class Address(ModelBase):
 			error += 1
 			if type(i) in (str, unicode):
 				i = (len(x), i)
-			try:
-				x = x.get(i[0],i[1])
-			except BeyondFlatError as e:
-				raise BeyondFlatError(Address(self.layers[:error]))
+			x = x.get(i[0],i[1])
 		return x
 
 
@@ -106,16 +103,6 @@ class Address(ModelBase):
 	def __repr__(self):
 		classname = repr(self.__class__).split()[1]
 		return "<%s instance %s at %s>" % (classname, str(self), hex(long(id(self)))[:-1])
-
-class BeyondFlatError(Exception):
-	def __init__(self, flataddr):
-		''' Flataddr should be the address of the node that needs to be loaded. '''
-		Exception.__init__(self, "Target flat not loaded: "+str(flataddr))
-		self.addr = flataddr
-
-	def propogate(self, pos, max, value):
-		self.addr.prepend(self.addr.jump(pos, max, value))
-		raise BeyondFlatError(self.addr)
 
 def expand(l):
 	''' Expands all sub-lists '''
