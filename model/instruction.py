@@ -84,7 +84,7 @@ class Instruction(ModelBase):
 		if self.code == 1:
 			return node.StringNode(self.value)
 		elif self.code == 2:
-			return node.MapNode(self.value)
+			return node.MapNode(keys = self.value)
 		elif self.code == 3:
 			return node.ListNode(self.value)
 		elif self.code == 4:

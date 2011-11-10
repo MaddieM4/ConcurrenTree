@@ -6,7 +6,7 @@ class NumberNode(node.Node):
 	def __init__(self, value, unique):
 		self._value = str(value) # Store value as string to avoid loss of precision
 		self.unique = int(unique)
-		self.children = node.ChildSet(NumberNode)
+		self._children = node.ChildSet(NumberNode)
 
 	# Node interface
 
@@ -22,22 +22,30 @@ class NumberNode(node.Node):
 
 	def flatten(self):
 		result = json.loads(self.value)
-		for i in self.children.values:
+		for i in self._children.values:
 			result += i.flatten()
 		return result
 
 	def get(self, pos, key):
 		if pos != 0:
 			raise IndexError("NumberNode only has children at position 0.")
-		return self.children[key]
+		return self._children[key]
 
 	def put(self, pos, obj):
 		if pos != 0:
 			raise IndexError("NumberNode only has children at position 0.")
-		self.children.insert(obj)
+		self._children.insert(obj)
 
 	def delete(self, pos):
 		raise node.Undelable("NumberNode does not support deletion")
+
+	@property
+	def children(self):
+		return [self._children]
+
+	@property
+	def deletions(self):
+		return []
 
 	def proto(self):
 		pass # TODO

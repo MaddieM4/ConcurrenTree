@@ -65,6 +65,14 @@ class MapNode(node.Node):
 	def delete(self, pos):
 		self._deletions[pos] = True
 
+	@property
+	def children(self):
+		return self._children + [self.extension]
+
+	@property
+	def deletions(self):
+		return node.ce_deletions(self._deletions)
+
 	def proto(self):
 		pass #TODO - figure out protocol representation for advanced types
 
