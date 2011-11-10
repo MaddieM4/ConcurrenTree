@@ -148,9 +148,9 @@ def InsertNode(address, pos, n):
 	elif type(n) == node.NumberNode:
 		return InsertNumber(address, pos, n.value, n.unique)
 	elif type(n) == node.SingleNode:
-		return InsertMap(address, pos)
+		return InsertSingle(address, pos)
 	elif type(n) == node.TrinaryNode:
-		return InsertMap(address, pos, n.value)
+		return InsertTrinary(address, pos, n.value)
 	else:
 		raise TypeError("Cannot create insertion instruction for type "+repr(type(n)))
 

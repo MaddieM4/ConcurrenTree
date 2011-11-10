@@ -28,7 +28,7 @@ class SingleNode(node.Node):
 	def put(self, pos, obj):
 		if pos != 0:
 			raise IndexError("SingleNode only has children at pos 0")
-		self._children.insert(ob)
+		self._children.insert(obj)
 
 	def delete(self):
 		raise node.Undelable("SingleNodes do not support deletion. Recursive set to null instead.")
