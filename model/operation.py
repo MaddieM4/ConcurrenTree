@@ -11,12 +11,15 @@ class Operation(ModelBase):
 
 	def __init__(self, instructions = [], protostring = None):
 		''' If protostring is present, uses that existing serialized instruction set. If not, use instructions. '''
-		if protostring:
-			instructions += json.loads(protostring)
-		try:
-			self.instructions = instruction.set(instructions)
-		except:
-			raise ParseError()
+		if type(instructions) == Operation:
+			self.instructions = list(instructions.instructions)
+		else:
+			if protostring:
+				instructions += json.loads(protostring)
+			try:
+				self.instructions = instruction.set(instructions)
+			except:
+				raise ParseError()
 
 	def apply(self, tree):
 		#self.sanitycheck(tree)
@@ -118,19 +121,23 @@ class Operation(ModelBase):
 def FromNode(n, pos):
 	''' Turns node n into an operation that inserts into root at position pos '''
 	op = Operation([instruction.InsertNode([], pos, n)])
-	addr = [pos, n.key]
+	addr = Address([pos, n.key])
 
 	deletions = n.deletions
 	if deletions != []:
-		op += instruction.Delete(*deletions)
+		op += instruction.Delete(addr, *deletions)
 
 	children = n.children
-	for i in range(len(children)):
-		child = children[i]
-		childop = Operation()
-		for k in child:
-			childop += (addr + FromNode(child[k], i)
-
+	if children != None:
+		for i in range(len(children)):
+			print "Childset ",i
+			child = children[i]
+			for k in child:
+				print "\tkey:", repr(k)
+				print "\tchild:", repr(child[k])
+				childop = FromNode(child[k], i) + addr
+				print "\tchildop:", childop.instructions
+				op += childop
 	return op
 
 class ParseError(SyntaxError): pass

@@ -148,7 +148,7 @@ def compress_deletions(l):
 			start = p
 			current = p
 		else:
-			if p = current + 1:
+			if p == current + 1:
 				current = p
 			else:
 				# append to stream
@@ -158,10 +158,11 @@ def compress_deletions(l):
 					stream.append((start, current))
 				start = p
 				current = p
-	if start == current:
-		stream.append(start)
-	else:
-		stream.append((start, current))
+	if start != None:
+		if start == current:
+			stream.append(start)
+		else:
+			stream.append((start, current))
 
 	return stream
 

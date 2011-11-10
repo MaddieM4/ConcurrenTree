@@ -11,7 +11,7 @@ class Instruction(ModelBase):
 	def __init__(self, value):
 		''' Value is a list or Instruction. '''
 		if isinstance(value, Instruction):
-			self = value
+			self.fromother(value)
 		else:
 			# Process protocol instruction
 			self.fromproto(value)
@@ -23,6 +23,10 @@ class Instruction(ModelBase):
 		self.code = value[0]
 		self.address = Address(value[1])
 		self.additional = value[2:]
+
+	def fromother(self, other):
+		''' Sets properties from other instruction. '''
+		self.fromproto(other.proto())
 
 	def apply(self, tree, checkfirst = False):
 		''' Apply this instruction to a tree. Operation is responsible for calling sanitycheck before applying. '''
@@ -151,4 +155,4 @@ def InsertNode(address, pos, n):
 		raise TypeError("Cannot create insertion instruction for type "+repr(type(n)))
 
 def Delete(address, *positions):
-	return Instruction([0]+positions)
+	return Instruction([0, address]+list(positions))
