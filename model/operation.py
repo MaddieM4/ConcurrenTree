@@ -130,13 +130,9 @@ def FromNode(n, pos):
 	children = n.children
 	if children != None:
 		for i in range(len(children)):
-			print "Childset ",i
 			child = children[i]
 			for k in child:
-				print "\tkey:", repr(k)
-				print "\tchild:", repr(child[k])
 				childop = FromNode(child[k], i) + addr
-				print "\tchildop:", childop.instructions
 				op += childop
 	return op
 
