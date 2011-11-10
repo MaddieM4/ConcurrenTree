@@ -24,6 +24,9 @@ class Operation(ModelBase):
 	def apply(self, tree):
 		#self.sanitycheck(tree)
 
+		if not isinstance(tree, node.Node):
+			return tree.apply(self)
+
 		backup = deepcopy(tree)
 		for i in self.instructions:
 			try:
