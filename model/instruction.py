@@ -129,5 +129,26 @@ def InsertTrinary(address, pos, value):
 	''' Accepts True, False, or None as value '''
 	return Instruction([6, address, pos, value])
 
+def InsertNode(address, pos, n):
+	''' 
+	Determines type of n and returns result of appropriate Insert* function.
+	Does not insert children or handle deletions.
+	'''
+
+	if type(n) == node.StringNode:
+		return InsertText(address, pos, n.value)
+	elif type(n) == node.MapNode:
+		return InsertMap(address, pos, n.value)
+	elif type(n) == node.ListNode:
+		return InsertList(address, pos, n.value)
+	elif type(n) == node.NumberNode:
+		return InsertNumber(address, pos, n.value, n.unique)
+	elif type(n) == node.SingleNode:
+		return InsertMap(address, pos)
+	elif type(n) == node.TrinaryNode:
+		return InsertMap(address, pos, n.value)
+	else:
+		raise TypeError("Cannot create insertion instruction for type "+repr(type(n)))
+
 def Delete(address, *positions):
 	return Instruction([0]+positions)

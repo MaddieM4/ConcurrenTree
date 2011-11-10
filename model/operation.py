@@ -12,7 +12,7 @@ class Operation(ModelBase):
 	def __init__(self, instructions = [], protostring = None):
 		''' If protostring is present, uses that existing serialized instruction set. If not, use instructions. '''
 		if protostring:
-			instructions = json.loads(protostring)
+			instructions += json.loads(protostring)
 		try:
 			self.instructions = instruction.set(instructions)
 		except:
@@ -114,6 +114,24 @@ class Operation(ModelBase):
 			self.prefix(other)
 
 		return self
+
+def FromNode(n, pos):
+	''' Turns node n into an operation that inserts into root at position pos '''
+	op = Operation([instruction.InsertNode([], pos, n)])
+	addr = [pos, n.key]
+
+	deletions = n.deletions
+	if deletions != []:
+		op += instruction.Delete(*deletions)
+
+	children = n.children
+	for i in range(len(children)):
+		child = children[i]
+		childop = Operation()
+		for k in child:
+			childop += (addr + FromNode(child[k], i)
+
+	return op
 
 class ParseError(SyntaxError): pass
 class OpApplyError(SyntaxError): pass
