@@ -40,8 +40,7 @@ class LinearNode(node.Node):
 
 	@property
 	def deletions(self):
-		positions = [i for i in range(len(self._deletions)) if self._deletions[i]]
-		return node.compress_deletions(positions)
+		return node.ce_deletions(self._deletions)
 
 	# Subclass responsibilities
 
