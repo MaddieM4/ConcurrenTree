@@ -34,6 +34,15 @@ class LinearNode(node.Node):
 	def delete(self, pos):
 		self._deletions[pos] = True
 
+	@property
+	def children(self):
+		return self._children
+
+	@property
+	def deletions(self):
+		positions = [i for i in range(len(self._deletions)) if self._deletions[i]]
+		return node.compress_deletions(positions)
+
 	# Subclass responsibilities
 
 	def encapsulate(self, obj):

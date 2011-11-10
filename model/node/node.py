@@ -132,3 +132,39 @@ class ChildSet:
 	def tail(self):
 		''' Child with lowest key '''
 		return self.values[0]
+
+def enumerate_deletions(l):
+	''' Takes a list of bools and return a list of the positions in l where l[i] is true '''
+	return [i for i in range(len(l)) if l[i]]
+
+def compress_deletions(l):
+	''' Takes a list of deleted positions, returns list of ints and ranges '''
+	l.sort()
+	stream = []
+	start = None
+	current = None
+	for p in l:
+		if start == None:
+			start = p
+			current = p
+		else:
+			if p = current + 1:
+				current = p
+			else:
+				# append to stream
+				if start == current:
+					stream.append(start)
+				else:
+					stream.append((start, current))
+				start = p
+				current = p
+	if start == current:
+		stream.append(start)
+	else:
+		stream.append((start, current))
+
+	return stream
+
+def ce_deletions(l):
+	''' Enumerate and compress a deltetion list in one step. '''
+	return compress_deletions(enumerate_deletions(l))
