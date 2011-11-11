@@ -70,7 +70,28 @@ class Address(ModelBase):
 		else:
 			return pos, key
 
+	@property
+	def parent(self):
+		''' Address for the parent node of self's node '''
+		if self.layers == []:
+			raise ValueError("Root has no parent")
+		new = Address(self) # copy
+		new.layers = new.layers[:-1]
+		return new
+
+	def position(self, root):
+		''' Position of final jump '''
+		tail = self.layers[-1]
+		if type(tail) == tuple:
+			return tail[0]
+		else:
+			return len(self.parent.resolve(root))
+
 	# Plumbing
+
+	def __len__(self):
+		''' Number of hops '''
+		return len(self.layers)
 
 	def __eq__(self, other):
 		return self.layers == other.layers

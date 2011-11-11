@@ -121,8 +121,21 @@ class Operation(ModelBase):
 
 		return self
 
+def FromChildren(n):
+	''' Creates an op for the descendants of n with the assumption that n is root '''
+	op = Operation()
+
+	children = n.children
+	if children != None:
+		for i in range(len(children)):
+			child = children[i]
+			for k in child:
+				op += FromNode(child[k], i)
+	return op
+
 def FromNode(n, pos):
-	''' Turns node n into an operation that inserts into root at position pos '''
+	''' Converts node n into an op that inserts it and its descendants to root '''
+
 	op = Operation([instruction.InsertNode([], pos, n)])
 	addr = Address([pos, n.key])
 
@@ -130,14 +143,19 @@ def FromNode(n, pos):
 	if deletions != []:
 		op += instruction.Delete(addr, *deletions)
 
-	children = n.children
-	if children != None:
-		for i in range(len(children)):
-			child = children[i]
-			for k in child:
-				childop = FromNode(child[k], i) + addr
-				op += childop
+	op += FromChildren(n) + addr
+
 	return op
+
+def FromStructure(root, address=[]):
+	''' Returns an op that inserts the node at address (and its descendants) to root '''
+	address = Address(address)
+
+	if len(address) > 0:
+		pos = address.position(root)
+		return FromNode(address.resolve(root), pos) + address.parent
+	else:
+		return FromChildren(root)
 
 class ParseError(SyntaxError): pass
 class OpApplyError(SyntaxError): pass
