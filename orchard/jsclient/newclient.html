@@ -175,10 +175,12 @@
 
 <!-- <p><canvas id="editor" width="800" height="300"></canvas></p> -->
 
+<a href="/facelift">Hey, check out the new fancy interface this tech is gonna integrate with!</a>
+
 <div id="display">
 	<h1 id="docname">No document loaded</h1>
-	<input type="button" onclick="load_from_dni()">
-	<input type="text" class="docname_input">
+	<input type="text" class="docname_input", style="width:100%;">
+	<input type="button" onclick="load_from_dni()", value="Load Document">
 	<pre id="screen"></pre>
 	<form class="inserter">
 		<input type="button" value="Insert" onclick="easy_insert()"/>
