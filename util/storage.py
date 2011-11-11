@@ -1,7 +1,8 @@
 import os.path
 import json
 
-from ConcurrenTree.model.tree import Tree
+from ConcurrenTree.model.document import Document
+from ConcurrenTree.model.node import StringNode # Default document type
 from encryption import LocalStorageCipher
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
@@ -40,7 +41,7 @@ class Storage(object):
             self._cache[x] = tree
             return tree
         else:
-            self[x] = Tree()
+            self[x] = Document(StringNode(""))
             return self[x]
             #raise NameError('Not Found in local storage: Tree with id ' + x)
 

@@ -1,8 +1,8 @@
-__all__ = ['address', 'bcp', 'instruction', 'operation', 'tree']
+__all__ = ['address', 'bcp', 'instruction', 'operation', 'node', 'document']
 
 from ConcurrenTree.util import hasher
 
-class ModelBase:
+class ModelBase(object):
 	def proto(self):
 		''' Python protocol representation '''
 		raise NotImplementedError("Subclasses of ModelBase must define self.proto()")

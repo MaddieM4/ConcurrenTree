@@ -129,7 +129,7 @@ class BCPConnection(Connection):
 			if not self.check_selected():return
 			if not self.require("address", obj):return
 			addr = address.Address(obj['address'])
-			sum = addr.resolve(self.fdoc).treesum
+			sum = addr.resolve(self.fdoc.root).treesum
 			self.select(self.there.selected)
 			self.push("tsum",address=addr.proto(), value=sum)
 		elif obt=='tsum':
@@ -138,27 +138,18 @@ class BCPConnection(Connection):
 			if not self.require("value", obj):return
 			# Compare to our own treesum
 			addr = address.Address(obj['address'])
-			sum = addr.resolve(self.fdoc).treesum
+			sum = addr.resolve(self.fdoc.root).treesum
 			if sum != obj['value']:
 				self.push("get", address=addr.proto(), depth=1)
 		elif obt=='get':
 			if not self.check_selected():return
 			if not self.require("address", obj):return
 			addr = address.Address(obj['address'])
-			node = addr.resolve(self.fdoc)
-			if "depth" in obj:
-				result = node.proto(obj['depth'])
-			else:
-				result = node.proto()
+
+			result = operation.FromStructure(self.fdoc.root, addr)
+
 			self.select(self.there.selected)
-			self.push("tree", address = addr.proto(), value=result)
-		elif obt=='tree':
-			if not self.check_selected():return
-			if not self.require("address", obj):return
-			if not self.require("value", obj):return
-			addr = address.Address(obj['address'])
-			node = addr.resolve(self.fdoc)
-			node.upgrade(obj['value'])
+			self.push("op", address = addr.proto(), instructions=result.proto()['instructions'])
 		elif obt=='subscribe':
 			if "docnames" not in obj:
 				if not self.check_selected(): return

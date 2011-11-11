@@ -9,7 +9,7 @@ class CTree
         # action functions should return trees
         @value = value
         @length = value.length
-        @key = serial.key value
+        @key = serial.key ("t" + value)
         @deletions = []
         window.arrayFill @deletions, (-> false), @length
         @children = []
