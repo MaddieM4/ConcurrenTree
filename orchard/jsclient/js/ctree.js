@@ -1,15 +1,18 @@
 (function() {
   var CTree, protostr, protoval, window;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   window = this;
+
   CTree = (function() {
+
     function CTree(value) {
       this._trace_char = __bind(this._trace_char, this);
       this._trace_index = __bind(this._trace_index, this);
       this.trace_verify = __bind(this.trace_verify, this);
       this.resolve = __bind(this.resolve, this);      this.value = value;
       this.length = value.length;
-      this.key = serial.key(value);
+      this.key = serial.key("t" + value);
       this.deletions = [];
       window.arrayFill(this.deletions, (function() {
         return false;
@@ -19,11 +22,13 @@
         return {};
       }), this.length + 1);
     }
+
     CTree.prototype.insert = function(pos, childtext) {
       var child;
       child = new CTree(childtext);
       return this.insert_obj(pos, child);
     };
+
     CTree.prototype["delete"] = function(pos) {
       var x, _ref, _ref2;
       if (window.isArray(pos)) {
@@ -35,10 +40,12 @@
       }
       return this;
     };
+
     CTree.prototype.insert_obj = function(pos, child) {
       this.children[pos][child.key] = child;
       return child;
     };
+
     CTree.prototype.flatten = function() {
       var node, nodes, p, result, _i, _len, _ref;
       result = "";
@@ -52,6 +59,7 @@
       }
       return result;
     };
+
     CTree.prototype.resolve = function(addr) {
       var child, key, pos;
       if (addr.length === 0) {
@@ -66,12 +74,15 @@
         return child = this.get(pos, key).resolve(addr);
       }
     };
+
     CTree.prototype.trace_index = function(pos) {
       return this.trace_verify(this._trace_index(pos));
     };
+
     CTree.prototype.trace_char = function(pos) {
       return this.trace_verify(this._trace_char(pos));
     };
+
     CTree.prototype.trace_verify = function(result) {
       if (window.isInteger(result)) {
         throw "CTree.trace: pos > this.flatten().length";
@@ -81,6 +92,7 @@
       }
       return result;
     };
+
     CTree.prototype._trace_index = function(togo) {
       var k, pos, _i, _len, _ref, _ref2;
       for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
@@ -103,6 +115,7 @@
       }
       return togo;
     };
+
     CTree.prototype._trace_char = function(togo) {
       var k, pos, _i, _len, _ref, _ref2;
       for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
@@ -127,6 +140,7 @@
       }
       return togo;
     };
+
     CTree.prototype.get = function(pos, key) {
       if (pos > this.length || pos < 0 || !window.isNumber(pos)) {
         throw "IndexError: CTree.get position out of range (" + pos.toString() + ")";
@@ -136,6 +150,7 @@
       }
       return this.children[pos][key];
     };
+
     CTree.prototype.keys = function(pos) {
       var key;
       return ((function() {
@@ -147,6 +162,7 @@
         return _results;
       }).call(this)).sort();
     };
+
     CTree.prototype.kids = function(pos) {
       var key, _i, _len, _ref, _results;
       _ref = this.keys(pos);
@@ -157,6 +173,7 @@
       }
       return _results;
     };
+
     CTree.prototype.jump = function(pos, key) {
       if (pos === this.length) {
         return [key];
@@ -164,11 +181,15 @@
         return [pos, key];
       }
     };
+
     CTree.prototype.apply = function(obj) {
       return obj.apply(this);
     };
+
     return CTree;
+
   })();
+
   protostr = function(item) {
     if (typeof item === "string") {
       return item;
@@ -176,6 +197,7 @@
       return "";
     }
   };
+
   protoval = function(list) {
     var i;
     return ((function() {
@@ -188,6 +210,7 @@
       return _results;
     })()).join("");
   };
+
   this.CTreeFromProto = function(proto) {
     var deletions, i, pos, tree, value, _i, _j, _len, _len2;
     deletions = proto.pop();
@@ -208,5 +231,7 @@
     }
     return tree;
   };
+
   this.CTree = CTree;
+
 }).call(this);
