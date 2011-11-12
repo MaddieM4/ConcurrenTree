@@ -3,6 +3,8 @@ from bottle import static_file
 from pool.server import Server
 from pool.policy import Policy
 
+bottle.debug()
+
 class HTTPServer(Server):
 	def __init__(self, host="localhost", port=8080):
 		self.host = host
@@ -90,6 +92,9 @@ def FileServer(bserver, prefix, ospath, onelayer=True):
 		return static_file(name, ospath)
 
 	return bserver.route(prefix)(printandserve)
+
+def Alias(bserver, route, filename, ospath):
+	return bserver.route(route)(lambda:static_file(filename, ospath))
 
 def freeze_dict(d):
 	''' No shrinkage jokes please. '''

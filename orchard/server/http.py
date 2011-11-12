@@ -9,11 +9,14 @@ class HTTP(http.HTTPServer):
 		http.HTTPServer.__init__(self, port=port, **options)
 
 		jsclient = ConcurrenTree.file("orchard/jsclient/")
+		js = ConcurrenTree.file("orchard/jsclient/js")
 		img = ConcurrenTree.file("img/logos")
 
-		self.route("/")(http.static_file('/newclient.html', jsclient))
+		http.Alias(self, "/newclient", "newclient.html", jsclient)
+		http.Alias(self, "/", "newclient.html", jsclient)
+		http.Alias(self, "/facelift", "facelift.html", jsclient)
 		http.FileServer(self, "/", jsclient)
-		http.FileServer(self, "js", jsclient+"js/")
+		http.FileServer(self, "js", js)
 		http.FileServer(self, "bootstrap", jsclient+"bootstrap/")
 		http.FileServer(self, "img", img)
 
