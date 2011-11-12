@@ -1,58 +1,21 @@
-from server import *
-from ConcurrenTree.util.server import httpfileserver as hfs
+from ConcurrenTree.util.server import http
 
 import ConcurrenTree
 
 import webbrowser
 
-class HTTP(Server):
-	def __init__(self, port=8080):
-		self.closed = False
-		self.port = port
-		self.rootpath = ConcurrenTree.file()
-		print "HTTP server root path:",self.rootpath
+class HTTP(http.HTTPServer):
+	def __init__(self, port=8080, **options):
+		http.HTTPServer.__init__(self, port=port, **options)
 
 		jsclient = ConcurrenTree.file("orchard/jsclient/")
-		img = ConcurrenTree.file("img/")
+		img = ConcurrenTree.file("img/logos")
 
-		self.server = hfs.Server(('',port), [
-			hfs.File(jsclient,"newclient.html",["/","/index.htm","/index.html", "/newclient"],'text/html'),
-			hfs.File(jsclient,"facelift.html", "/facelift",'text/html'),
-			hfs.File(jsclient,"js/util.js", ["/util.js", "/js/util.js"],mimetype="text/javascript"),
-			hfs.File(jsclient,"js/buffer.js", ["/buffer.js", "/js/buffer.js"], mimetype="text/javascript"),
-			hfs.File(jsclient,"js/ctree.js", ["/ctree.js", "/js/ctree.js"],mimetype="text/javascript", preload=True),
-			hfs.File(jsclient,"js/operation.js", ["/operation.js","/js/operation.js"],mimetype="text/javascript"),
-			hfs.File(jsclient,"js/bcp.js", ["/bcp.js", "/js/bcp.js"], mimetype="text/javascript", preload=True),
-			hfs.File(jsclient,"js/view.js", ["/view.js", "/js/view.js"], mimetype="text/javascript", preload=True),
-			hfs.File(jsclient,"js/worker.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"js/display.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"js/displayworker.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"js/stream.js", ["/stream.js", "/js/stream.js"], mimetype="text/javascript"),
-			hfs.File(jsclient,"js/ws.js", "/js/stream/ws.js", mimetype="text/javascript"),
-			hfs.File(jsclient,"js/jquery-1.4.2.min.js", ["/jquery.js", "/jquery-1.4.2.min.js"],"text/javascript", browsercache=True, cache=True, preload=True),
-			hfs.File(jsclient,"js/textile-editor.min.js", ["/textile.js", "/textile-editor.min.js"],"text/javascript"),
-			hfs.File(jsclient,"js/head.min.js", "/head.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
-			hfs.File(jsclient,"bootstrap/bootstrap.min.css", "/bootstrap.css", mimetype="text/css", browsercache=True, cache=True, preload=True),
-			hfs.File(jsclient,"bootstrap/js/bootstrap-dropdown.js", "/js/bootstrap/dropdown.js", mimetype="text/javascript", browsercache=True, cache=True, preload=True),
-			hfs.File(img,"logos/OrchardLogo.svg", ["/img/logo.svg", "/OrchardLogo.svg"],"image/svg+xml", browsercache=True),
-			hfs.File(img,"logos/OrchardBigLogo.svg", ["/img/biglogo.svg", "/OrchardBigLogo.svg"],"image/svg+xml", browsercache=True),
-			hfs.File(img,"logos/Orchard32.ico", "/favicon.ico","image", browsercache=True)
-		], supercache = False)
-		self._policy = Policy()
-
-	def run(self):
-		startmessage('HTTP',self.port)
-		self.server.start()
-
-	def starting(self):
-		return []
-
-	def policy(self):
-		return self._policy
-
-	def close(self):
-		self.closed = True
-		self.server.close()
+		self.route("/")(http.static_file('/newclient.html', jsclient))
+		http.FileServer(self, "/", jsclient)
+		http.FileServer(self, "js", jsclient+"js/")
+		http.FileServer(self, "bootstrap", jsclient+"bootstrap/")
+		http.FileServer(self, "img", img)
 
 	def open(self, location="/"):
 		''' Open a new browser window '''

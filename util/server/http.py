@@ -1,8 +1,9 @@
 import bottle
+from bottle import static_file
 from pool.server import Server
 from pool.policy import Policy
 
-class BottleServer(Server):
+class HTTPServer(Server):
 	def __init__(self, host="localhost", port=8080):
 		self.host = host
 		self.port = port
@@ -80,10 +81,15 @@ def FileServer(bserver, prefix, ospath, onelayer=True):
 	if not prefix.startswith("/"):
 		prefix = "/" + prefix
 	if onelayer:
-		prefix += "<name>"
+		prefix += ":name"
 	else:
-		prefix += "<name:path>"
-	return bserver.route(prefix)(lambda name:bottle.static_file(name, ospath))
+		prefix += ":name:path"
+
+	def printandserve(name):
+		print "Attempting to serve ",repr(name)," from ",repr(ospath)
+		return static_file(name, ospath)
+
+	return bserver.route(prefix)(printandserve)
 
 def freeze_dict(d):
 	''' No shrinkage jokes please. '''
