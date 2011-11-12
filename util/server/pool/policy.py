@@ -84,3 +84,9 @@ class SubPolicy(dict):
 			raise TypeError("SubPolicy values must be callable")
 		with self.lock:
 			self._default = value
+
+def BlankPolicy():
+	''' Passes everything, as opposed to a policy with no defaults, which passes nothing '''
+	new = Policy()
+	new.inputs.default = lambda message, conn, broadcast: broadcast(message)
+	new.outputs.default = lambda message, conn, broadcast: conn.queue.server_push(message)
