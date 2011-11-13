@@ -4,24 +4,22 @@
 <head>
 	<title>Beta replacement client</title>
 
-	<script src="head.js"></script>
+	<script src="js/head.js"></script>
 	<script>
 		var ted, hostws, docs, bcp, wbcp;
 
 		head.js(
-			"jquery.js",
-			//"textile.js",
-			"util.js",
-			"stream.js",
-			"ctree.js",
-			"operation.js",
+			"js/jquery.js",
+			"js/util.js",
+			"js/stream.js",
+			"js/ctree.js",
+			"js/operation.js",
 			"js/worker.js",
 			"js/display.js",
-			"bcp.js",
-			"view.js")
+			"js/bcp.js",
+			"js/view.js")
 
 		head.ready("jquery.js",function(){
-			//ted = new Textile.Editor('editor');
 			wbcp = $("#writebcp");
 			$(".docname_input").val("hello")
 		})
@@ -170,7 +168,7 @@
 </head>
 <body>
 <p>
-<img src="OrchardBigLogo.svg" alt="Orchard Logo" height="120px" width="530px"/>
+<img src="img/OrchardBigLogo.svg" alt="Orchard Logo" height="120px" width="530px"/>
 </p>
 
 <!-- <p><canvas id="editor" width="800" height="300"></canvas></p> -->
