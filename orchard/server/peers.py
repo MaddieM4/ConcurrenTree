@@ -119,6 +119,7 @@ class Peers(Server):
 		return {
 			"name":"PeerServer",
 			"closed":self.closed,
+			"connect":self.connect,
 			"port":self.port,
 			"address":self.address
 		}

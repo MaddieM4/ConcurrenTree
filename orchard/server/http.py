@@ -27,6 +27,8 @@ class HTTP(http.HTTPServer):
 		http.Alias(self, "/js/textile.js", "textile-editor.min.js", js)
 		http.Alias(self, "/js/stream/ws.js", "ws.js", js)
 
+		self.rootpath = jsclient
+		self.port = port
 
 	def open(self, location="/"):
 		''' Open a new browser window '''

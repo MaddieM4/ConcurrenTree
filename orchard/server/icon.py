@@ -48,7 +48,7 @@ class Icon(StatusIcon):
 			self.item("New Window", self.server.newwindow, "gtk-add"),
 			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
-			self.item("Connect to peer", self.server.info, "gtk-network"),
+			self.item("Connect to peer", self.server.connect_to_peer, "gtk-network"),
 			gtk.SeparatorMenuItem(),
 			self.item("Configure", self.server.configure, "gtk-preferences"),
 			gtk.SeparatorMenuItem(),
@@ -110,6 +110,30 @@ class IconServer(Server):
 			d.destroy()
 		dialog.connect("response", response)
 		dialog.show_all()
+
+	def connect_to_peer(self, *args):
+		dialog = gtk.MessageDialog(buttons=gtk.BUTTONS_OK)
+		dialog.set_property("title", "Orchard Connection Properties")		
+		dialog.set_markup('Please enter the address of the Peer server:')
+
+		def response(entry, dialog, r):
+			dialog.response(r)
+
+		entry = gtk.Entry()
+		entry.connect("activate", response, dialog, gtk.RESPONSE_OK)
+
+		hbox = gtk.HBox()
+		hbox.pack_start(gtk.Label("Address:"), False, 5, 5)
+		hbox.pack_end(entry)
+		dialog.vbox.pack_end(hbox, True, True, 0)
+
+		dialog.show_all()
+		dialog.run()
+		text = entry.get_text()
+		dialog.destroy()
+
+		peerserver = self.pool.properties()['PeerServer']
+		peerserver['connect'](text)
 
 	def about(self, *args):
 		dialog = gtk.AboutDialog()
