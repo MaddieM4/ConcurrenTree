@@ -48,7 +48,7 @@ class Icon(StatusIcon):
 			self.item("New Window", self.server.newwindow, "gtk-add"),
 			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
-			self.item("Connect to peer", self.server.connect_to_peer, "gtk-network"),
+			self.item("Connect to peer", self.server.connect_to_peer, "gtk-redo"),
 			gtk.SeparatorMenuItem(),
 			self.item("Configure", self.server.configure, "gtk-preferences"),
 			gtk.SeparatorMenuItem(),
