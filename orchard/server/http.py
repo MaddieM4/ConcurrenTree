@@ -10,15 +10,16 @@ class HTTP(http.HTTPServer):
 
 		jsclient = ConcurrenTree.file("orchard/jsclient/")
 		js = ConcurrenTree.file("orchard/jsclient/js")
+		css = ConcurrenTree.file("orchard/jsclient/css")
 		img = ConcurrenTree.file("img/logos")
 
 		http.Alias(self, "/", "newclient.html", jsclient)
 		http.Alias(self, "/newclient", "newclient.html", jsclient)
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
 
-		http.FileServer(self, "/", jsclient)
 		http.FileServer(self, "js", js)
-		http.FileServer(self, "bootstrap", jsclient+"bootstrap/")
+		http.FileServer(self, "css", css)
+		http.FileServer(self, "bootstrap", jsclient+"bootstrap/", False)
 		http.FileServer(self, "img", img)
 
 		http.Alias(self, "/js/head.js", "head.min.js", js)

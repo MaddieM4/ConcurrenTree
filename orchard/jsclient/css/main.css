@@ -1,0 +1,50 @@
+html, body {
+	background-color:#eec;
+}
+
+body {
+	padding-top:50px;
+}
+
+.toplevel {
+	background-color:#fff;
+	padding: 20px;
+	border-color: #ddd;
+	-webkit-border-radius: 6px 6px 6px 6px;
+	  -moz-border-radius: 6px 6px 6px 6px;
+	     border-radius: 6px 6px 6px 6px;
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+	  -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+	     box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
+.toplevel.content {
+	margin-left: 280px;
+	-webkit-border-radius: 0px 6px 6px 6px;
+	  -moz-border-radius: 0px 6px 6px 6px;
+	     border-radius: 0px 6px 6px 6px;
+	padding-top:0px;
+}
+
+.tabs-main {
+	margin: 0px 0px 0px 280px;
+}
+
+.tabs-main, .tabs-main > li.active, .tabs-main > li.active > a {
+	border-color: transparent;
+	color: #888;
+}
+
+.tabs-main > li > a {
+	color: #444;
+	background-color: #CCA;
+}
+
+.tabs-main > li > a:hover {
+	background-color: #DDB;
+	border-color: #CCA;
+}
+
+.tabs-main > li.active > a:hover {
+	border-color: #CCA;
+}

@@ -90,7 +90,7 @@ def FileServer(bserver, prefix, ospath, onelayer=True):
 	if onelayer:
 		prefix += ":name"
 	else:
-		prefix += ":name:path"
+		prefix += ':name#.*#'
 
 	def printandserve(name):
 		print "Attempting to serve ",repr(name)," from ",repr(ospath)
