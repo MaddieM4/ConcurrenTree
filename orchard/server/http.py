@@ -12,13 +12,20 @@ class HTTP(http.HTTPServer):
 		js = ConcurrenTree.file("orchard/jsclient/js")
 		img = ConcurrenTree.file("img/logos")
 
-		http.Alias(self, "/newclient", "newclient.html", jsclient)
 		http.Alias(self, "/", "newclient.html", jsclient)
+		http.Alias(self, "/newclient", "newclient.html", jsclient)
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
+
 		http.FileServer(self, "/", jsclient)
 		http.FileServer(self, "js", js)
 		http.FileServer(self, "bootstrap", jsclient+"bootstrap/")
 		http.FileServer(self, "img", img)
+
+		http.Alias(self, "/js/head.js", "head.min.js", js)
+		http.Alias(self, "/js/jquery.js", "jquery-1.4.2.min.js", js)
+		http.Alias(self, "/js/textile.js", "textile-editor.min.js", js)
+		http.Alias(self, "/js/stream/ws.js", "ws.js", js)
+
 
 	def open(self, location="/"):
 		''' Open a new browser window '''

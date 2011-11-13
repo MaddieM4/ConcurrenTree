@@ -11,11 +11,12 @@ class HTTPServer(Server):
 		self.port = port
 		self._policy = Policy()
 		self.server = bottle.Bottle()
+		self.wsgi = None
 		self.closed = False
 		self.mounts = set()
 
 	def run(self):
-		bottle.run(self.server, host=self.host, port=self.port)
+		bottle.run(self.server, server=KillableWSGIRefServer, host=self.host, port=self.port, setserver=self.setserver)
 
 	def starting(self):
 		return []
@@ -27,6 +28,7 @@ class HTTPServer(Server):
 		print "Shutting down HTTP server..."
 		self.closed = True
 		self.server.close()
+		self.wsgi.shutdown()
 		print "HTTP server shut down."
 
 	def new(self):
@@ -57,6 +59,9 @@ class HTTPServer(Server):
 	def reset(self):
 		''' Unmount everything from internal server. Doesn't affect self.mounts '''
 		self.server.reset()
+
+	def setserver(self, wsgi):
+		self.wsgi = wsgi
 
 	@property
 	def properties(self):
@@ -92,6 +97,23 @@ def FileServer(bserver, prefix, ospath, onelayer=True):
 		return static_file(name, ospath)
 
 	return bserver.route(prefix)(printandserve)
+
+class KillableWSGIRefServer(bottle.WSGIRefServer):
+	def run(self, handler):
+		''' Copied and pasted from Bottle source, unfortunately. I hate the hackiness of that. '''
+
+		from wsgiref.simple_server import make_server, WSGIRequestHandler
+		if self.quiet:
+			class QuietHandler(WSGIRequestHandler):
+				def log_request(*args, **kw): pass
+			self.options['handler_class'] = QuietHandler
+
+		setserver = self.options['setserver']
+		del self.options['setserver']
+
+		srv = make_server(self.host, self.port, handler, **self.options)
+		setserver(srv)
+		srv.serve_forever()
 
 def Alias(bserver, route, filename, ospath):
 	return bserver.route(route)(lambda:static_file(filename, ospath))
