@@ -31,34 +31,8 @@ class HTTPServer(Server):
 		self.wsgi.shutdown()
 		print "HTTP server shut down."
 
-	def new(self):
-		''' Returns a Bottle object so other modules don't have to import bottle '''
-		return bottle.Bottle()
-
 	def route(self, path="/", **options):
 		return self.server.route(path=path, **options)
-
-	def mount(self, prefix, server, **options):
-		''' Mounts a WSGI server (such as a Bottle) to a prefix on this server '''
-		if not server in self:
-			self.server.mount(server, prefix, **options)
-			self.mounts.add((prefix, server, freeze_dict(options)))
-
-	def unmount(self, server):
-		''' Unmounts a previously mounted WSGI server '''
-		if server in self:
-			self.mounts.remove(self[server])
-			self.reset()
-			self.remount()
-
-	def remount(self):
-		''' Mount every element of self.mounts to internal server '''
-		for i in self.mounts:
-			self.mount(i[0], i[1], **thaw_dict(i[2]))
-
-	def reset(self):
-		''' Unmount everything from internal server. Doesn't affect self.mounts '''
-		self.server.reset()
 
 	def setserver(self, wsgi):
 		self.wsgi = wsgi
@@ -98,6 +72,9 @@ def FileServer(bserver, prefix, ospath, onelayer=True):
 
 	return bserver.route(prefix)(printandserve)
 
+def Alias(bserver, route, filename, ospath):
+	return bserver.route(route)(lambda:static_file(filename, ospath))
+
 class KillableWSGIRefServer(bottle.WSGIRefServer):
 	def run(self, handler):
 		''' Copied and pasted from Bottle source, unfortunately. I hate the hackiness of that. '''
@@ -114,9 +91,6 @@ class KillableWSGIRefServer(bottle.WSGIRefServer):
 		srv = make_server(self.host, self.port, handler, **self.options)
 		setserver(srv)
 		srv.serve_forever()
-
-def Alias(bserver, route, filename, ospath):
-	return bserver.route(route)(lambda:static_file(filename, ospath))
 
 def freeze_dict(d):
 	''' No shrinkage jokes please. '''
