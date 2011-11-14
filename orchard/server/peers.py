@@ -40,6 +40,12 @@ class PeerSocket:
 		self.socket.close()
 		self.closed = True
 
+	@property
+	def address(self):
+		ip, port = self.socket.getpeername()
+		fqdn = socket.getfqdn(ip)
+		return "%s:%d" % (fqdn, port)
+
 class Peers(Server):
 	def __init__(self, port=9090, docs = None):
 		self.lock = Lock()
@@ -57,9 +63,10 @@ class Peers(Server):
 		startmessage('Peer', self.socket.getsockname()[1])
 		self.socket.listen(4)
 		while not self.closed:
-			for i in self.peers:
-				self.peers[i].process()
-			self.clean()
+			with self.lock:
+				for i in self.peers:
+					self.peers[i].process()
+				self.clean()
 			Rlist, Wlist, Xlist = select.select(self.listeners, [], self.listeners, 0.1)
 			for ready in Rlist:
 				if ready == self.socket:
@@ -90,6 +97,11 @@ class Peers(Server):
 		with self.lock:
 			self.unread.append(newpeer.connection)
 
+	def disconnect(self, fileno):
+		with self.lock:
+			self.peers[fileno].close()
+			#del self.peers[fileno]
+
 	def starting(self):
 		with self.lock:
 			unread, self.unread = self.unread, []
@@ -99,14 +111,15 @@ class Peers(Server):
 		return self._policy
 
 	def close(self):
-		for peer in self.peers:
-			self.peers[peer].close()
-		self.closed = True
+		with self.lock:
+			for peer in self.peers:
+				self.peers[peer].close()
+			self.closed = True
 
 	@property
 	def address(self):
 		try:
-			return self.socket.getsockname()
+			return (socket.getfqdn(), self.port)
 		except:
 			return ('',0)
 
@@ -120,17 +133,22 @@ class Peers(Server):
 			"name":"PeerServer",
 			"closed":self.closed,
 			"connect":self.connect,
+			"disconnect":self.disconnect,
+			"connections":self.cleanpeers,
 			"port":self.port,
 			"address":self.address
 		}
 
 	def clean(self):
-		i = 0
-		keys = self.peers.keys()
-		while i<len(keys):
-			if self.peers[keys[i]].closed:
-				del self.peers[keys[i]]
-			i+=1
+		self.peers = self.cleanpeers
+
+	@property
+	def cleanpeers(self):
+		result = {}
+		for i in self.peers:
+			if not self.peers[i].closed:
+				result[i] = self.peers[i]
+		return result
 
 	@property
 	def listeners(self):

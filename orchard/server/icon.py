@@ -49,6 +49,7 @@ class Icon(StatusIcon):
 			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
 			self.item("Connect to peer", self.server.connect_to_peer, "gtk-redo"),
+			self.item("Disconnect from peers", self.server.info_peers, "gtk-undo"),
 			gtk.SeparatorMenuItem(),
 			self.item("Configure", self.server.configure, "gtk-preferences"),
 			gtk.SeparatorMenuItem(),
@@ -99,7 +100,7 @@ class IconServer(Server):
 		properties = [
 			"HTTP port: "+str(poolprops['HTTP']['port']),
 			"WebSocket port: "+str(poolprops['WebSocket']['port']),
-			"Peer address: "+str(poolprops['PeerServer']['address'])
+			"Peer address: "+ ("%s:%d" % poolprops['PeerServer']['address'])
 		]
 		dialog.set_property("secondary-text", "\n".join(properties))
 		#dialog.set_property("use-markup", True)
@@ -110,6 +111,48 @@ class IconServer(Server):
 			d.destroy()
 		dialog.connect("response", response)
 		dialog.show_all()
+
+	def info_peers(self, *args):
+		dialog = gtk.MessageDialog()
+		dialog.set_property("title", "Disconnect from Peers")
+		dialog.set_property("text", "Disconnect from Peers")
+		dialog.set_property("secondary-text", "It's important to note that due to the way sockets work, the port on which a peer is hosted"+
+			" is different from the port where connection is negotiated to take place, so expect port numbers to change but IP addresses"+
+			" to remain the same as where you connected to.")
+		listobj = PeerList({})
+		dialog.vbox.pack_end(listobj.view)
+
+		dialog.add_button("Refresh", 2)
+		dialog.add_button("Connect", 3)
+		dialog.add_button("Disconnect", 1)
+		dialog.add_button("Done", 0)
+		image = gtk.image_new_from_stock("gtk-network", gtk.ICON_SIZE_DIALOG)
+		dialog.set_image(image)
+
+		def update_peers():
+			peerprops = self.pool.properties()['PeerServer']
+			listobj.update(peerprops['connections'])
+
+		def response(d, gint):
+			if gint == 3:
+				self.connect_to_peer()
+				update_peers()
+			if gint == 2:
+				update_peers()
+			elif gint == 1:
+				selected = listobj.selected
+				if selected != None:
+					peerprops = self.pool.properties()['PeerServer']
+					try:
+						peerprops['disconnect'](listobj.selected)
+					except KeyError:
+						# No longer connected to that fileno anyways.
+					update_peers()
+			elif gint == 0:
+				dialog.destroy()
+		dialog.connect("response", response)
+		dialog.show_all()
+		update_peers()
 
 	def connect_to_peer(self, *args):
 		dialog = gtk.MessageDialog(buttons=gtk.BUTTONS_OK)
@@ -163,8 +206,46 @@ class IconServer(Server):
 		self.openwindow("/mydocuments")
 
 	def configure(self, *args):
-		# TODO - Make a Configuration dialog.
-		pass
+		self.openwindow("/facelift/settings")
+
+class PeerList:
+	def __init__(self, peers):
+		self.view = gtk.TreeView()
+		self.model = gtk.ListStore(int, str)
+		self.columns = (
+			(gtk.TreeViewColumn('Fileno'), gtk.CellRendererText(), 'text', 0), 
+			(gtk.TreeViewColumn('Address'), gtk.CellRendererText(), 'text', 1)
+		)
+
+		for i in self.columns:
+			self.view.append_column(i[0])
+			i[0].pack_start(i[1], True)
+			i[0].add_attribute(i[1], i[2], i[3])
+
+		self.view.set_model(self.model)
+		self.view.show_all()
+
+		self.update(peers)
+
+	def update(self, peers):
+		self.peers = {}
+
+		# Clear the ListStore
+		while len(self.model) > 0:
+			del self.model[0]
+
+		# Repopulate
+		for fileno in peers:
+			peer = peers[fileno]
+			self.peers[fileno] = self.model.append([fileno, peer.address])
+
+	@property
+	def selected(self):
+		model, iter = self.view.get_selection().get_selected()
+		if iter == None:
+			return None
+		fileno = int(model.get_value(iter, 0))
+		return fileno
 
 if __name__=="__main__":
 	ike = Icon()
