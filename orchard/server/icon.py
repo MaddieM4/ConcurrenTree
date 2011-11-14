@@ -65,8 +65,8 @@ class Icon(StatusIcon):
 		return item
 
 class IconServer(Server):
-	def __init__(self, pool):
-		self.icon = Icon(self)
+	def __init__(self, pool, logo=""):
+		self.icon = Icon(self, logo)
 		self._policy = Policy()
 		self.properties = {}
 		self.pool = pool

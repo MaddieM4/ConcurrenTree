@@ -17,17 +17,20 @@ defaults = {
 	"1":{
 		"peers":9090,
 		"wsport":9091,
-		"http":8080
+		"http":8080,
+		"icon":""
 	},
 	"2":{
 		"peers":9190,
 		"wsport":9191,
-		"http":8180
+		"http":8180,
+		"icon":"Red"
 	},
 	"3":{
 		"peers":9290,
 		"wsport":9291,
-		"http":8280
+		"http":8280,
+		"icon":"Blue"
 	}
 
 }
@@ -85,7 +88,7 @@ s_ws   = pool.start(ws.WebSocketServer, port=args.wsport, docs=docs)
 if not args.browser:
 	s_http.open("/newclient?ws=" + str(s_ws.port))
 # start notification icon
-pool.start(icon.IconServer, pool)
+pool.start(icon.IconServer, pool, logo=(args.portset and defaults[args.portset]['icon']) or "")
 
 # start background servers
 peerserver = pool.start(peers.Peers, port=args.peers, docs = docs)
