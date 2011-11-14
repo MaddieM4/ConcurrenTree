@@ -147,6 +147,7 @@ class IconServer(Server):
 						peerprops['disconnect'](listobj.selected)
 					except KeyError:
 						# No longer connected to that fileno anyways.
+						pass
 					update_peers()
 			elif gint == 0:
 				dialog.destroy()
