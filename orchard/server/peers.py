@@ -5,6 +5,13 @@ from ConcurrenTree.model.bcp.connection import BCPConnection
 import socket
 import select
 
+def fancy_addr(addr):
+	ip, port = addr
+	fqdn = socket.getfqdn(ip)
+	if fqdn == "localhost":
+		fqdn = socket.getfqdn()
+	return (fqdn, port)	
+
 class PeerSocket:
 	def __init__(self, socket, docs, cycleflag):
 		self.closed = False
@@ -42,9 +49,7 @@ class PeerSocket:
 
 	@property
 	def address(self):
-		ip, port = self.socket.getpeername()
-		fqdn = socket.getfqdn(ip)
-		return "%s:%d" % (fqdn, port)
+		return "%s:%d" % fancy_addr(self.socket.getpeername())
 
 class Peers(Server):
 	def __init__(self, port=9090, docs = None):
@@ -119,7 +124,7 @@ class Peers(Server):
 	@property
 	def address(self):
 		try:
-			return (socket.getfqdn(), self.port)
+			return fancy_addr(self.socket.getsockname())
 		except:
 			return ('',0)
 
