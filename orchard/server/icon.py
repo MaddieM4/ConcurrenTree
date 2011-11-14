@@ -5,9 +5,9 @@ import gtk
 from gtk import gdk, StatusIcon
 
 class Icon(StatusIcon):
-	def __init__(self, server):
+	def __init__(self, server, logo=""):
 		StatusIcon.__init__(self)
-		self.set_from_file(file("img/logos/OrchardLogo.svg"))
+		self.set_from_file(file("img/logos/OrchardLogo%s.svg" % logo))
 		self.set_tooltip("Orchard Server")
 		self.server = server
 		self.connect("activate", self.leftclick)
@@ -48,10 +48,9 @@ class Icon(StatusIcon):
 			self.item("New Window", self.server.newwindow, "gtk-add"),
 			self.item("My Documents", self.server.opendocuments, "gtk-home"),
 			self.item("Connection Information", self.server.info, "gtk-network"),
-			self.item("Connect to peer", self.server.connect_to_peer, "gtk-redo"),
-			self.item("Disconnect from peers", self.server.info_peers, "gtk-undo"),
 			gtk.SeparatorMenuItem(),
 			self.item("Configure", self.server.configure, "gtk-preferences"),
+			self.item("Manage Peers", self.server.info_peers, "gtk-redo"),
 			gtk.SeparatorMenuItem(),
 			self.item("gtk-about", self.server.about),
 			self.item("gtk-quit", self.server.quit)
@@ -114,11 +113,9 @@ class IconServer(Server):
 
 	def info_peers(self, *args):
 		dialog = gtk.MessageDialog()
-		dialog.set_property("title", "Disconnect from Peers")
-		dialog.set_property("text", "Disconnect from Peers")
-		dialog.set_property("secondary-text", "It's important to note that due to the way sockets work, the port on which a peer is hosted"+
-			" is different from the port where connection is negotiated to take place, so expect port numbers to change but IP addresses"+
-			" to remain the same as where you connected to.")
+		dialog.set_property("title", "Manage Peers")
+		dialog.set_property("text", "Manage Peers")
+		dialog.set_property("secondary-text", "When people connect to you, their port number will probably not be their host port.")
 		listobj = PeerList({})
 		dialog.vbox.pack_end(listobj.view)
 
