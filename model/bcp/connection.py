@@ -22,7 +22,6 @@ class BCPConnection(Connection):
 		self.here = Peer()
 		self.there = Peer()
 		self.initialize_documents()
-		print "INIT DONE"
 
 	def incoming(self, value):
 		''' Processes IO buffer '''
@@ -105,6 +104,7 @@ class BCPConnection(Connection):
 
 	def check(self, name, addr = []):
 		addr = address.Address(addr).proto() # Make sure it's proto
+		self.select(name)
 		self.push("check", address=addr)
 
 	def analyze(self, obj, objstring):
