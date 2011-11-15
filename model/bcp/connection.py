@@ -61,12 +61,9 @@ class BCPConnection(Connection):
 				self.select(mname)
 				self.send(msg['value'].proto())
 		elif mtype == "subscribe":
-			timeout = msg['timeout']
-			if not mname in self.poolsubs:
-				self.poolsubs[mname] = 0
+			if not mname in self.here.subscriptions:
 				self.subscribe([mname])
-			self.poolsubs[mname] = max(self.poolsubs[mname], timeout)
-			# TODO: Expire subscriptions
+				self.check(mname)
 
 	def pool_push(self, msg):
 		print "Pool pushing",msg
@@ -173,6 +170,7 @@ class BCPConnection(Connection):
 				obj[docnames] = [self.there.selected]
 			for name in obj['docnames']:
 				self.docs[name].subscribed = True
+				self.pool_push({"type":"subscribe", "docname":name})
 				self.there.subscriptions.add(name)
 		elif obt=='unsubscribe':
 			if "docnames" in obj:
