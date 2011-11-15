@@ -141,16 +141,16 @@ class BCPConnection(Connection):
 			if not self.check_selected():return
 			if not self.require("address", obj):return
 			addr = address.Address(obj['address'])
-			sum = addr.resolve(self.fdoc.root).treesum
+			sum = addr.resolve(self.fdoc.root).hash
 			self.select(self.there.selected)
 			self.push("tsum",address=addr.proto(), value=sum)
 		elif obt=='tsum':
 			if not self.check_selected():return
 			if not self.require("address", obj):return
 			if not self.require("value", obj):return
-			# Compare to our own treesum
+			# Compare to our own hash
 			addr = address.Address(obj['address'])
-			sum = addr.resolve(self.fdoc.root).treesum
+			sum = addr.resolve(self.fdoc.root).hash
 			if sum != obj['value']:
 				self.push("get", address=addr.proto(), depth=1)
 		elif obt=='get':

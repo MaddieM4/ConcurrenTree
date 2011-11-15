@@ -195,7 +195,7 @@ class IconServer(Server):
 	def openwindow(self, url):
 		props = self.pool.properties()
 		wsport = props['WebSocket']['port']
-		props['HTTP']['open'](url+"#ws="+str(wsport))
+		props['HTTP']['open'](url+"?ws="+str(wsport))
 
 	def newwindow(self, *args):
 		self.openwindow("/newclient")
