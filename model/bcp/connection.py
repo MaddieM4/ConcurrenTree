@@ -163,7 +163,6 @@ class BCPConnection(Connection):
 			if sum != obj['value']:
 				self.sendop(self.there.selected, addr)
 				self.push("get", address=addr.proto(), depth=1)
-				self.check(self.there.selected, addr)
 		elif obt=='get':
 			if not self.check_selected():return
 			if not self.require("address", obj):return
