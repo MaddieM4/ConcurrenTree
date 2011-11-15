@@ -21,6 +21,8 @@ class BCPConnection(Connection):
 
 		self.here = Peer()
 		self.there = Peer()
+		self.initialize_documents()
+		print "INIT DONE"
 
 	def incoming(self, value):
 		''' Processes IO buffer '''
@@ -94,6 +96,16 @@ class BCPConnection(Connection):
 			docnames = list(docnames)
 			self.push("subscribe", docnames=docnames)
 			self.here.subscriptions.update(docnames)
+
+	def initialize_documents(self):
+		subs = self.docs.subscribed
+		self.subscribe(subs)
+		for subname in subs:
+			self.check(subname)
+
+	def check(self, name, addr = []):
+		addr = address.Address(addr).proto() # Make sure it's proto
+		self.push("check", address=addr)
 
 	def analyze(self, obj, objstring):
 		''' 

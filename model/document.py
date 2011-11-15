@@ -7,6 +7,7 @@ class Document(ModelBase):
 	def __init__(self, root, applied = []):
 		self.root = root
 		self.applied = set(applied)
+		self.subscribed = False
 
 	def apply(self, op):
 		''' Apply an operation and track its application '''

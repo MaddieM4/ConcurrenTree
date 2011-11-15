@@ -61,3 +61,7 @@ class Storage(object):
             self.store(tree)
             del self._cache[key]
                 
+    @property
+    def subscribed(self):
+	''' Docnames that you are subscribed to. '''
+        return [i for i in self._cache if self._cache[i].subscribed]

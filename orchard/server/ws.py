@@ -6,9 +6,11 @@ from server import *
 
 class WSConnection(websocket.WebSocket):
 	def __init__(self, client, server):
+		print "Initializing WSConnection"
 		super(WSConnection, self).__init__(client, server)
 		self.connection = BCPConnection(server.docs, None)
 		self.dq = self.connection.ioqueue
+		print "Done initializing"
 
 	def onmessage(self, data):
 		print "Websocket receiving data:", data
@@ -18,7 +20,10 @@ class WSConnection(websocket.WebSocket):
 	def onsweep(self):
 		while True:
 			try:
-				self.send(self.dq.server_pull(timeout=0))
+				if self.handshaken:
+					self.send(self.dq.server_pull(timeout=0))
+				else:
+					break
 			except dq.Empty:
 				break
 

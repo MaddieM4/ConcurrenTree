@@ -44,6 +44,7 @@ class WebSocket(object):
                 self.header = parts[0]
                 if self.dohandshake(self.header, parts[1]):
                     logging.info("Handshake successful")
+                    print "Handshake successful"
                     self.handshaken = True
         else:
             self.data += data
@@ -103,6 +104,7 @@ class WebSocket(object):
         logging.info("Got message: %s" % data)
 
     def send(self, data):
+	print "sending data", repr(data)
         logging.info("Sent message: %s" % data)
         self.client.send("\x00%s\xff" % data)
 
@@ -139,6 +141,7 @@ class WebSocketServer(object):
                     fileno = client.fileno()
                     self.listeners.append(fileno)
                     newconn = self.connections[fileno] = self.cls(client, self)
+                    print "putting in queue"
                     self.queue.put(newconn)
                 else:
                     logging.debug("Client ready for reading %s" % ready)
