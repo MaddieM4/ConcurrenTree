@@ -155,11 +155,7 @@ class BCPConnection(Connection):
 				if not self.check_selected(): return
 				obj[docnames] = [self.there.selected]
 			for name in obj['docnames']:
-				self.pool_push({
-					"type":"subscribe",
-					"docname":name,
-					"timeout":30
-				})
+				self.docs[name].subscribed = True
 				self.there.subscriptions.add(name)
 		elif obt=='unsubscribe':
 			if "docnames" in obj:
