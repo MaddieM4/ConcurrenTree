@@ -88,6 +88,12 @@ class ChildSet:
 			if isinstance(value, i): return True
 		return False
 
+	def proto(self):
+		result = {}
+		for i in self:
+			result[i] = self[i].hash
+		return result
+
 	def __setitem__(self, key, value):
 		if self.types != None and not self.validtype(value):
 			raise TypeError("Must be of one of the types: "+repr(self.types))

@@ -107,6 +107,14 @@ class BCPConnection(Connection):
 		self.select(name)
 		self.push("check", address=addr)
 
+	def sendop(self, name, addr = []):
+		addr = address.Address(addr)
+
+		result = operation.FromStructure(self.docs[name].root, addr)
+
+		self.select(name)
+		self.push("op", address = addr.proto(), instructions=result.proto()['instructions'])
+
 	def analyze(self, obj, objstring):
 		''' 
 			Apply a message as a piece of remote communication.
@@ -127,6 +135,7 @@ class BCPConnection(Connection):
 				try:
 					op.apply(self.fdoc)
 					print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
+					print "New hash: '%s'" % self.fdoc.hash
 					self.pool_push({
 						"type":"op",
 						"docname":self.there.selected,
@@ -152,16 +161,13 @@ class BCPConnection(Connection):
 			addr = address.Address(obj['address'])
 			sum = addr.resolve(self.fdoc.root).hash
 			if sum != obj['value']:
+				self.sendop(self.there.selected, addr)
 				self.push("get", address=addr.proto(), depth=1)
+				self.check(self.there.selected, addr)
 		elif obt=='get':
 			if not self.check_selected():return
 			if not self.require("address", obj):return
-			addr = address.Address(obj['address'])
-
-			result = operation.FromStructure(self.fdoc.root, addr)
-
-			self.select(self.there.selected)
-			self.push("op", address = addr.proto(), instructions=result.proto()['instructions'])
+			self.sendop(self.there.selected, obj['address'])
 		elif obt=='subscribe':
 			if "docnames" not in obj:
 				if not self.check_selected(): return
