@@ -9,10 +9,6 @@ class Server(object):
 		raise NotImplementedError()
 
 	@property
-	def closed(self):
-		raise NotImplementedError()
-
-	@property
 	def properties(self):
 		result = {}
 		for name in dir(self):

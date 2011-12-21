@@ -74,31 +74,41 @@ if args.portset:
 	default("wsport")
 	default("http")
 
-from ConcurrenTree.util.server.pool import *
-from server import http, ws, peers, icon
-from ConcurrenTree.util.storage import Storage
+from server import http#, ws, peers, icon
+from ConcurrenTree.util.storage.filestorage import FileStorage
+import gevent
+from gevent import monkey; monkey.patch_all()
 
-pool = pool.Pool()
-docs = Storage()
+def run(servers=[], greenlets=[]):
+	greenlets = greenlets or [gevent.spawn(x.run) for x in servers]
+	gevent.joinall(greenlets)
+	return greenlets
+
+def close(servers):
+	for x in servers:
+		x.close()
+
+docs = FileStorage()
 
 # add interface servers
-s_http = pool.start(http.HTTP, port=args.http)
-s_ws   = pool.start(ws.WebSocketServer, port=args.wsport, docs=docs)
+s_http = http.HTTP(port=args.http)
+#s_ws   = ws.WebSocketServer(port=args.wsport, docs=docs)
 # Start browser
 if not args.browser:
-	s_http.open("/newclient?ws=" + str(s_ws.port))
+	s_http.open("/newclient?ws=" + str(args.wsport))
 # start notification icon
-pool.start(icon.IconServer, pool, logo=(args.portset and defaults[args.portset]['icon']) or "")
+#pool.start(icon.IconServer, pool, logo=(args.portset and defaults[args.portset]['icon']) or "")
 
 # start background servers
-peerserver = pool.start(peers.Peers, port=args.peers, docs = docs)
+#peerserver = pool.start(peers.Peers, port=args.peers, docs = docs)
 
 # Connect to cmdline peers
-for peer in startpeers:
-	peerserver.connect(peer)
+#for peer in startpeers:
+#	peerserver.connect(peer)
 
 try:
-	pool.run()
+	greenlets = run([s_http])
 except KeyboardInterrupt:
 	print
-	pool.close()
+	close(greenlets)
+	run(greenlets=greenlets)
