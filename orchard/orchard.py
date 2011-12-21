@@ -16,19 +16,19 @@ import optparse
 defaults = {
 	"1":{
 		"peers":9090,
-		"wsport":9091,
+		"sioport":9091,
 		"http":8080,
 		"icon":""
 	},
 	"2":{
 		"peers":9190,
-		"wsport":9191,
+		"sioport":9191,
 		"http":8180,
 		"icon":"Red"
 	},
 	"3":{
 		"peers":9290,
-		"wsport":9291,
+		"sioport":9291,
 		"http":8280,
 		"icon":"Blue"
 	}
@@ -44,7 +44,7 @@ concurrent text model.
 
 parser.add_option("-p", "--peers", dest="peers", default=0,
 	help="The port you want to host on for peers")
-parser.add_option("-w", "--websocket", dest="wsport", default=0,
+parser.add_option("-w", "--websocket", dest="sioport", default=0,
 	help="The port you want to host for websocket clients")
 parser.add_option("-H", "--http", dest="http", default=0,
 	help="HTTP host port")
@@ -71,10 +71,10 @@ if args.portset:
 		if getattr(args, argname)==0:
 			setattr(args, argname, defaults[args.portset][argname])
 	default("peers")
-	default("wsport")
+	default("sioport")
 	default("http")
 
-from server import http, ws#, icon, peers
+from server import http, sio#, icon, peers
 from ConcurrenTree.util.storage.filestorage import FileStorage
 import gevent
 from gevent import monkey; monkey.patch_all()
@@ -83,10 +83,10 @@ docs = FileStorage()
 
 # add interface servers
 s_http = http.HTTP(port=args.http)
-s_ws   = ws.WebSocketServer(port=args.wsport, docs=docs)
+s_sio  = sio.WebSocketServer(port=args.sioport, docs=docs)
 # Start browser
 if not args.browser:
-	s_http.open("/newclient?ws=" + str(args.wsport))
+	s_http.open("/newclient?ws=" + str(args.sioport))
 # start notification icon
 #pool.start(icon.IconServer, pool, logo=(args.portset and defaults[args.portset]['icon']) or "")
 
@@ -97,7 +97,7 @@ if not args.browser:
 #for peer in startpeers:
 #	peerserver.connect(peer)
 
-servers = [s_http, s_ws]
+servers = [s_http, s_sio]
 greenlets = [gevent.spawn(x.run) for x in servers]
 
 try:
