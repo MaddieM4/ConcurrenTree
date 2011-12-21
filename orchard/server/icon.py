@@ -1,5 +1,3 @@
-from server import *
-
 from ConcurrenTree import file
 import gtk
 from gtk import gdk, StatusIcon
@@ -75,12 +73,6 @@ class IconServer(Server):
 	def run(self):
 		gdk.threads_init()
 		gtk.main()
-
-	def starting(self):
-		return []
-
-	def policy(self):
-		return self._policy
 
 	def close(self):
 		self.closed = True

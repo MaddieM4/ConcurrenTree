@@ -1,4 +1,3 @@
-from server import *
 from threading import Lock
 from ConcurrenTree.model.bcp.connection import BCPConnection
 

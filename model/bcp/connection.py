@@ -3,39 +3,73 @@ import traceback
 
 from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import operation, address
-from ConcurrenTree.util.server.pool.connection import Connection
 from peer import Peer
 from errors import errors
 
 nullbyte = "\x00"
 
-class BCPConnection(Connection):
+class BCPConnection(object):
 	''' A connection between two Peers '''
-	def __init__(self, docs, auth):
+
+	def __init__(self, docs, auth, f):
+		''' 
+			docs - key/value access to docname/document pairs
+			auth - TBD
+			f    - Filelike object for stream
+		'''
 		Connection.__init__(self)
-		self._id = None
 		self.poolsubs = {}
+		self.buffer = ""
 
 		self.docs = docs
 		self.auth = auth
+		self.file = f
 
 		self.here = Peer()
 		self.there = Peer()
 		self.initialize_documents()
 
-	def incoming(self, value):
-		''' Processes IO buffer '''
-		if nullbyte in value:
-			length = value.index(nullbyte)
-			try:
-				self.recv(value[:length])
-			finally:
-				return self.incoming(value[length+1:])
-		else:
-			return value
 
-	def recv(self, msg):
-		''' Takes a textual BCP message of unknown validity '''
+	def run(self):
+		try:
+			while 1:
+				self.read()
+		except IOError:
+			print "Connection closed"
+
+
+	def initialize_documents(self):
+		subs = self.docs.subscribed
+		self.subscribe(subs)
+		for subname in subs:
+			self.check(subname)
+
+	# STREAM INPUT
+
+	def read(self):
+		''' Reads raw data into the buffer '''
+		if self.closed:
+			raise IOError("Connection Closed")
+		value = self.file.read(1024)
+		if value == "":
+			self.close()
+			raise IOError("Connection Closed")
+		self.buffer += value
+		self.frame()
+
+	def frame(self):
+		''' Parses buffer into frames, as many as are in the buffer '''
+		if nullbyte in buffer:
+			length = buffer.index(nullbyte)
+			try:
+				self.recv_frame(buffer[:length])
+			finally:
+				self.buffer = buffer[length+1:]
+				self.frame()
+
+	def recv_frame(self, msg):
+		''' Processes a raw frame before passing it to self.analyze '''
+
 		print "recving message:",msg
 		try:
 			obj = json.loads(msg)
@@ -51,31 +85,23 @@ class BCPConnection(Connection):
 			traceback.print_exc()
 			self.error(500)
 
-	def outgoing(self, msg):
-		''' Accepts messages from pool '''
-		mtype = msg['type']
-		mname = msg['docname']
+	# STREAM OUTPUT
 
-		if mtype == "op":
-			if mname in self.there.subscriptions:
-				self.select(mname)
-				self.send(msg['value'].proto())
-		elif mtype == "subscribe":
-			if not mname in self.here.subscriptions:
-				self.subscribe([mname])
-				self.check(mname)
+	def send_frame(self, frame):
+		if self.closed:
+			raise IOError("Connection Closed")
+		print "sending message:", frame
+		self.file.write(frame)
 
-	def pool_push(self, msg):
-		print "Pool pushing",msg
-		self.queue.client_push(msg)
+	def send(self, msg):
+		self.send_frame(strict(msg)+nullbyte)
 
 	def push(self, msgtype, **kwargs):
+		''' Convenience function for sending a frame '''
 		kwargs['type'] = msgtype
 		self.send(kwargs)
 
-	def send(self, msg):
-		print "sending message:",msg
-		self.ioqueue.client_push(strict(msg)+nullbyte)
+	# HIGH-LEVEL UTILITIES
 
 	def select(self, docname):
 		if self.here.selected != docname:
@@ -93,12 +119,6 @@ class BCPConnection(Connection):
 			self.push("subscribe", docnames=docnames)
 			self.here.subscriptions.update(docnames)
 
-	def initialize_documents(self):
-		subs = self.docs.subscribed
-		self.subscribe(subs)
-		for subname in subs:
-			self.check(subname)
-
 	def check(self, name, addr = []):
 		addr = address.Address(addr).proto() # Make sure it's proto
 		self.select(name)
@@ -111,6 +131,8 @@ class BCPConnection(Connection):
 
 		self.select(name)
 		self.push("op", address = addr.proto(), instructions=result.proto()['instructions'])
+
+	# MESSAGE ANALYSIS
 
 	def analyze(self, obj, objstring):
 		''' 
@@ -188,6 +210,7 @@ class BCPConnection(Connection):
 			self.error(401) # Unknown Message Type
 
 	def check_selected(self, is_loaded=True):
+		''' Confirm that remotely selected docname exists '''
 		if not self.there.selected:
 			return self.error(405) # No document selected
 		if is_loaded and not self.there.selected in self.docs:
@@ -218,8 +241,9 @@ class BCPConnection(Connection):
 		''' Locally selected document '''
 		return self.docs[self.here.selected]
 
+	def close(self):
+		self.file.close()
+
 	@property
-	def id(self):
-		if self._id == None:
-			self._id = self.getunique("conn")
-		return self._id
+	def closed(self):
+		return self.file.closed
