@@ -74,19 +74,10 @@ if args.portset:
 	default("wsport")
 	default("http")
 
-from server import http#, ws, peers, icon
+from server import http#, ws, icon, peers
 from ConcurrenTree.util.storage.filestorage import FileStorage
 import gevent
 from gevent import monkey; monkey.patch_all()
-
-def run(servers=[], greenlets=[]):
-	greenlets = greenlets or [gevent.spawn(x.run) for x in servers]
-	gevent.joinall(greenlets)
-	return greenlets
-
-def close(servers):
-	for x in servers:
-		x.close()
 
 docs = FileStorage()
 
@@ -106,9 +97,13 @@ if not args.browser:
 #for peer in startpeers:
 #	peerserver.connect(peer)
 
+servers = [s_http]#, s_ws]
+greenlets = [gevent.spawn(x.run) for x in servers]
+
 try:
-	greenlets = run([s_http])
+	gevent.joinall(greenlets)
 except KeyboardInterrupt:
 	print
-	close(greenlets)
-	run(greenlets=greenlets)
+	for x in servers:
+		x.close()
+	#gevent.joinall(greenlets, timeout=5)

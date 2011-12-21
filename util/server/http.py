@@ -20,7 +20,6 @@ class HTTPServer(Server):
 		print "Shutting down HTTP server..."
 		self.closed = True
 		self.server.close()
-		self.wsgi.shutdown()
 		print "HTTP server shut down."
 
 	def route(self, path="/", **options):
