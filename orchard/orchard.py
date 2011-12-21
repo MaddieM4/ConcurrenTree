@@ -74,7 +74,7 @@ if args.portset:
 	default("wsport")
 	default("http")
 
-from server import http#, ws, icon, peers
+from server import http, ws#, icon, peers
 from ConcurrenTree.util.storage.filestorage import FileStorage
 import gevent
 from gevent import monkey; monkey.patch_all()
@@ -83,7 +83,7 @@ docs = FileStorage()
 
 # add interface servers
 s_http = http.HTTP(port=args.http)
-#s_ws   = ws.WebSocketServer(port=args.wsport, docs=docs)
+s_ws   = ws.WebSocketServer(port=args.wsport, docs=docs)
 # Start browser
 if not args.browser:
 	s_http.open("/newclient?ws=" + str(args.wsport))
@@ -97,7 +97,7 @@ if not args.browser:
 #for peer in startpeers:
 #	peerserver.connect(peer)
 
-servers = [s_http]#, s_ws]
+servers = [s_http, s_ws]
 greenlets = [gevent.spawn(x.run) for x in servers]
 
 try:

@@ -1,4 +1,3 @@
-import ConcurrenTree.util.hasher as hasher
 import ConcurrenTree.util.server.websocket as websocket
 from ConcurrenTree.model.bcp.connection import BCPConnection
 
@@ -47,18 +46,6 @@ class WebSocketServer(Server):
 		self.server.listen(5)
 		print "WebSocket server terminating"
 
-	def starting(self):
-		news = []
-		while True:
-			try:
-				news.append(self.server.queue.get_nowait().connection)
-			except dq.Empty:
-				break
-		return news
-
-	def policy(self):
-		return self._policy
-
 	def close(self):
 		self.server.running = False
 
@@ -69,9 +56,3 @@ class WebSocketServer(Server):
 			"port":self.port,
 			"closed":self.closed
 		}
-
-class WSPolicy(Policy):
-	def __init__(self):
-		Policy.__init__(self)
-		self.inputs.default = lambda msg, conn, bcast: bcast(msg)
-		self.outputs.default = lambda msg, conn, bcast: conn.queue.server_push(msg)
