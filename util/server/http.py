@@ -1,7 +1,6 @@
 import bottle
 from bottle import static_file
-from pool.server import Server
-from pool.policy import Policy
+from server import Server
 
 bottle.debug()
 
@@ -9,7 +8,6 @@ class HTTPServer(Server):
 	def __init__(self, host="localhost", port=8080):
 		self.host = host
 		self.port = port
-		self._policy = Policy()
 		self.server = bottle.Bottle()
 		self.wsgi = None
 		self.closed = False
@@ -17,12 +15,6 @@ class HTTPServer(Server):
 
 	def run(self):
 		bottle.run(self.server, server=KillableWSGIRefServer, host=self.host, port=self.port, setserver=self.setserver)
-
-	def starting(self):
-		return []
-
-	def policy(self):
-		return self._policy
 
 	def close(self):
 		print "Shutting down HTTP server..."
