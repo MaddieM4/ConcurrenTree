@@ -1,18 +1,25 @@
 from ConcurrenTree.model import ModelBase
-from ConcurrenTree.model.operation import FromNode
+from ConcurrenTree.model.node import make
+from ConcurrenTree.model.operation import Operation, FromNode
 
 class Document(ModelBase):
 	''' Stores a node and tracks operations. '''
 
 	def __init__(self, root, applied = []):
-		self.root = root
+		self.root = make(root)
+
 		self.applied = set(applied)
 		self.subscribed = False
 
-	def apply(self, op):
+	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
 		op.apply(self.root)
-		self.applied.add(op.hash)
+		if track:
+			self.applied.add(op.hash)
+
+	def load(self, json):
+		self.apply(Operation(json[0]), False)
+		self.applied = set(json[1])
 
 	def flatten(self):
 		return self.root.flatten()
