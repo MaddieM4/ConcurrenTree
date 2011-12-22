@@ -11,11 +11,11 @@ nullbyte = "\x00"
 class BCPConnection(object):
 	''' A connection between two Peers '''
 
-	def __init__(self, docs, auth, f):
+	def __init__(self, docs, auth, stream):
 		''' 
-			docs - key/value access to docname/document pairs
-			auth - TBD
-			f    - Filelike object for stream
+			docs   - key/value access to docname/document pairs
+			auth   - TBD
+			stream - (input, output) tuple of Queues.
 		'''
 		Connection.__init__(self)
 		self.poolsubs = {}
@@ -23,7 +23,7 @@ class BCPConnection(object):
 
 		self.docs = docs
 		self.auth = auth
-		self.file = f
+		self.stream = stream
 
 		self.here = Peer()
 		self.there = Peer()
@@ -34,6 +34,7 @@ class BCPConnection(object):
 		try:
 			while 1:
 				self.read()
+				self.frame()
 		except IOError:
 			print "Connection closed"
 
@@ -50,12 +51,14 @@ class BCPConnection(object):
 		''' Reads raw data into the buffer '''
 		if self.closed:
 			raise IOError("Connection Closed")
-		value = self.file.read(1024)
+		value = self.input.get()
 		if value == "":
 			self.close()
 			raise IOError("Connection Closed")
-		self.buffer += value
-		self.frame()
+		self.buffer += string
+
+	def inject(self, string):
+		self.input.put(string)
 
 	def frame(self):
 		''' Parses buffer into frames, as many as are in the buffer '''
@@ -91,7 +94,10 @@ class BCPConnection(object):
 		if self.closed:
 			raise IOError("Connection Closed")
 		print "sending message:", frame
-		self.file.write(frame)
+		self._send(frame)
+
+	def _send(self, frame):
+		self.output.put(frame)
 
 	def send(self, msg):
 		self.send_frame(strict(msg)+nullbyte)
@@ -241,9 +247,23 @@ class BCPConnection(object):
 		''' Locally selected document '''
 		return self.docs[self.here.selected]
 
+	@property
+	def input(self):
+		return self.stream[0]
+
+	@property
+	def output(self):
+		return self.stream[1]
+
 	def close(self):
 		self.file.close()
 
 	@property
 	def closed(self):
 		return self.file.closed
+
+def QueuePair():
+	from Queue import Queue
+	A = Queue()
+	B = Queue()
+	return [(A, B), (B, A)]

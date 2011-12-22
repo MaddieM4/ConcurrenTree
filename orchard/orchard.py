@@ -83,7 +83,7 @@ docs = FileStorage()
 
 # add interface servers
 s_http = http.HTTP(port=args.http)
-s_sio  = sio.WebSocketServer(port=args.sioport, docs=docs)
+s_sio  = sio.SocketIOServer(port=args.sioport, docs=docs)
 # Start browser
 if not args.browser:
 	s_http.open("/newclient?ws=" + str(args.sioport))

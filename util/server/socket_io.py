@@ -1,4 +1,4 @@
-'''
+''' 
 A socket.io bridge for Python
 
 This gives Python users access to socket.io, a node.js library. This library
@@ -10,6 +10,7 @@ For the latest source, visit https://github.com/evanw/socket.io-python
 '''
 
 import os
+import os.path
 import json
 import atexit
 import socket
@@ -139,7 +140,8 @@ class Server:
     
     def __init__(self):
         self.clients = {}
-    
+        self.closed = False
+
     def _handle(self, info):
         command = info['command']
         session = info['session']
@@ -217,7 +219,9 @@ class Server:
         os.close(handle)
         
         # run that script in node.js
-        process = subprocess.Popen(['node', path])
+        env = os.environ
+        env["NODE_PATH"] = NodePath()
+        process = subprocess.Popen(['node', path], env=env)
         def cleanup():
             process.kill()
             os.remove(path)
@@ -236,10 +240,17 @@ class Server:
         
         # run the server
         buffer = ''
-        while 1:
+        while not self.closed:
             buffer += sock.recv(4096)
             index = buffer.find('\0')
             while index >= 0:
                 data, buffer = buffer[0:index], buffer[index+1:]
                 self._handle(json.loads(data))
                 index = buffer.find('\0')
+        cleanup()
+
+    def close(self):
+        self.closed = True
+
+def NodePath():
+    return os.path.join(os.path.dirname(__file__), "node_modules")
