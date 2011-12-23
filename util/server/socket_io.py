@@ -224,7 +224,8 @@ class Server:
         process = subprocess.Popen(['node', path], env=env)
         def cleanup():
             process.kill()
-            os.remove(path)
+            if os.path.exists(path):
+                os.remove(path)
         atexit.register(cleanup)
         
         # make sure we can communicate with node.js
@@ -241,7 +242,11 @@ class Server:
         # run the server
         buffer = ''
         while not self.closed:
-            buffer += sock.recv(4096)
+            response = sock.recv(4096)
+            if response == "":
+                print "Node.js <-> Python socket broke in Socket.IO"
+                break
+            buffer += response
             index = buffer.find('\0')
             while index >= 0:
                 data, buffer = buffer[0:index], buffer[index+1:]

@@ -74,10 +74,10 @@ if args.portset:
 	default("sioport")
 	default("http")
 
-from server import http, sio#, icon, peers
-from ConcurrenTree.util.storage.filestorage import FileStorage
 import gevent
 from gevent import monkey; monkey.patch_all()
+from server import http, sio#, icon, peers
+from ConcurrenTree.util.storage.filestorage import FileStorage
 
 docs = FileStorage()
 
@@ -101,9 +101,10 @@ servers = [s_http, s_sio]
 greenlets = [gevent.spawn(x.run) for x in servers]
 
 try:
+	print "Starting servers"
 	gevent.joinall(greenlets)
 except KeyboardInterrupt:
-	print
+	print "Closing servers"
 	for x in servers:
 		x.close()
 	#gevent.joinall(greenlets, timeout=5)
