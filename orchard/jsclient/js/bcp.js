@@ -7,15 +7,16 @@
   BCP = (function() {
 
     function BCP(stream, auth) {
+      this.stream = stream;
+      this.auth = auth;
       this.unsubscribe = __bind(this.unsubscribe, this);
       this.subscribe = __bind(this.subscribe, this);
       this._handle = __bind(this._handle, this);
       this.errorhandle = __bind(this.errorhandle, this);
       this.handle = __bind(this.handle, this);
-      this.recieve = __bind(this.recieve, this);      this.docs = [];
-      this.stream = stream;
-      this.stream.onmessage = this.recieve;
-      this.auth = auth;
+      this.recieve = __bind(this.recieve, this);
+      this.docs = [];
+      this.stream.on('message', this.recieve);
       this.selected = "";
       this.subscriptions = {};
       this.bflag = {};
@@ -263,7 +264,7 @@
       var s;
       s = JSON.stringify(obj);
       this.log("sending", s);
-      return this.stream.send(s);
+      return this.stream.send(s + "\x00");
     };
 
     BCP.prototype.error = function(code) {
@@ -274,10 +275,6 @@
     };
 
     BCP.prototype.log = function(headline, detail) {};
-
-    BCP.prototype.reconnect = function() {
-      return this.stream.reconnect();
-    };
 
     return BCP;
 

@@ -1,15 +1,13 @@
 # bcp.coffee :: BCP Parsing Hub
 
-# Dependancies: CTree, Operation, Stream
+# Dependencies: CTree, Operation, a stream made with socket.io
 
 context = window
 
 class BCP
-    constructor: (stream, auth) ->
+    constructor: (@stream, @auth) ->
         @docs = []
-        @stream = stream
-        @stream.onmessage = @recieve
-        @auth = auth
+        @stream.on('message', @recieve)
         @selected = ""
         @subscriptions = {}
         @bflag = {}
@@ -160,13 +158,11 @@ class BCP
     send: (obj) ->
         s = JSON.stringify obj
         @log "sending", s
-        @stream.send s
+        @stream.send s+"\x00"
     error: (code) ->
         @send
             "type": "error"
             "code": code
     log: (headline, detail) ->
-    reconnect: ->
-        @stream.reconnect()
 
 context.BCP = BCP

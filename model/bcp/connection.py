@@ -17,13 +17,14 @@ class BCPConnection(object):
 			auth   - TBD
 			stream - (input, output) tuple of Queues.
 		'''
-		Connection.__init__(self)
 		self.poolsubs = {}
 		self.buffer = ""
+		self.last_buffer = ""
 
 		self.docs = docs
 		self.auth = auth
 		self.stream = stream
+		self.closed = False
 
 		self.here = Peer()
 		self.there = Peer()
@@ -55,19 +56,22 @@ class BCPConnection(object):
 		if value == "":
 			self.close()
 			raise IOError("Connection Closed")
-		self.buffer += string
+		self.buffer += value
 
 	def inject(self, string):
 		self.input.put(string)
 
 	def frame(self):
 		''' Parses buffer into frames, as many as are in the buffer '''
-		if nullbyte in buffer:
-			length = buffer.index(nullbyte)
+		if self.last_buffer != self.buffer:
+			self.last_buffer = self.buffer
+			print "Buffer:", repr(self.buffer)
+		if nullbyte in self.buffer:
+			length = self.buffer.index(nullbyte)
 			try:
-				self.recv_frame(buffer[:length])
+				self.recv_frame(self.buffer[:length])
 			finally:
-				self.buffer = buffer[length+1:]
+				self.buffer = self.buffer[length+1:]
 				self.frame()
 
 	def recv_frame(self, msg):
@@ -256,11 +260,7 @@ class BCPConnection(object):
 		return self.stream[1]
 
 	def close(self):
-		self.file.close()
-
-	@property
-	def closed(self):
-		return self.file.closed
+		self.closed = True
 
 def QueuePair():
 	from Queue import Queue

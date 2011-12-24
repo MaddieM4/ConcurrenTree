@@ -6,12 +6,12 @@
 
 	<script src="js/head.js"></script>
 	<script>
-		var ted, hostws, docs, bcp, wbcp;
+		var ted, hostws, docs, bcp, wbcp, my_display;
+		var rootdisplay, load_document, load_from_dni;
 
 		head.js(
 			"js/jquery.js",
 			"js/util.js",
-			"js/stream.js",
 			"js/ctree.js",
 			"js/operation.js",
 			"js/worker.js",
@@ -23,21 +23,24 @@
 			wbcp = $("#writebcp");
 			$(".docname_input").val("hello")
 		})
-
-		head.ready("stream.js",function(){
+		head.ready("view.js",function(){
 			// Find port
-			wsport = get_url_variable("ws",9091)
-			// Start websocket
-			hostws = new Stream("websocket","ws://localhost:"+wsport+"/");
-		});
+			sioport = get_url_variable("ws",9091)
+			siohost = "http://localhost:"+sioport;
 
-		head.ready("bcp.js",function(){
+			// Start load socket.io.js
+			head.js(siohost+"/socket.io/socket.io.js", function(){
+
+			// Create stream
+			socket = new io.Socket(null, {"port":sioport});
+			socket.connect();
+
 			function log(source, msg) {
 				$('#bcplog').append("<li><b>"+source.toUpperCase()+": </b>"+msg+"</li>")
 			}
 
 			// Start BCP processor
-			bcp = new BCP(hostws, null)
+			bcp = new BCP(socket, null)
 			bcp.log = log;
 
 			function checkJSON(){
@@ -55,78 +58,73 @@
 				wbcp.removeClass("valid");
 			})
 
-			$('#reconnectbutton').click(function(){
-				bcp.reconnect()
-			})
-		});
+			function my_display(docname, bcp){
+				self = this;
+				this.text = "";
+				this.primitive = new Display(docname, bcp, true)
+				this.display = $("#display #screen");
+				this.buttons = $("#display input:button");
+				this.display.removeClass("loaded");
 
-		function my_display(docname){
-			self = this;
-			this.text = "";
-			this.primitive = new Display(docname, bcp, true)
-			this.display = $("#display #screen");
-			this.buttons = $("#display input:button");
-			this.display.removeClass("loaded");
+				this.lock = function(){
+					this.buttons.attr("disabled", true);
+				}
+				this.unlock = function(){
+					this.buttons.attr("disabled", false);
+				}
+				/*this.replace = function(start, end, value){
+					this.text = this.text.slice(0,start)+value+this.text.slice(end);
+					this.display.html(this.text) // TODO: escape html literals
+				}*/
+				this.write = function(value){
+					this.text = value;
+					this.display.html(this.text);
+				}
+				this.rewrite = function(value){
+					self.write(value);
+					self.display.addClass("loaded");
+				}
+				this.clear = function(){
+					this.write("");
+				}
+				this.insert = function(pos, value) {
+				  this.primitive.act(function(prim){
+					prim.cursor(0,parseInt(pos));
+					prim.insert(value);
+				  });
+				}
+				this.delete = function(start, end) {
+				  var amount;
+				  start = parseInt(start);
+				  amount = parseInt(end)-start + 1;
+				  this.primitive.act(function(prim){
+					prim.cursor(0,start);
+					prim.delete(amount);
+				  });
+				}
+				this.close = function(){
+					this.primitive.close();
+				}
+				this.clear();
+				this.primitive.onrewrite = self.rewrite;
+			}
 
-			this.lock = function(){
-				this.buttons.attr("disabled", true);
+			function load_document(name){
+				$("#docname").html('Docname: "'+name+'"')
+				if (rootdisplay) {rootdisplay.close()}
+				rootdisplay = new my_display(name, bcp);
+				bcp.broadcast(name);
+				bcp.get(name);
+				bcp.subscribe(name);
 			}
-			this.unlock = function(){
-				this.buttons.attr("disabled", false);
-			}
-			/*this.replace = function(start, end, value){
-				this.text = this.text.slice(0,start)+value+this.text.slice(end);
-				this.display.html(this.text) // TODO: escape html literals
-			}*/
-			this.write = function(value){
-				this.text = value;
-				this.display.html(this.text);
-			}
-			this.rewrite = function(value){
-				self.write(value);
-				self.display.addClass("loaded");
-			}
-			this.clear = function(){
-				this.write("");
-			}
-			this.insert = function(pos, value) {
-			  this.primitive.act(function(prim){
-				prim.cursor(0,parseInt(pos));
-				prim.insert(value);
-			  });
-			}
-			this.delete = function(start, end) {
-			  var amount;
-			  start = parseInt(start);
-			  amount = parseInt(end)-start + 1;
-			  this.primitive.act(function(prim){
-				prim.cursor(0,start);
-				prim.delete(amount);
-			  });
-			}
-			this.close = function(){
-				this.primitive.close();
-			}
-			this.clear();
-			this.primitive.onrewrite = self.rewrite;
-		}
 
-		var rootdisplay;
-		function load_document(name){
-			$("#docname").html('Docname: "'+name+'"')
-			if (rootdisplay) {rootdisplay.close()}
-			rootdisplay = new my_display(name);
-			bcp.broadcast(name);
-			bcp.get(name);
-			bcp.subscribe(name);
-		}
+			function load_from_dni(){
+				load_document($('.docname_input').val())
+			}
 
-		function load_from_dni(){
-			load_document($('.docname_input').val())
-		}
-
-		head.ready("view.js",function(){
 			load_from_dni()
+
+			});
 		});
 
 		function easy_insert(){
