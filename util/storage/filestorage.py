@@ -2,7 +2,8 @@ import os, os.path
 import json
 
 from ConcurrenTree.model.document import Document
-from ConcurrenTree.util.encryption import LocalStorageCipher
+#from ConcurrenTree.util.encryption import LocalStorageCipher
+from ConcurrenTree.util import hasher
 from ConcurrenTree.util.storage import BaseStorage
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
@@ -67,7 +68,8 @@ class FileStorage(BaseStorage):
 
     def filename(self, docname):
             return os.path.join(self._dir, 
-                LocalStorageCipher.encrypt(docname)
+                #LocalStorageCipher.encrypt(docname)
+                hasher.sum(docname)
             )
 
     @property

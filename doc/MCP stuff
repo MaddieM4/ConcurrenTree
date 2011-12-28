@@ -1,0 +1,102 @@
+NOTE: This stream-of-consciousness document was instrumental in the redesign of the BCP protocol, but is completely out of date. Refer to https://docs.google.com/document/d/13pFsvRR341sT323l9mTRacI3CrC91xDpsAelsaH7h_0/edit?hl=en_US for valid information. This document is here for purely historical reasons - plus I don't want to waste all the effort I put into enumerating the paranoia levels of Orchard hosting.
+
+--------------------------------------------------------------------------------
+
+For awhile, we've gotten away with no auth, only a suggested docname format, no existence checking... and it made sense at the time. After all, the root node of every document is the same, providing a single root point from which all documents descend. Even if you don't have a doc stored, you can infer its most basic state and store that in its place on the fly.
+
+But things are different now, we can do them right from the start this time.
+
+Orchard has to be multi-user, even if its primary target audience is single user. It's going to be the same core for single-user and hosted, so we have to have login in the browser and auth in the server.
+
+Dealing with docs you don't care about:
+
+	Selecting a doc you don't store:
+		Should always fail.
+		
+	Ops for a doc you don't store:
+		If subscribed:
+			Forward or drop op.
+		else:
+			Fail.
+		
+	Sync of a doc you don't store:
+		Should always fail.
+	
+	Subscribing to a doc you don't store:
+		Should always succeed.
+		
+The complication, of course, is the Python Server's proxy position, providing caching and MCP support for multiple browser clients. And Facebook-like corporations will be in the same boat. We solve it now, we solve it good.
+
+But it's still a complication, because it's working "on behalf of" someone with the same user credentials as itself. Or rather, a facet of itself. We're back to the multi-user thing. The server has to verify identity and then enter a special relationship with the client.
+
+Hold on! This can be solved with a settings document. Call it self/settings/cache_names, and make it an array of docnames. When the client wants to load a foreign document, it adds the docname to the cache list. The server watches this list and responds to changes in real time, allocating blank docs and allowing the client to select them. It should delete docs when they are removed from name_cache. This works with multi-user and metadoc philosophy.
+
+AUTHORIZATION:
+
+You're trying to authorize as joe@somebody.com over BCP. Your Python server is probably not running on somebody.com, but it still has to vet you as joe on somebody.com's behalf. Your login credentials, therefore, are a username (joe@somebody.com) and a private passphrase for that machine that unlocks your key. The key is stored unencrypted in RAM only, however, it is still unencrypted on the server. If you don't own the server, that could be a bad thing.
+
+ALTERNATIVE AUTH (MCP TUNNEL):
+
+You can tunnel MCP inside BCP with messages of type "MCP". You can retrieve your encrypted key pair from your Orchard server in an encrypted fashion and unlock it client side too. Here's how they work for the paranoid:
+
+Retrieve the key
+	Create one-time key pair (transport_private and transport_public)
+	Enter key retrieval password (different from private key decryption passphrase)
+	Send getKey(name=username, password=passwd, transport=transport_public)
+	Recieve key(public="bdhab8y31=...", data="i3u3u523i...")
+	Decrypt data with transport_private
+
+Unlock key on the browser side
+	Enter passphrase to crack open private component
+	Decrypt data with passphrase
+	Browser has public and private key!
+
+Set up incoming MCP
+	Send MCP message s!self.public(forwardToBCP(identity))
+	This is basically equivalent to port forwarding, minus the sadness
+
+Send outgoing MCP messages all you want
+	MCP(data="3789357286267492...")
+	Not dependent on the previous step, unless you want replies ;)
+
+To get people to be aware of your change of contact data, you can update that data over email in the background with POP3/SMTP, and with MCP once the tunnel is established. Once their version of joe@somebody.com/contact changes, they will start sending data to your MCP tunnel location, which (along with any other forwarding obligations) will sink your data down the tunnel to you. Your tunnel proxy will not automatically work as a cross-syncing device (it's oblivious of your contact doc), your browser end needs to do that. In many cases, the tunnel sink is the only forwarding obligation your proxy will have.
+
+This ultimately boils down into...
+
+THREE TYPES OF HOSTING:
+
+When your data is being hosted, there are three packages you can basically go for.
+
+	Trusting:
+		Email hosting (optional to use, server has encrypted key)
+		Encrypted document storage
+		Orchard settings in metadocs
+		Unencrypted BCP
+		Unused MCP tunnel
+		Encrypted key pair on server disk
+		Unencrypted key pair in server RAM while logged in
+		Unencrypted documents in server RAM while logged in
+	Mildly paranoid:
+		Email hosting (optional to use, server has encrypted key)
+		Encrypted MCP over unencrypted BCP
+		Encrypted key pair on server disk
+		Username/password-locked transfer access to key
+		Encrypted key transfer
+		Server sees no unencrypted data
+	Ultra paranoid:
+		No account
+		MCP tunnel
+		No key dance/storage
+		Keys manually copied between devices by user
+
+These are in order from "Adequate for most people but could be safer" to "Cumbersome but freakishly safe." We're talking just using the server as an MCP tunnel and nothing else in that last one, man. Ultimately, at that point, it's basically equivalent to hosting your own instance of Orchard. And honestly, I don't think BCP should have encryption tech other than the upgrade tunnel, it's redundant and overcomplicates the spec, which hurts adoption. Most things don't need encryption and the ones that do can shell out the effort involved in the two more secure options.
+
+DEVICE SYNC PATTERN:
+
+Part of the interface spec is device layers. Every device in a layer is required to forward data to other devices so they all get the data eventually. But what is the best balance of efficiency and reliability when replicating messages to other devices? You don't want to send data more than necessary, but you also want to make sure everybody gets every update.
+
+This also applies to transferring ops between participants. Should you send deltas to every other participant? Just one or a few? And which?
+
+This is an open problem and up for debate. The solution will probably be discovered through experimentation. My tentative answer is "Try to get at least N responses", where n is the number of participants, and N is min(n, 4)-1. This way with less than three participants, you should try to get confirmations from everyone, but your obligation caps out at 3 other people (adjustable). This is enough to exceed ring-level connectivity, though it still allows the possibility of dead zones.
+
+So that's not good enough. You, as the sender, have a list of all the intended receivers, which can be sorted and is understood to be the same between nodes. Let's try to make use of that. You want to optimize discovery - send data to nodes least likely to be getting it from somewhere else. It's a layer of confusing that your algorithm has to predict and subvert itself. A possible method is sending preemptive acks to the nodes that should try to reach you. Also, seeking through the list in primes.

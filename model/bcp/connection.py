@@ -3,15 +3,17 @@ import traceback
 
 from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import operation, address
+
 from peer import Peer
 from errors import errors
+import ext.core as core
 
 nullbyte = "\x00"
 
 class BCPConnection(object):
 	''' A connection between two Peers '''
 
-	def __init__(self, docs, auth, stream):
+	def __init__(self, docs, auth, stream, extensions = []):
 		''' 
 			docs   - key/value access to docname/document pairs
 			auth   - TBD
@@ -26,12 +28,16 @@ class BCPConnection(object):
 		self.stream = stream
 		self.closed = False
 
+		self._queued_extensions = extensions
+		self.extensions = {}
+
 		self.here = Peer()
 		self.there = Peer()
 		self.initialize_documents()
 
 
 	def run(self):
+		self.load_extensions(self._queued_extensions)
 		try:
 			while 1:
 				self.read()
@@ -39,6 +45,12 @@ class BCPConnection(object):
 		except IOError:
 			print "Connection closed"
 
+
+	def load_extensions(self, extensions=[]):
+		for ext in [core.Core]+extensions:
+			if ext[0] not in self.extensions:
+				self.extensions[ext[0]] = ext
+		self.push("extensions", available=[e for e in self.extensions.keys() if e != "core"])
 
 	def initialize_documents(self):
 		subs = self.docs.subscribed
@@ -149,75 +161,11 @@ class BCPConnection(object):
 			Apply a message as a piece of remote communication.
 		'''
 		obt = obj['type']
-		if obt=='select':
-			if not self.require("docname", obj): return
-			self.there.selected = obj['docname']
-		elif obt=='op':
-			if not self.check_selected():return
-			if not self.require("instructions", obj): return
-			try:
-				op = operation.Operation(instructions = obj['instructions'])
-			except operation.ParseError:
-				return self.error(453)
-			# TODO: authorize
-			if not op.applied(self.fdoc):
-				try:
-					op.apply(self.fdoc)
-					print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
-					print "New hash: '%s'" % self.fdoc.hash
-					self.pool_push({
-						"type":"op",
-						"docname":self.there.selected,
-						"value":op
-					})
-				except operation.OpApplyError:
-					self.error(500) # General Local Error
-			else:
-				print "Op was already applied"
-		elif obt=='check':
-			# TODO - error testing
-			if not self.check_selected():return
-			if not self.require("address", obj):return
-			addr = address.Address(obj['address'])
-			sum = addr.resolve(self.fdoc.root).hash
-			self.select(self.there.selected)
-			self.push("tsum",address=addr.proto(), value=sum)
-		elif obt=='tsum':
-			if not self.check_selected():return
-			if not self.require("address", obj):return
-			if not self.require("value", obj):return
-			# Compare to our own hash
-			addr = address.Address(obj['address'])
-			sum = addr.resolve(self.fdoc.root).hash
-			if sum != obj['value']:
-				self.sendop(self.there.selected, addr)
-				self.push("get", address=addr.proto(), depth=1)
-		elif obt=='get':
-			if not self.check_selected():return
-			if not self.require("address", obj):return
-			self.sendop(self.there.selected, obj['address'])
-		elif obt=='subscribe':
-			if "docnames" not in obj:
-				if not self.check_selected(): return
-				obj[docnames] = [self.there.selected]
-			for name in obj['docnames']:
-				self.docs[name].subscribed = True
-				self.pool_push({"type":"subscribe", "docname":name})
-				self.there.subscriptions.add(name)
-		elif obt=='unsubscribe':
-			if "docnames" in obj:
-				if len(obj['docnames']) > 0:
-					for name in obj['docnames']:
-						self.there.subscriptions.discard(name)
-				else:
-					self.there.subscriptions.clear()
-			else:
-				if not self.check_selected(): return
-				self.there.subscriptions.discard(self.there.selected)
-		elif obt=='error':
-			print obj
-		else:
-			self.error(401) # Unknown Message Type
+		for ext in self.extensions:
+			ext = self.extensions[ext]
+			if obt in ext[1]:
+				return ext[1][obt](self, obj, objstring, obt)
+		self.error(401, data = obt) # Unknown Message Type
 
 	def check_selected(self, is_loaded=True):
 		''' Confirm that remotely selected docname exists '''
