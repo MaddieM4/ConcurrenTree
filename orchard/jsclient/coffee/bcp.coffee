@@ -62,10 +62,9 @@ class BCP
         else
             @sync name
     load: (name) ->
-        @select name
         @send 
-            type: "get"
-            address: []
+            "type": "load"
+            "docname": name
     broadcast: (name) ->
         ###
         Send a loaded document to docs as an operation, 
@@ -105,11 +104,6 @@ class BCP
         "op": (self, message) ->
             op = new Operation(message.instructions)
             self.foreign op, self.other.selected
-        "tree": (self, message) ->
-            self.getcached[message.docname] = message.value
-            if self.bflag[message.docname]
-                self.broadcast message.docname
-                self.bflag[message.docname] = off
         "subscribe": (self, message) ->
             if message.docnames.length is 0
               self.other.subscriptions[self.other.selected]=true
@@ -127,6 +121,10 @@ class BCP
               self.other.subscriptions[self.other.selected]=false
         "error": (self, message) ->
             self.errorhandle message
+        "extensions": (self, message) ->
+            if message.available.indexOf("puppet") is -1
+              self.error 500, "Missing Extensions", ["puppet"]
+              self.stream.disconnect()
         0: (self, message) ->
             console.log "error: unknown message type"
             self.error 401
@@ -159,10 +157,15 @@ class BCP
         s = JSON.stringify obj
         @log "sending", s
         @stream.send s+"\x00"
-    error: (code) ->
-        @send
-            "type": "error"
-            "code": code
+    error: (code, details, data) ->
+        message = 
+          "type": "error"
+          "code": code
+        if details
+          message.details = details
+        if data
+          message.data = data
+        @send message
     log: (headline, detail) ->
 
 context.BCP = BCP

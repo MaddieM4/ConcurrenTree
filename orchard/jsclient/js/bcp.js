@@ -84,10 +84,9 @@
     };
 
     BCP.prototype.load = function(name) {
-      this.select(name);
       return this.send({
-        type: "get",
-        address: []
+        "type": "load",
+        "docname": name
       });
     };
 
@@ -157,13 +156,6 @@
         op = new Operation(message.instructions);
         return self.foreign(op, self.other.selected);
       },
-      "tree": function(self, message) {
-        self.getcached[message.docname] = message.value;
-        if (self.bflag[message.docname]) {
-          self.broadcast(message.docname);
-          return self.bflag[message.docname] = false;
-        }
-      },
       "subscribe": function(self, message) {
         var i, _i, _len, _ref, _results;
         if (message.docnames.length === 0) {
@@ -198,6 +190,12 @@
       },
       "error": function(self, message) {
         return self.errorhandle(message);
+      },
+      "extensions": function(self, message) {
+        if (message.available.indexOf("puppet") === -1) {
+          self.error(500, "Missing Extensions", ["puppet"]);
+          return self.stream.disconnect();
+        }
       },
       0: function(self, message) {
         console.log("error: unknown message type");
@@ -267,11 +265,15 @@
       return this.stream.send(s + "\x00");
     };
 
-    BCP.prototype.error = function(code) {
-      return this.send({
+    BCP.prototype.error = function(code, details, data) {
+      var message;
+      message = {
         "type": "error",
         "code": code
-      });
+      };
+      if (details) message.details = details;
+      if (data) message.data = data;
+      return this.send(message);
     };
 
     BCP.prototype.log = function(headline, detail) {};
