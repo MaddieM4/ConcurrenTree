@@ -2,16 +2,15 @@ import os, os.path
 import json
 
 from ConcurrenTree.model.document import Document
-#from ConcurrenTree.util.encryption import LocalStorageCipher
-from ConcurrenTree.util import hasher
 from ConcurrenTree.util.storage import BaseStorage
+from ConcurrenTree.util import hasher
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
 
 class FileStorage(BaseStorage):
     """Storage interface, including caching"""
-    def __init__(self, find=None, dir=STORAGE_DIR):
-        BaseStorage.__init__(self, find)
+    def __init__(self, find=None, dir=STORAGE_DIR, encryptor=None):
+        BaseStorage.__init__(self, find=find, encryptor=encryptor)
         self._dir = dir
         self._cache = {}
         self._dirty = set()
@@ -43,7 +42,7 @@ class FileStorage(BaseStorage):
     def store(self, docname):
         with open(self.filename(docname), 'w') as f:
             f.write(
-                LocalStorageCipher.encrypt(
+                self.encrypt(
                       str(self[docname])
                     )
                 )
@@ -52,7 +51,7 @@ class FileStorage(BaseStorage):
         path = self.filename(docname)
         if os.path.exists(path):
             with open(path, 'r') as f:
-                contents = LocalStorageCipher.decrypt(f.read())
+                contents = self.decrypt(f.read())
                 json_file = json.loads(contents)
                 doc = Document({})
 		doc.load(json_file)
@@ -67,12 +66,28 @@ class FileStorage(BaseStorage):
             self._dirty.remove(docname)
 
     def filename(self, docname):
-            return os.path.join(self._dir, 
-                #LocalStorageCipher.encrypt(docname)
-                hasher.sum(docname)
-            )
+        return os.path.join(self._dir, 
+            self.encrypt(docname)
+        )
 
     @property
     def subscribed(self):
         ''' Docnames that you are subscribed to. '''
         return [i for i in self._cache if self._cache[i].subscribed]
+
+
+class FileStorageFactory(object):
+    def __init__(self, storage_dir=STORAGE_DIR, find=None, encryptorFactory=None):
+        self.dir = storage_dir
+        self.find = find
+        self.encryptorFactory = encryptorFactory
+
+    def make(self, username, password):
+        return FileStorage(self.find,
+            os.path.join(self.storage_dir, hasher.sum(username)),
+            self.encryptor(username, password)
+        )
+
+    def encryptor(self, username, password):
+        if self.encryptorFactory:
+            return self.encryptorFactory.make(username, password)

@@ -1,6 +1,6 @@
 class BaseStorage(object):
 
-	def __init__(self, find=None):
+	def __init__(self, find=None, encryptor = None):
 		''' 
 			Find is an optional callback. It takes a docname, attempts to
 			retrieve the document from remote sources, and either succeeds
@@ -9,9 +9,13 @@ class BaseStorage(object):
 			This should block until a blank Document is ready and the host
 			has confirmed that you have access to the doc. This document 
 			will be stored for you in the correct docname slot.
+
+			Encryptor should be an object with methods "encrypt" and 
+			"decrypt", or None.
 		'''
 		self.events = []
 		self._find = find
+		self.encryptor = encryptor
 
 	def find(self, docname):
 		if docname in self:
@@ -30,15 +34,31 @@ class BaseStorage(object):
 		'''
 		raise NotImplementedError()
 
+	# Encryption
+
+	def encrypt(self, str):
+		if self.encryptor:
+			return self.encryptor.encrypt(str)
+		else:
+			return str
+
+	def decrypt(self, str):
+		if self.encryptor:
+			return self.encryptor.decrypt(str)
+		else:
+			return str
+
 	# Events
 
 	def subscribe(self, docname):
-		self.events.append(("sub", docname, True))
-		self[docname].subscribed = True
+		if not self[docname].subscribed:
+			self.events.append(("sub", docname, True))
+			self[docname].subscribed = True
 
 	def unsubscribe(self, docname):
-		self.events.append(("sub", docname, False))
-		self[docname].subscribed = False
+		if self[docname].subscribed:
+			self.events.append(("sub", docname, False))
+			self[docname].subscribed = False
 
 	def op(self, docname, op):
 		self.events.append(("op", docname, op))
