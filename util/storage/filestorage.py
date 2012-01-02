@@ -11,7 +11,7 @@ class FileStorage(BaseStorage):
     """Storage interface, including caching"""
     def __init__(self, find=None, dir=STORAGE_DIR, encryptor=None):
         BaseStorage.__init__(self, find=find, encryptor=encryptor)
-        self._dir = dir
+        self._dir = os.path.expanduser(dir)
         self._cache = {}
         self._dirty = set()
         
@@ -67,7 +67,7 @@ class FileStorage(BaseStorage):
 
     def filename(self, docname):
         return os.path.join(self._dir, 
-            self.encrypt(docname)
+            hasher.sum(self.encrypt(docname))
         )
 
     @property
@@ -77,17 +77,25 @@ class FileStorage(BaseStorage):
 
 
 class FileStorageFactory(object):
-    def __init__(self, storage_dir=STORAGE_DIR, find=None, encryptorFactory=None):
-        self.dir = storage_dir
+    def __init__(self, storageDir=STORAGE_DIR, find=None, encryptorFactory=None):
+        self.dir = storageDir
         self.find = find
         self.encryptorFactory = encryptorFactory
 
     def make(self, username, password):
         return FileStorage(self.find,
-            os.path.join(self.storage_dir, hasher.sum(username)),
+            self.filename(username),
             self.encryptor(username, password)
         )
+
+    def new(self, username, password, key=None):
+        self.encryptorFactory.new(username, password, key)
+        os.makedirs(self.filename(username))
+        return self.make(username, password)
 
     def encryptor(self, username, password):
         if self.encryptorFactory:
             return self.encryptorFactory.make(username, password)
+
+    def filename(self, username):
+        return os.path.join(self.dir, hasher.sum(username))
