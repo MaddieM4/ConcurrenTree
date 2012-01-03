@@ -13,7 +13,7 @@ nullbyte = "\x00"
 class BCPConnection(object):
 	''' A connection between two Peers '''
 
-	def __init__(self, docs, auth, stream, extensions = []):
+	def __init__(self, auth, stream, extensions = []):
 		''' 
 			docs   - key/value access to docname/document pairs
 			auth   - TBD
@@ -23,7 +23,7 @@ class BCPConnection(object):
 		self.buffer = ""
 		self.last_buffer = ""
 
-		self.docs = docs
+		self.docs = None
 		self.auth = auth
 		self.stream = stream
 		self.closed = False
@@ -33,7 +33,7 @@ class BCPConnection(object):
 
 		self.here = Peer()
 		self.there = Peer()
-		self.initialize_documents()
+		#self.initialize_documents()
 
 
 	def run(self):
@@ -50,7 +50,7 @@ class BCPConnection(object):
 		for ext in [core.Core]+extensions:
 			if ext[0] not in self.extensions:
 				self.extensions[ext[0]] = ext
-		self.push("extensions", available=[e for e in self.extensions.keys() if e != "core"])
+		self.push("extensions", available=self.extensions.keys())
 
 	def initialize_documents(self):
 		subs = self.docs.subscribed

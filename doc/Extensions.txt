@@ -1,0 +1,50 @@
+core:
+	extensions
+	error
+	>> 500 Server Error
+	>> 501 Extension Known But Not Supported
+	>> 503 Extension Supported but Unavailable
+	
+	>> 400 Client Error
+	>> 401 Unknown Message Type
+	>> 451 Could not parse JSON
+	>> 452 Missing Argument
+	>> 453 Bad Argument
+	>> 454 Wrong JSON Root Type
+	
+	>> 100 Connection Error
+	>> 101 Server does not support extension
+
+data:
+	select
+	op
+	subscribe
+	unsubscribe
+	get
+	check
+	tsum
+	>> 404 Document Not Stored Here
+	>> 301 Not Authorized
+
+auth_u/p:
+	login
+	login_success
+	>> 300 Auth Error
+	>> 301 Not Authorized
+	>> 302 Bad Authorization Attempt
+
+mcp_tunnel:
+	mcp
+	mcp_forward
+
+tls_tunnel:
+	tls
+
+storage:
+	storage_get
+	storage_set
+
+puppet:
+	load
+	send
+	close
