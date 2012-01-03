@@ -1,50 +1,65 @@
 core:
-	extensions
-	error
-	>> 500 Server Error
-	>> 501 Extension Known But Not Supported
-	>> 503 Extension Supported but Unavailable
+	< extensions
+	= error
+	<< 500 Server Error
+	<< 501 Extension Known But Not Supported
+	<< 503 Extension Supported but Unavailable
 	
-	>> 400 Client Error
-	>> 401 Unknown Message Type
-	>> 451 Could not parse JSON
-	>> 452 Missing Argument
-	>> 453 Bad Argument
-	>> 454 Wrong JSON Root Type
+	>> 400 Unknown Client Error
+	== 401 Unknown Message Type
+	== 451 Could not parse JSON
+	== 452 Missing Argument
+	== 453 Bad Argument
+	== 454 Wrong JSON Root Type
 	
-	>> 100 Connection Error
-	>> 101 Server does not support extension
+	== 100 Connection Error
+	<< 101 Server does not support extension
 
 data:
-	select
-	op
-	subscribe
-	unsubscribe
-	get
-	check
-	tsum
-	>> 404 Document Not Stored Here
-	>> 301 Not Authorized
+	= select
+	= op
+	= subscribe
+	= unsubscribe
+	= get
+	= check
+	= tsum
+	== 404 Document Not Stored Here
+	== 301 Not Authorized
 
 auth_u/p:
-	login
-	login_success
-	>> 300 Auth Error
-	>> 301 Not Authorized
-	>> 302 Bad Authorization Attempt
+	> login
+	< login_success
+	<< 300 Auth Error
+	<< 301 Not Authorized
+	<< 302 Bad Authorization Attempt
 
 mcp_tunnel:
-	mcp
-	mcp_forward
+	= mcp
+	= mcp_forward
 
 tls_tunnel:
-	tls
+	= tls
+	== 102 TLS Connection Error
 
 storage:
-	storage_get
-	storage_set
+	> storage_get
+	> storage_set
+	> storage_append
+	< storage_value
+	<< 502 Resource Unavailable
 
 puppet:
-	load
-	send
-	close
+	> load
+	> send
+	> close
+
+(LEGEND)----
+< Message type only server can send
+> Message type only client can send
+= Message type that is client/server agnostic
+
+>> Error only server can send
+<< Error only client can send
+== Error that is client/server agnostic
+
+If the remote can send it, you need to support it, but only for the extensions the client actually takes advantage of.
