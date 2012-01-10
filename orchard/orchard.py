@@ -77,13 +77,13 @@ if args.portset:
 import gevent
 from gevent import monkey; monkey.patch_all()
 from server import http, sio#, icon, peers
-from ConcurrenTree.util.storage.filestorage import FileStorage
+from ConcurrenTree.util.storage.default import DefaultAuth
 
-docs = FileStorage()
+auth = DefaultAuth()
 
 # add interface servers
 s_http = http.HTTP(port=args.http)
-s_sio  = sio.SocketIOServer(port=args.sioport, docs=docs)
+s_sio  = sio.SocketIOServer(port=args.sioport, auth=auth)
 # Start browser
 if not args.browser:
 	s_http.open("/newclient?ws=" + str(args.sioport))

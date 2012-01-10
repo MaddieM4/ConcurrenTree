@@ -24,7 +24,7 @@ class BCPConnection(object):
 		self.closed = False
 
 		self._queued_extensions = extensions
-		self.extensions = {}
+		self.clear_extensions()
 
 	def run(self):
 		self.load_extensions(self._queued_extensions)
@@ -37,10 +37,14 @@ class BCPConnection(object):
 
 
 	def load_extensions(self, extensions=[]):
-		for ext in [core.Core()]+extensions:
+		for ext in extensions:
 			if ext.name not in self.extensions:
 				self.extensions[ext.name] = ext
 		self.push("extensions", available=self.extensions.keys())
+
+	def clear_extensions(self):
+		self.extensions = {}
+		self.load_extensions([core.Core()])
 
 	# STREAM INPUT
 
@@ -82,7 +86,7 @@ class BCPConnection(object):
 			self.error(454) # Wrong root type
 			return
 		try:
-			self.analyze(obj, msg)
+			self.analyze(obj)
 		except:
 			traceback.print_exc()
 			self.error(500)
@@ -117,10 +121,10 @@ class BCPConnection(object):
 		'''
 		for ext in self.extensions:
 			try:
-				self.extensions[ext].process(obj)
+				self.extensions[ext].process(self, obj)
 			except extension.TryAnother:
 				pass
-		self.error(401, data = obt) # Unknown Message Type
+		self.error(401, data = obj['type']) # Unknown Message Type
 
 	# MISC
 
