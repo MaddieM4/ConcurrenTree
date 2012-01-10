@@ -2,7 +2,6 @@ import json
 import traceback
 
 from ConcurrenTree.util.hasher import strict
-from ConcurrenTree.model import operation, address
 
 from errors import errors
 from ext import core, extension
@@ -14,9 +13,8 @@ class BCPConnection(object):
 
 	def __init__(self, stream, extensions = []):
 		''' 
-			docs   - key/value access to docname/document pairs
-			auth   - TBD
 			stream - (input, output) tuple of Queues.
+			extensions - a list of extension objects.
 		'''
 		self.poolsubs = {}
 		self.buffer = ""
@@ -39,9 +37,9 @@ class BCPConnection(object):
 
 
 	def load_extensions(self, extensions=[]):
-		for ext in [core.Core]+extensions:
-			if ext[0] not in self.extensions:
-				self.extensions[ext[0]] = ext
+		for ext in [core.Core()]+extensions:
+			if ext.name not in self.extensions:
+				self.extensions[ext.name] = ext
 		self.push("extensions", available=self.extensions.keys())
 
 	# STREAM INPUT
