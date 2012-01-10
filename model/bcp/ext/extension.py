@@ -17,6 +17,15 @@ class Extension(object):
 			except SilentFail:
 				return # Extension has handled it
 
+	def require(self, conn, arg, obj):
+		if not arg in obj:
+			self.error(conn, 452, 'Missing required argument: "%s"' % arg, arg)
+
+	def error(self, conn, *args, **kwargs):
+		''' Send an error message and raise a SilentFail '''
+		conn.error(*args, **kwargs)
+		raise SilentFail()
+
 class TryAnother(KeyError):
 	pass
 

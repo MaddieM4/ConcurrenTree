@@ -4,7 +4,13 @@ from extension import *
 class Data(Extension):
 	def __init__(self, docs):
 		Extension.__init__(self, "data", {
-			"select": self._select
+			"select": self._select,
+			"op": self._op,
+			"get": self._get,
+			"check": self._check,
+			"tsum": self._tsum,
+			"subscribe": self._subscribe,
+			"unsubscribe": self._unsubscribe
 		}, bound = True)
 		self.docs = docs
 
@@ -45,15 +51,6 @@ class Data(Extension):
 			self.error(conn, 405) # No document selected
 		if is_loaded and not self.there.selected in self.docs:
 			self.error(conn, 404) # Document not found
-
-	def require(self, conn, arg, obj):
-		if not arg in obj:
-			self.error(conn, 452, 'Missing required argument: "%s"' % arg, arg)
-
-	def error(self, conn, *args, **kwargs):
-		''' Send an error message and raise a SilentFail '''
-		conn.error(*args, **kwargs)
-		raise SilentFail()
 
 	@property
 	def fdoc(self):
@@ -130,6 +127,7 @@ class Data(Extension):
 			self.there.subscriptions.add(name)
 
 	def _unsubscribe(self, conn, obj):
+		# TODO Use doc unsubscription
 		if "docnames" in obj:
 			if len(obj['docnames']) > 0:
 				for name in obj['docnames']:
