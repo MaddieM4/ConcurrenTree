@@ -4,16 +4,15 @@ import traceback
 from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import operation, address
 
-from peer import Peer
 from errors import errors
-import ext.core as core
+from ext import core, extension
 
 nullbyte = "\x00"
 
 class BCPConnection(object):
 	''' A connection between two Peers '''
 
-	def __init__(self, auth, stream, extensions = []):
+	def __init__(self, stream, extensions = []):
 		''' 
 			docs   - key/value access to docname/document pairs
 			auth   - TBD
@@ -23,18 +22,11 @@ class BCPConnection(object):
 		self.buffer = ""
 		self.last_buffer = ""
 
-		self.docs = None
-		self.auth = auth
 		self.stream = stream
 		self.closed = False
 
 		self._queued_extensions = extensions
 		self.extensions = {}
-
-		self.here = Peer()
-		self.there = Peer()
-		#self.initialize_documents()
-
 
 	def run(self):
 		self.load_extensions(self._queued_extensions)
@@ -51,12 +43,6 @@ class BCPConnection(object):
 			if ext[0] not in self.extensions:
 				self.extensions[ext[0]] = ext
 		self.push("extensions", available=self.extensions.keys())
-
-	def initialize_documents(self):
-		subs = self.docs.subscribed
-		self.subscribe(subs)
-		for subname in subs:
-			self.check(subname)
 
 	# STREAM INPUT
 
@@ -95,7 +81,6 @@ class BCPConnection(object):
 		except ValueError:
 			self.error(451) # Bad JSON
 			return
-		if type(obj)!=dict:
 			self.error(454) # Wrong root type
 			return
 		try:
@@ -106,80 +91,40 @@ class BCPConnection(object):
 
 	# STREAM OUTPUT
 
+	def push(self, msgtype, **kwargs):
+		''' Convenience function for sending a message with a type'''
+		kwargs['type'] = msgtype
+		self.send(kwargs)
+
+	def send(self, msg):
+		''' Send a message dict to remote peer '''
+		self.send_frame(strict(msg)+nullbyte)
+
 	def send_frame(self, frame):
+		''' Send a textual frame to the remote end or raise IOError '''
 		if self.closed:
 			raise IOError("Connection Closed")
 		print "sending message:", frame
 		self._send(frame)
 
 	def _send(self, frame):
+		''' Underlying function to put a string in the output queue '''
 		self.output.put(frame)
-
-	def send(self, msg):
-		self.send_frame(strict(msg)+nullbyte)
-
-	def push(self, msgtype, **kwargs):
-		''' Convenience function for sending a frame '''
-		kwargs['type'] = msgtype
-		self.send(kwargs)
-
-	# HIGH-LEVEL UTILITIES
-
-	def select(self, docname):
-		if self.here.selected != docname:
-			self.push("select", docname=docname)
-		self.here.selected = docname
-
-	def subscribe(self, docnames=None):
-		if docnames==None:
-			if self.here.selected:
-				self.push("subscribe")
-			else:
-				raise ValueError("Cannot subscribe to selected with no document selected")
-		else:
-			docnames = list(docnames)
-			self.push("subscribe", docnames=docnames)
-			self.here.subscriptions.update(docnames)
-
-	def check(self, name, addr = []):
-		addr = address.Address(addr).proto() # Make sure it's proto
-		self.select(name)
-		self.push("check", address=addr)
-
-	def sendop(self, name, addr = []):
-		addr = address.Address(addr)
-
-		result = operation.FromStructure(self.docs[name].root, addr)
-
-		self.select(name)
-		self.push("op", address = addr.proto(), instructions=result.proto()['instructions'])
 
 	# MESSAGE ANALYSIS
 
-	def analyze(self, obj, objstring):
+	def analyze(self, obj):
 		''' 
 			Apply a message as a piece of remote communication.
 		'''
-		obt = obj['type']
 		for ext in self.extensions:
-			ext = self.extensions[ext]
-			if obt in ext[1]:
-				return ext[1][obt](self, obj, objstring, obt)
+			try:
+				self.extensions[ext].process(obj)
+			except extension.TryAnother:
+				pass
 		self.error(401, data = obt) # Unknown Message Type
 
-	def check_selected(self, is_loaded=True):
-		''' Confirm that remotely selected docname exists '''
-		if not self.there.selected:
-			return self.error(405) # No document selected
-		if is_loaded and not self.there.selected in self.docs:
-			return self.error(404) # Document not found
-		return True
-
-	def require(self, arg, obj):
-		if not arg in obj:
-			self.error(452, 'Missing required argument: "%s"' % arg, arg)
-			return False
-		return True
+	# MISC
 
 	def error(self, num=500, details="", data=None):
 		if num in errors and not details:
@@ -188,16 +133,6 @@ class BCPConnection(object):
 			self.push("error", code=num, details=details, data=data)
 		else:
 			self.push("error", code=num, details=details)
-
-	@property
-	def fdoc(self):
-		''' Foreign selected document '''
-		return self.docs[self.there.selected]
-
-	@property
-	def ldoc(self):
-		''' Locally selected document '''
-		return self.docs[self.here.selected]
 
 	@property
 	def input(self):
