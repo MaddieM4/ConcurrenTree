@@ -24,6 +24,39 @@
 	head.ready("bootstrap-dropdown.js", function() {
 		$('.topbar').dropdown();
 	});
+
+	head.ready(function(){
+		$('#console_input').live('change keydown keyup', function(){
+			value = $('#console_input')[0].value;
+			console.log(value);
+			if (isJSON(value)){
+				$("#console_submit").removeClass("disabled");
+			} else {
+				$("#console_submit").addClass("disabled");
+			}
+		})
+
+		// Find port
+		sioport = get_url_variable("ws",9091)
+		siohost = "http://localhost:"+sioport;
+
+		// Start load socket.io.js
+		head.js(siohost+"/socket.io/socket.io.js", function(){
+
+			// Create stream
+			socket = new io.Socket(null, {"port":sioport});
+			socket.connect();
+
+			function log(source, msg) {
+				$('#console_log').append("<li><b>"+source.toUpperCase()+": </b>"+msg+"</li>")
+			}
+
+			// Start BCP processor
+			bcp = new BCP(socket, null)
+			bcp.log = log;
+		});
+
+	});
 	</script>
 </head>
 
@@ -37,7 +70,7 @@
         <li><a href="/facelift">Welcome</a></li>
         <li><a href="/facelift/home">Home</a></li>
         <li><a href="/facelift/settings">Settings</a></li>
-        <li><a href="/">Raw editor</a></li>
+        <li><a href="/newclient">Raw editor</a></li>
         <li class="active"><a href="/console">BCP Console</a></li>
       </ul>
       <ul class="nav secondary-nav">
@@ -74,7 +107,9 @@
 
         <textarea id="console_input" style="width:100%; margin-bottom:5px;">
 Type your BCP messages here, or use the wizards.</textarea>
-        <a id="submitbcp" class="btn primary disabled" onclick=''>Send Message</a>
+        <a id="console_submit" class="btn primary disabled" onclick=''>Send Message</a>
+
+        <ul id="console_log"></ul>
 
       </div>
     </div>
