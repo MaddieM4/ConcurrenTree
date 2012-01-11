@@ -8,12 +8,16 @@
       this.auth = auth;
       this.unsubscribe = __bind(this.unsubscribe, this);
       this.subscribe = __bind(this.subscribe, this);
+      this.disconnect = __bind(this.disconnect, this);
+      this.connect = __bind(this.connect, this);
       this._handle = __bind(this._handle, this);
       this.errorhandle = __bind(this.errorhandle, this);
       this.handle = __bind(this.handle, this);
       this.recieve = __bind(this.recieve, this);
       this.docs = [];
       this.stream.on('message', this.recieve);
+      this.stream.on('connect', this.connect);
+      this.stream.on('disconnect', this.disconnect);
       this.selected = "";
       this.subscriptions = {};
       this.bflag = {};
@@ -187,19 +191,19 @@
       }
     };
     BCP.prototype.ehandlers = {
-      100: function(self, message) {
-        self.log("connection", "broken");
-        return console.error("Connection broken");
-      },
-      101: function(self, message) {
-        return self.log("connection", "started");
-      },
       0: function(self, message) {
         var m;
         m = JSON.stringify(message);
         self.log("server error", m);
         return console.error("Server error: " + m);
       }
+    };
+    BCP.prototype.connect = function() {
+      return this.log("connection", "started");
+    };
+    BCP.prototype.disconnect = function() {
+      this.log("connection", "broken");
+      return console.error("Connection broken");
     };
     BCP.prototype.subscribe = function(name, type) {
       var i, _i, _len, _results;
@@ -253,7 +257,9 @@
       if (data) message.data = data;
       return this.send(message);
     };
-    BCP.prototype.log = function(headline, detail) {};
+    BCP.prototype.log = function(headline, detail) {
+      return console.log(headline + ":" + detail);
+    };
     return BCP;
   })();
   context.BCP = BCP;

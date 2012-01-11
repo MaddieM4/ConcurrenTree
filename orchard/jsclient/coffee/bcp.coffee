@@ -8,6 +8,8 @@ class BCP
     constructor: (@stream, @auth) ->
         @docs = []
         @stream.on('message', @recieve)
+        @stream.on('connect', @connect)
+        @stream.on('disconnect', @disconnect)
         @selected = ""
         @subscriptions = {}
         @bflag = {}
@@ -130,15 +132,15 @@ class BCP
             console.log "error: unknown message type"
             self.error 401
     ehandlers: 
-        100: (self, message) ->
-            self.log "connection", "broken"
-            console.error "Connection broken"
-        101: (self, message) ->
-            self.log "connection", "started"
         0: (self, message) ->
             m = JSON.stringify message
             self.log "server error", m
             console.error "Server error: #{m}"
+    connect: () =>
+            @log "connection", "started"
+    disconnect: () =>
+            @log "connection", "broken"
+            console.error "Connection broken"
     subscribe: (name, type) =>
         if typeof name is "string"
           name = [name]
@@ -168,5 +170,6 @@ class BCP
           message.data = data
         @send message
     log: (headline, detail) ->
+        console.log(headline+":"+detail)
 
 context.BCP = BCP
