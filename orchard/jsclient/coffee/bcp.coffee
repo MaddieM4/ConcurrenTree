@@ -122,9 +122,10 @@ class BCP
         "error": (self, message) ->
             self.errorhandle message
         "extensions": (self, message) ->
-            if message.available.indexOf("puppet") is -1
-              self.error 500, "Missing Extensions", ["puppet"]
-              self.stream.disconnect()
+            #if message.available.indexOf("puppet") is -1
+            #  self.error 500, "Missing Extensions", ["puppet"]
+            #  self.stream.disconnect()
+            self.log "extensions", message.available.toString()
         0: (self, message) ->
             console.log "error: unknown message type"
             self.error 401
