@@ -8,18 +8,21 @@
 
 	<script src="js/head.js"></script>
 	<script>
-		head.js(
-			"js/jquery.js",
-			"bootstrap/js/bootstrap-dropdown.js",
-			"bootstrap/js/bootstrap-buttons.js",
-			"js/util.js",
-			"js/ctree.js",
-			"js/operation.js",
-			"js/worker.js",
-			"js/display.js",
-			"js/bcp.js",
-			"js/view.js"
-		);
+
+	var bcp, bcp_send;
+
+	head.js(
+		"js/jquery.js",
+		"bootstrap/js/bootstrap-dropdown.js",
+		"bootstrap/js/bootstrap-buttons.js",
+		"js/util.js",
+		"js/ctree.js",
+		"js/operation.js",
+		"js/worker.js",
+		"js/display.js",
+		"js/bcp.js",
+		"js/view.js"
+	);
 
 	head.ready("bootstrap-dropdown.js", function() {
 		$('.topbar').dropdown();
@@ -28,7 +31,6 @@
 	head.ready(function(){
 		$('#console_input').live('change keydown keyup', function(){
 			value = $('#console_input')[0].value;
-			console.log(value);
 			if (isJSON(value)){
 				$("#console_submit").removeClass("disabled");
 			} else {
@@ -54,6 +56,11 @@
 			// Start BCP processor
 			bcp = new BCP(socket, null)
 			bcp.log = log;
+
+			bcp_send = function(){
+				value = $('#console_input')[0].value;
+				bcp.send(value);
+			}
 		});
 
 	});
@@ -107,7 +114,7 @@
 
         <textarea id="console_input" style="width:100%; margin-bottom:5px;">
 Type your BCP messages here, or use the wizards.</textarea>
-        <a id="console_submit" class="btn primary disabled" onclick=''>Send Message</a>
+        <a id="console_submit" class="btn primary disabled" onclick='bcp_send();'>Send Message</a>
 
         <ul id="console_log"></ul>
 
