@@ -59,7 +59,7 @@
 
 			bcp_send = function(){
 				value = $('#console_input')[0].value;
-				bcp.send(value);
+				bcp.send(JSON.parse(value));
 			}
 		});
 

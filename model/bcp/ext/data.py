@@ -65,12 +65,12 @@ class Data(Extension):
 	# MESSAGE HANDLERS
 
 	def _select(self, conn, obj):
-		self.require("docname", obj)
+		self.require(conn, "docname", obj)
 		self.there.selected = obj['docname']
 
 	def _op(self, conn, obj):
 		self.check_selected()
-		self.require("instructions", obj)
+		self.require(conn, "instructions", obj)
 		try:
 			op = operation.Operation(instructions = obj['instructions'])
 		except operation.ParseError:
@@ -93,13 +93,13 @@ class Data(Extension):
 
 	def _get(self, conn, obj):
 		self.check_selected()
-		self.require("address", obj)
+		self.require(conn, "address", obj)
 		self.sendop(conn, self.there.selected, obj['address'])
 
 	def _check(self, conn, obj):
 		# TODO - error testing
 		self.check_selected()
-		self.require("address", obj)
+		self.require(conn, "address", obj)
 
 		addr = address.Address(obj['address'])
 		sum = addr.resolve(self.fdoc.root).hash
@@ -108,8 +108,8 @@ class Data(Extension):
 
 	def _tsum(self, conn, obj):
 		self.check_selected()
-		self.require("address", obj)
-		self.require("value", obj)
+		self.require(conn, "address", obj)
+		self.require(conn, "value", obj)
 
 		# Compare to our own hash
 		addr = address.Address(obj['address'])

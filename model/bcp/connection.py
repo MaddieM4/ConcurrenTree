@@ -23,8 +23,8 @@ class BCPConnection(object):
 		self.stream = stream
 		self.closed = False
 
-		self._queued_extensions = extensions
-		self.clear_extensions()
+		self._queued_extensions = [core.Core()] + extensions
+		self.extensions = {}
 
 	def run(self):
 		self.load_extensions(self._queued_extensions)
@@ -83,6 +83,7 @@ class BCPConnection(object):
 		except ValueError:
 			self.error(451) # Bad JSON
 			return
+		if type(obj)!=dict:
 			self.error(454) # Wrong root type
 			return
 		try:
@@ -121,7 +122,7 @@ class BCPConnection(object):
 		'''
 		for ext in self.extensions:
 			try:
-				self.extensions[ext].process(self, obj)
+				return self.extensions[ext].process(self, obj)
 			except extension.TryAnother:
 				pass
 		self.error(401, data = obj['type']) # Unknown Message Type

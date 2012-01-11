@@ -13,8 +13,8 @@ class AuthUP(Extension):
 		self.onlogin = onlogin
 
 	def login_attempt(self, conn, obj):
-		self.require("username", obj)
-		self.require("password", obj)
+		self.require(conn, "username", obj)
+		self.require(conn, "password", obj)
 
 		username = obj["username"]
 		password = obj["password"]
