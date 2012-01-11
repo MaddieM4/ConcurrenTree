@@ -1,18 +1,27 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-	<title>Facelift - no working parts, just fancy graphics.</title>
-
+	<title>BCP Console</title>
 	<link rel="stylesheet" href="bootstrap/bootstrap.css">
 	<link rel="stylesheet" href="css/main.css">
 
-	<script src="js/jquery.js"></script>
-	<script src="bootstrap/js/bootstrap-dropdown.js"></script>
-
+	<script src="js/head.js"></script>
 	<script>
+		head.js(
+			"js/jquery.js",
+			"bootstrap/js/bootstrap-dropdown.js",
+			"bootstrap/js/bootstrap-buttons.js",
+			"js/util.js",
+			"js/ctree.js",
+			"js/operation.js",
+			"js/worker.js",
+			"js/display.js",
+			"js/bcp.js",
+			"js/view.js"
+		);
 
-	$(document).ready( function() {
+	head.ready("bootstrap-dropdown.js", function() {
 		$('.topbar').dropdown();
 	});
 	</script>
@@ -25,11 +34,11 @@
     <div class="container-fluid">
       <a class="brand" href="http://orchard.com/">Orchard</a>
       <ul class="nav">
-        <li class="active"><a href="/facelift">Welcome</a></li>
+        <li><a href="/facelift">Welcome</a></li>
         <li><a href="/facelift/home">Home</a></li>
         <li><a href="/facelift/settings">Settings</a></li>
         <li><a href="/">Raw editor</a></li>
-        <li><a href="/console">BCP Console</a></li>
+        <li class="active"><a href="/console">BCP Console</a></li>
       </ul>
       <ul class="nav secondary-nav">
         <li class="dropdown">
@@ -55,19 +64,23 @@
   </div>
 
   <ul class="tabs tabs-main" data-tabs="tabs">
-    <li class="active"><a href="#welcome">Welcome</a></li>
-    <li><a href="#welcome"> + New Document</a></li>
+    <li class="active"><a href="#console">Console</a></li>
   </ul>
 
   <div class="content toplevel">
     <div class="tab-content">
-      <div id="welcome">
-        <img src="img/OrchardBigLogo.svg" alt="Orchard Logo" height="120px" width="530px"/><br>
-        A testing ground for Bootstrap and the final Orchard client layout. We'll merge it together with the technical parts later, this is a purely UI venture here.
+      <div id="console">
+        <pre id="console_screen"></pre>
+
+        <textarea id="console_input" style="width:100%; margin-bottom:5px;">
+Type your BCP messages here, or use the wizards.</textarea>
+        <a id="submitbcp" class="btn primary disabled" onclick=''>Send Message</a>
+
       </div>
     </div>
   </div>
 </div>
 
 </body>
+
 </html>

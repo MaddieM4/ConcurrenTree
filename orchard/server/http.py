@@ -16,6 +16,7 @@ class HTTP(http.HTTPServer):
 		http.Alias(self, "/", "newclient.html", jsclient)
 		http.Alias(self, "/newclient", "newclient.html", jsclient)
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
+		http.Alias(self, "/console", "console.html", jsclient)
 
 		http.FileServer(self, "js", js)
 		http.FileServer(self, "css", css)
