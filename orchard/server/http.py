@@ -15,7 +15,6 @@ class HTTP(http.HTTPServer):
 
 		http.Alias(self, "/favicon.ico", "Orchard32.ico", img)
 		http.Alias(self, "/", "console.html", jsclient)
-		http.Alias(self, "/newclient", "newclient.html", jsclient)
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
 		http.Alias(self, "/console", "console.html", jsclient)
 

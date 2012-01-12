@@ -86,7 +86,7 @@ s_http = http.HTTP(auth, port=args.http)
 s_sio  = sio.SocketIOServer(port=args.sioport, auth=auth)
 # Start browser
 if not args.browser:
-	s_http.open("/newclient?ws=" + str(args.sioport))
+	s_http.open("/?ws=" + str(args.sioport))
 # start notification icon
 #pool.start(icon.IconServer, pool, logo=(args.portset and defaults[args.portset]['icon']) or "")
 
