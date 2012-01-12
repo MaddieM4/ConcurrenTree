@@ -22,7 +22,7 @@ class AuthUP(Extension):
 		try:
 			self.auth.load(username, password)
 			self.auth.verify(username, password)
-		except:
+		except ValueError:
 			self.error(conn, 302, "Bad Authorization Attempt")
 
 		self.login_success(conn, username, self.auth[username])

@@ -93,6 +93,13 @@ class FileStorageFactory(object):
         os.makedirs(self.filename(username))
         return self.make(username, password)
 
+    def verify(self, username, password):
+        try:
+            self.encryptor(username, password)
+            return True
+        except:
+            raise ValueError("Bad username or password.")
+
     def encryptor(self, username, password):
         if self.encryptorFactory:
             return self.encryptorFactory.make(username, password)

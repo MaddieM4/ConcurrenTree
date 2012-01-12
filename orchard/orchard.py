@@ -82,7 +82,7 @@ from ConcurrenTree.util.storage.default import DefaultAuth
 auth = DefaultAuth()
 
 # add interface servers
-s_http = http.HTTP(port=args.http)
+s_http = http.HTTP(auth, port=args.http)
 s_sio  = sio.SocketIOServer(port=args.sioport, auth=auth)
 # Start browser
 if not args.browser:

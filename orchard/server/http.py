@@ -5,7 +5,7 @@ import ConcurrenTree
 import webbrowser
 
 class HTTP(http.HTTPServer):
-	def __init__(self, port=8080, **options):
+	def __init__(self, auth, port=8080, **options):
 		http.HTTPServer.__init__(self, port=port, **options)
 
 		jsclient = ConcurrenTree.file("orchard/jsclient/")
@@ -13,6 +13,7 @@ class HTTP(http.HTTPServer):
 		css = ConcurrenTree.file("orchard/jsclient/css")
 		img = ConcurrenTree.file("img/logos")
 
+		http.Alias(self, "/favicon.ico", "Orchard32.ico", img)
 		http.Alias(self, "/", "console.html", jsclient)
 		http.Alias(self, "/newclient", "newclient.html", jsclient)
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
@@ -28,8 +29,29 @@ class HTTP(http.HTTPServer):
 		http.Alias(self, "/js/textile.js", "textile-editor.min.js", js)
 		http.Alias(self, "/js/stream/ws.js", "ws.js", js)
 
+		http.Callback(self, "/account/new", self.newAccount, method="POST")
+		http.Callback(self, "/account/form", self.newAccountForm)
+
 		self.rootpath = jsclient
 		self.port = port
+		self.auth = auth
+
+	def newAccount(self, request):
+		d = dict(request.forms)
+		if 'username' in d and 'password' in d:
+			self.auth.new(d['username'], d['password'])
+			return ["Created successfully!"]
+		return ["Missing username or password arguments."]
+
+	def newAccountForm(self, request):
+		return [
+			"<html><head><title>Make a new account</title></head>",
+			"<body><form method='POST' action='/account/new'>",
+			"Username: <input type='text' name='username'><br/>",
+			"Password: <input type='password' name='password'><br/>",
+			"<input type='submit'>",
+			"</form></body></html>"
+		]
 
 	def open(self, location="/"):
 		''' Open a new browser window '''

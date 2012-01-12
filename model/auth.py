@@ -10,6 +10,9 @@ class Auth(object):
 		if not username in self:
 			self[username] = self.maker.make(username, password)
 
+	def verify(self, username, password):
+		return self.maker.verify(username, password)
+
 	def new(self, username, password, key=None):
 		" Create a user "
 		self[username] = self.maker.new(username, password, key)

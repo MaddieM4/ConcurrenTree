@@ -1,5 +1,5 @@
 import bottle
-from bottle import static_file
+from bottle import static_file, request, response
 from server import Server
 
 bottle.debug()
@@ -65,6 +65,9 @@ def FileServer(bserver, prefix, ospath, onelayer=True):
 
 def Alias(bserver, route, filename, ospath):
 	return bserver.route(route)(lambda:static_file(filename, ospath))
+
+def Callback(bserver, route, callback, **options):
+	return bserver.route(route, **options)(lambda:callback(request))
 
 class KillableWSGIRefServer(bottle.WSGIRefServer):
 	def run(self, handler):
