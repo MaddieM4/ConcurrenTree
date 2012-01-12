@@ -29,6 +29,6 @@ class SocketIOServer(io.Server):
 def onlogin(conn, username, docs):
 	# Load new extensions and make login unavailable
 	conn.clear_extensions()
-	conn.load_extension([
+	conn.load_extensions([
 		data.Data(docs)
 	])
