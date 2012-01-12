@@ -9,6 +9,7 @@ class Extension(object):
 		if not obt in self.callbacks:
 			raise TryAnother(obt)
 		else:
+			#print "Trying "+repr(obt)+" of "+repr(self.name)
 			try:
 				if self.bound:
 					return self.callbacks[obt](conn, msg)

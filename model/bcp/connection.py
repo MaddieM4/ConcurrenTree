@@ -121,6 +121,7 @@ class BCPConnection(object):
 			Apply a message as a piece of remote communication.
 		'''
 		for ext in self.extensions:
+			#print "Trying extension "+repr(self.extensions[ext].name)
 			try:
 				return self.extensions[ext].process(self, obj)
 			except extension.TryAnother:

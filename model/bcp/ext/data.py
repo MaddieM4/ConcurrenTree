@@ -14,6 +14,9 @@ class Data(Extension):
 		}, bound = True)
 		self.docs = docs
 
+		self.here = Peer()
+		self.there = Peer()
+
 	# UTILITIES
 
 	def select(self, conn, docname):
@@ -66,10 +69,11 @@ class Data(Extension):
 
 	def _select(self, conn, obj):
 		self.require(conn, "docname", obj)
+		print "Selecting" + obj['docname']
 		self.there.selected = obj['docname']
 
 	def _op(self, conn, obj):
-		self.check_selected()
+		self.check_selected(conn)
 		self.require(conn, "instructions", obj)
 		try:
 			op = operation.Operation(instructions = obj['instructions'])
@@ -92,13 +96,13 @@ class Data(Extension):
 			print "Op was already applied"
 
 	def _get(self, conn, obj):
-		self.check_selected()
+		self.check_selected(conn)
 		self.require(conn, "address", obj)
 		self.sendop(conn, self.there.selected, obj['address'])
 
 	def _check(self, conn, obj):
 		# TODO - error testing
-		self.check_selected()
+		self.check_selected(conn)
 		self.require(conn, "address", obj)
 
 		addr = address.Address(obj['address'])
@@ -107,7 +111,7 @@ class Data(Extension):
 		conn.push("tsum",address=addr.proto(), value=sum)
 
 	def _tsum(self, conn, obj):
-		self.check_selected()
+		self.check_selected(conn)
 		self.require(conn, "address", obj)
 		self.require(conn, "value", obj)
 
@@ -120,7 +124,7 @@ class Data(Extension):
 
 	def _subscribe(self, conn, obj):
 		if "docnames" not in obj:
-			self.check_selected()
+			self.check_selected(conn)
 			obj[docnames] = [self.there.selected]
 		for name in obj['docnames']:
 			self.docs.subscribe(name)
@@ -135,7 +139,7 @@ class Data(Extension):
 			else:
 				self.there.subscriptions.clear()
 		else:
-			if not self.check_selected(): return
+			if not self.check_selected(conn): return
 			self.there.subscriptions.discard(self.there.selected)
 
 class Peer:
