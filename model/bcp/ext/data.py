@@ -1,9 +1,10 @@
-from ConcurrenTree.model import operation, address
+from ConcurrenTree.model import operation, address, document
 from extension import *
 
 class Data(Extension):
 	def __init__(self, docs):
 		Extension.__init__(self, "data", {
+			"create": self._create,
 			"select": self._select,
 			"op": self._op,
 			"get": self._get,
@@ -67,10 +68,22 @@ class Data(Extension):
 
 	# MESSAGE HANDLERS
 
+	def _create(self, conn, obj):
+		self.require(conn, "docname", obj)
+		name = obj['docname']
+
+		if not name in self.docs:
+			self.docs[name] = document.Document({})
+
 	def _select(self, conn, obj):
 		self.require(conn, "docname", obj)
-		print "Selecting" + obj['docname']
-		self.there.selected = obj['docname']
+		name = obj['docname']
+
+		if not name in self.docs:
+			self.error(conn, 404)
+
+		print "Selecting" + name
+		self.there.selected = name
 
 	def _op(self, conn, obj):
 		self.check_selected(conn)

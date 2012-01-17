@@ -21,7 +21,7 @@ class FileStorage(BaseStorage):
         else:
             return self.load(x)
 
-    def set(self, doc, docname):
+    def set(self, docname, doc):
         self._cache[docname] = doc
         self._dirty.add(docname) 
 
