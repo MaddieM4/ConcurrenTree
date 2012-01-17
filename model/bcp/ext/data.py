@@ -73,7 +73,7 @@ class Data(Extension):
 		name = obj['docname']
 
 		if not name in self.docs:
-			self.docs[name] = document.Document({})
+			self.docs[name] = document.Document("")
 
 	def _select(self, conn, obj):
 		self.require(conn, "docname", obj)
@@ -95,14 +95,9 @@ class Data(Extension):
 		# TODO: authorize
 		if not op.applied(self.fdoc):
 			try:
-				op.apply(self.fdoc)
+				self.docs.op(self.there.selected, op)
 				print "Tree '%s' modified: '%s'" % (self.there.selected, self.fdoc.flatten())
 				print "New hash: '%s'" % self.fdoc.hash
-				self.pool_push({
-					"type":"op",
-					"docname":self.there.selected,
-					"value":op
-				})
 			except operation.OpApplyError:
 				self.error(conn, 500) # General Local Error
 		else:
