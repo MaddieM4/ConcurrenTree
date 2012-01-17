@@ -11,10 +11,10 @@ class RSA(object):
 			self.unlock()
 
 	def encrypt(self, value):
-		return self.key.encrypt(value, "")[0] # No K value for RSA
+		return self.key.encrypt(str(value), "")[0] # No K value for RSA
 
 	def decrypt(self, value):
-		return self.key.decrypt(value)
+		return self.key.decrypt(str(value))
 
 	def unlock(self):
 		self.key = rsalib.importKey(AESUnlocker(self.password).decrypt(self.keystr))
