@@ -44,6 +44,16 @@
 			$('#__tab_'+id+" a").click();
 		}
 	}
+
+	prebuilt_tabs = {
+		"welcome":['Welcome', '/tab/welcome.html']
+	}
+
+	function prebuilt_tab(name){
+		details = prebuilt_tabs[name];
+		select_tab(name, details[0], details[1])
+		return false;
+	}
 	</script>
 </head>
 
@@ -54,7 +64,7 @@
     <div class="container-fluid">
       <a class="brand" href="http://orchard.com/">Orchard</a>
       <ul class="nav">
-        <li><a href="#welcome" onclick="select_tab('welcome'); return false;">Welcome</a></li>
+        <li><a href="#welcome" onclick="return prebuilt_tab('welcome');">Welcome</a></li>
         <li><a href="/facelift">Home</a></li>
         <li><a href="/facelift/settings">Settings</a></li>
         <li><a href="/console">BCP Console</a></li>
@@ -83,21 +93,18 @@
   </div>
 
   <ul class="tabs tabs-main" data-tabs="tabs">
-    <li id="__tab_welcome" class="active"><a href="#welcome">Welcome</a></li>
-    <li><a href="#welcome"> + New Document</a></li>
+    <!--<li id="__tab_welcome" class="active"><a href="#welcome">Welcome</a></li>
+    <li><a href="#welcome"> + New Document</a></li>-->
   </ul>
 
   <div class="content toplevel">
     <div class="tab-content">
-      <div id="welcome" class="tab-pane active">
-        <img src="img/OrchardBigLogo.svg" alt="Orchard Logo" height="120px" width="530px"/><br>
-	Orchard is a proof-of-concept daemon and web client for personal ConcurrenTree documents. It aims to promote open concurrency standards and provide P2P Wave-like collaboration in secure, difficult-to-censor ways.
-
-	<br/><br/><a href="#" onclick="select_tab('mcss', 'Main.css', '/css/main.css'); return false;">Click here to open a tab full of CSS gibberish.</a>
-      </div>
     </div>
   </div>
 </div>
 
+<script>
+	prebuilt_tab('welcome');
+</script>
 </body>
 </html>

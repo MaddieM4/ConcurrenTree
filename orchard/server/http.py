@@ -19,6 +19,7 @@ class HTTP(http.HTTPServer):
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
 		http.Alias(self, "/console", "console.html", jsclient)
 
+		http.FileServer(self, "tab", jsclient+"tab/")
 		http.FileServer(self, "js", js)
 		http.FileServer(self, "css", css)
 		http.FileServer(self, "bootstrap", jsclient+"bootstrap/", False)
