@@ -14,7 +14,8 @@ class HTTP(http.HTTPServer):
 		img = ConcurrenTree.file("img/logos")
 
 		http.Alias(self, "/favicon.ico", "Orchard32.ico", img)
-		http.Alias(self, "/", "console.html", jsclient)
+		http.Alias(self, "/", "index.html", jsclient)
+		http.Alias(self, "/index", "index.html", jsclient)
 		http.Alias(self, "/facelift", "facelift.html", jsclient)
 		http.Alias(self, "/console", "console.html", jsclient)
 
