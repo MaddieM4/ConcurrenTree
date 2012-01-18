@@ -27,7 +27,8 @@ function select_tab(id, title, url){
 }
 
 prebuilt_tabs = {
-	"welcome":['Welcome', '/tab/welcome.html']
+	"welcome":['Welcome', '/tab/welcome.html'],
+	"console":['Console', '/tab/console.html']
 }
 
 function prebuilt_tab(name){
