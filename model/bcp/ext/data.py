@@ -135,11 +135,9 @@ class Data(Extension):
 			self.check_selected(conn)
 			obj[docnames] = [self.there.selected]
 		for name in obj['docnames']:
-			self.docs.subscribe(name)
 			self.there.subscriptions.add(name)
 
 	def _unsubscribe(self, conn, obj):
-		# TODO Use doc unsubscription
 		if "docnames" in obj:
 			if len(obj['docnames']) > 0:
 				for name in obj['docnames']:

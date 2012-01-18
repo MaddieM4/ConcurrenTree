@@ -1,6 +1,5 @@
 import os, os.path
 import json
-
 from ConcurrenTree.model.document import Document
 from ConcurrenTree.util.storage import BaseStorage
 from ConcurrenTree.util import hasher
@@ -12,6 +11,8 @@ class FileStorage(BaseStorage):
     def __init__(self, find=None, dir=STORAGE_DIR, encryptor=None):
         BaseStorage.__init__(self, find=find, encryptor=encryptor)
         self._dir = os.path.expanduser(dir)
+        if not os.path.exists(self._dir):
+            os.makedirs(self._dir)
         self._cache = {}
         self._dirty = set()
         
@@ -22,6 +23,8 @@ class FileStorage(BaseStorage):
             return self.load(x)
 
     def set(self, docname, doc):
+        self.needflush.set()
+	print "self.needflush = ", self.needflush.is_set()
         self._cache[docname] = doc
         self._dirty.add(docname) 
 
@@ -54,7 +57,7 @@ class FileStorage(BaseStorage):
                 contents = self.decrypt(f.read())
                 json_file = json.loads(contents)
                 doc = Document({})
-		doc.load(json_file)
+                doc.load(json_file)
             self._cache[x] = doc
             return doc
         else:
@@ -63,7 +66,7 @@ class FileStorage(BaseStorage):
     def flush(self):
         for docname in self._dirty:
             self.store(docname)
-            self._dirty.remove(docname)
+        self._dirty.clear()
 
     def filename(self, docname):
         return os.path.join(self._dir, 

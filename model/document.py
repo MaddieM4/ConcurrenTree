@@ -9,7 +9,6 @@ class Document(ModelBase):
 		self.root = make(root)
 
 		self.applied = set(applied)
-		self.subscribed = False
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''

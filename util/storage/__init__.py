@@ -1,3 +1,6 @@
+import threading
+import thread
+
 class BaseStorage(object):
 
 	def __init__(self, find=None, encryptor = None):
@@ -17,6 +20,10 @@ class BaseStorage(object):
 		self._find = find
 		self.encryptor = encryptor
 
+		self.flushing = True
+		self.needflush = threading.Event()
+		self.flusherthread = thread.start_new_thread(self.flush_loop)
+
 	def find(self, docname):
 		if docname in self:
 			return self[docname]
@@ -34,6 +41,13 @@ class BaseStorage(object):
 		'''
 		raise NotImplementedError()
 
+	def flush_loop(self):
+		while self.flushing:
+			self.needflush.wait(5)
+			if self.needflush.is_set():
+				self.flush()
+				self.needflush.clear()
+
 	# Encryption
 
 	def encrypt(self, str):
@@ -50,18 +64,12 @@ class BaseStorage(object):
 
 	# Events
 
-	def subscribe(self, docname):
-		if not self[docname].subscribed:
-			self.events.append(("sub", docname, True))
-			self[docname].subscribed = True
-
-	def unsubscribe(self, docname):
-		if self[docname].subscribed:
-			self.events.append(("sub", docname, False))
-			self[docname].subscribed = False
+	def event(self, typestr, docname, data):
+		for ear in self.event_listeners:
+			ear(typestr, docname, data)
 
 	def op(self, docname, op):
-		self.events.append(("op", docname, op))
+		self.event("op", docname, op)
 		self[docname].apply(op)
 
 	# Dict access
