@@ -14,9 +14,17 @@ class Data(Extension):
 			"unsubscribe": self._unsubscribe
 		}, bound = True)
 		self.docs = docs
+		self.docs.event_listeners.add(self.doc_listener)
 
 		self.here = Peer()
 		self.there = Peer()
+
+	# Handle live changes on the doc level
+
+	def doc_listener(self, typestr, docname, data):
+		if typestr=="op":
+			if docname in self.there.subscriptions:
+				self.conn.send(data.proto())
 
 	# UTILITIES
 
@@ -131,6 +139,7 @@ class Data(Extension):
 			conn.push("get", address=addr.proto(), depth=1)
 
 	def _subscribe(self, conn, obj):
+		self.conn = conn
 		if "docnames" not in obj:
 			self.check_selected(conn)
 			obj[docnames] = [self.there.selected]

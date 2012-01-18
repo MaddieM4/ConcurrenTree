@@ -16,7 +16,7 @@ class BaseStorage(object):
 			Encryptor should be an object with methods "encrypt" and 
 			"decrypt", or None.
 		'''
-		self.events = []
+		self.event_listeners = set()
 		self._find = find
 		self.encryptor = encryptor
 
