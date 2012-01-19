@@ -39,6 +39,12 @@ function prebuilt_tab(name){
 
 function close_tab(name){
 	if (!name) {
-		
+		name = current_tab();
 	}
+	$('#'+name).remove();
+	$('#__tab_'+name).remove();
+}
+
+function current_tab(){
+	return $('.tab-content > .active').attr('id');
 }
