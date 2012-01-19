@@ -23,6 +23,31 @@
 			$('#nu_modal').modal({backdrop:true,keyboard:true});
 		});
 
+		function new_user(){
+			var name = $('#nu_modal_username')[0].value;
+			var pass = $('#nu_modal_password')[0].value;
+			var btn  = $('#nu_modal .btn.primary')
+			btn.button('loading')
+
+			function success(){
+				alert("SUCCESS");
+			}
+
+			function error(){
+				alert("Account could not be created.");
+			}
+
+			$.ajax({
+				url:"/account/new",
+				type:"POST",
+				data:{
+					username:name,
+					password:pass
+				},
+				success:success,
+				error:error
+			});
+		}
 	</script>
 </head>
 
@@ -92,8 +117,8 @@
     </form>
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn primary" data-loading-text="Generating RSA Key..." 
-onclick='$("#nu_modal .btn.primary").button("loading")'>Create User</a>
+    <a href="#" class="btn primary" data-loading-text="loading stuff..."
+onclick='new_user(); return false;'>Create User</a>
     <a href="#" class="btn secondary" onclick="$('#nu_modal').modal('hide')">Cancel</a>
   </div>
 </div>
