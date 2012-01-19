@@ -42,9 +42,10 @@ function close_tab(name){
 		name = current_tab();
 	}
 	if (name == "console") console_bcp.stream.disconnect()
+
+	var stab = prev_tab() || next_tab();
 	$('#'+name).remove();
 	$('#__tab_'+name).remove();
-	var stab = prev_tab() || next_tab();
 	if (stab){
 		select_tab(stab);
 	} else {
