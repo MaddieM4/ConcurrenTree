@@ -1,5 +1,6 @@
 (function() {
   var SHA1, getUrlParameter;
+
   this.arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
     
@@ -29,7 +30,6 @@
             arrayFill [], ((i) -> i * i), 6
                 returns [0, 1, 4, 9, 16, 25]
     */
-
     var i;
     assert(isArray(array), 'array (first argument) must be an array');
     assert(isFunction(value), 'value (second argument) must be a function');
@@ -39,6 +39,7 @@
     }
     return array;
   };
+
   this.isArray = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Array]";
@@ -46,6 +47,7 @@
       return false;
     }
   };
+
   this.isObject = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Object]";
@@ -53,6 +55,7 @@
       return false;
     }
   };
+
   this.isFunction = function(obj) {
     if (typeof obj === "function") return true;
     if (typeof obj === "object") {
@@ -61,12 +64,15 @@
       return false;
     }
   };
+
   this.isInteger = function(obj) {
     return isNumber(obj) && Math.floor(obj) === obj;
   };
+
   this.isNumber = function(obj) {
     return typeof obj === "number";
   };
+
   this.isBoolean = function(obj) {
     /* tests if an object is a boolean object
         
@@ -76,12 +82,13 @@
         if obj is true or obj is false then true else false
         
         JS Condition (obj === true || obj === false), not '=='!
-    */
-    return typeof obj === "boolean";
+    */    return typeof obj === "boolean";
   };
+
   this.isString = function(obj) {
     return typeof obj === "string";
   };
+
   this.range = function(start, end, step) {
     var i, _results;
     if (step == null) step = 1;
@@ -116,7 +123,6 @@
             range 5, 0, 2
                 [5, 3, 1]
     */
-
     step = (start < end && step > 0) || (start > end && step < 0) ? step : -step;
     _results = [];
     for (i = start; start <= end ? i < end : i > end; i += step) {
@@ -124,6 +130,7 @@
     }
     return _results;
   };
+
   this.urlParameters = function(url) {
     var i, kv, pairs, params, _i, _len;
     if (url == null) url = this.location.href;
@@ -146,7 +153,6 @@
             to decode urlencoded values, and where possible, these values 
             could be unstringified (1 should be 1 not '1', perhaps?)
     */
-
     params = {};
     pairs = url.slice(url.indexOf('?') + 1).split('&');
     for (_i = 0, _len = pairs.length; _i < _len; _i++) {
@@ -156,6 +162,7 @@
     }
     return params;
   };
+
   this.get_url_variable = getUrlParameter = function(name, def) {
     /* extracts the parameter name from the current page url, or returns def if
         name does not exist.
@@ -181,7 +188,6 @@
             getUrlParameter 'z', 'default'
                 'default'
     */
-
     var params;
     params = urlParameters();
     if (params[name] !== void 0) {
@@ -190,6 +196,28 @@
       return def;
     }
   };
+
+  this.Stream = function(callback, port, host, addr) {
+    var longaddr;
+    if (!(port != null)) port = 9091;
+    if (!(host != null)) host = "localhost";
+    if (!(addr != null)) addr = "/";
+    longaddr = "http://" + host + ":" + port + addr;
+    return this.LoadSIO("http://" + host + ":" + port + "/socket.io/socket.io.js", {
+      port: port
+    }, callback);
+  };
+
+  this.LoadSIO = function(base, options, callback) {
+    console.log(base);
+    return head.js(base, function() {
+      var sock;
+      sock = new io.Socket(void 0, options);
+      sock.connect();
+      return callback(sock);
+    });
+  };
+
   this.isJSON = function(str) {
     try {
       JSON.parse(str);
@@ -198,6 +226,7 @@
       return false;
     }
   };
+
   SHA1 = function(msg) {
     var A, B, C, D, E, H0, H1, H2, H3, H4, Utf8Encode, W, blockstart, cvt_hex, i, j, lsb_hex, msg_len, rotate_left, temp, temp1, temp2, word_array;
     rotate_left = function(n, s) {
@@ -368,6 +397,7 @@
     temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
     return temp.toLowerCase();
   };
+
   this.serial = {
     key: function(str) {
       /* Creates a textual node key
@@ -381,8 +411,7 @@
           Notes:
           
           Examples:
-      */
-      if (str.length > 10) {
+      */      if (str.length > 10) {
         return str.slice(0, 10) + serial.sum(str.slice(10)).slice(0, 6);
       } else {
         return str;
@@ -401,13 +430,13 @@
               http://stackoverflow.com/q/7538590/473479
           
           Examples:
-      */
-      return SHA1(str);
+      */      return SHA1(str);
     },
     strict: function(obj) {
       throw "serial.strict is not yet implemented";
     }
   };
+
   this.assert = function(condition, message) {
     /* throws an error if the condition passed is not true. Optionally provide
         the error message to be thrown.
@@ -431,16 +460,19 @@
         
         Examples:
             assert (isString str), 'str is not a string!'
-    */
-    message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
+    */    message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
     if (!condition) throw message;
   };
+
 }).call(this);
 (function() {
   var BCP, context;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   context = window;
+
   BCP = (function() {
+
     function BCP(stream, auth) {
       this.stream = stream;
       this.auth = auth;
@@ -465,6 +497,7 @@
       };
       this.getcached = {};
     }
+
     BCP.prototype.recieve = function(message) {
       var msg;
       message = message.slice(0, -1);
@@ -479,23 +512,24 @@
       }
       this.handle(msg);
     };
+
     BCP.prototype.local = function(op, name) {
       /*
               Process a locally-generated op
-      */
-      console.log("selecting");
+      */      console.log("selecting");
       this.select(name);
       console.log("sending local");
       this.docssend(op, name);
       console.log("sending proto");
       return this.send(op.proto());
     };
+
     BCP.prototype.foreign = function(op, name) {
       /*
               Process a remotely-generated op
-      */
-      return this.docssend(op, name);
+      */      return this.docssend(op, name);
     };
+
     BCP.prototype.select = function(name) {
       assert(typeof name === "string", "Docnames must be a string");
       if (name === this.selected) return;
@@ -505,12 +539,12 @@
       });
       return this.selected = name;
     };
+
     BCP.prototype.get = function(name) {
       /*
               recieve or sync a document
               does not broadcast
-      */
-      if (name === void 0) name = this.selected;
+      */      if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string");
       if (this.getcached[name] === void 0) {
         this.getcached[name] = [[]];
@@ -519,18 +553,19 @@
         return this.sync(name);
       }
     };
+
     BCP.prototype.load = function(name) {
       return this.send({
         "type": "load",
         "docname": name
       });
     };
+
     BCP.prototype.broadcast = function(name) {
       /*
               Send a loaded document to docs as an operation, 
               or flag for it to happen when get returns
       */
-
       var op;
       if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string.");
@@ -542,6 +577,7 @@
         return this.docssend(op, name);
       }
     };
+
     BCP.prototype.sync = function(name) {
       if (name === void 0) name = this.selected;
       this.select(name);
@@ -550,6 +586,7 @@
         "eras": 0
       });
     };
+
     BCP.prototype.docssend = function(op, name) {
       var doc, _i, _len, _ref, _results;
       _ref = this.docs;
@@ -560,15 +597,19 @@
       }
       return _results;
     };
+
     BCP.prototype.register = function(display) {
       return this.docs.push(display);
     };
+
     BCP.prototype.handle = function(message) {
       return this._handle(message, message.type, this.handlers);
     };
+
     BCP.prototype.errorhandle = function(message) {
       return this._handle(message, message.code, this.ehandlers);
     };
+
     BCP.prototype._handle = function(message, type, handlerset) {
       var f;
       f = handlerset[type];
@@ -576,6 +617,7 @@
       if (!(message.docname != null)) message.docname = this.other.selected;
       return f(this, message);
     };
+
     BCP.prototype.handlers = {
       "select": function(self, message) {
         return self.other.selected = message.docname;
@@ -628,6 +670,7 @@
         return self.error(401);
       }
     };
+
     BCP.prototype.ehandlers = {
       0: function(self, message) {
         var m;
@@ -636,13 +679,16 @@
         return console.error("Server error: " + m);
       }
     };
+
     BCP.prototype.connect = function() {
       return this.log("connection", "started");
     };
+
     BCP.prototype.disconnect = function() {
       this.log("connection", "broken");
       return console.error("Connection broken");
     };
+
     BCP.prototype.subscribe = function(name, type) {
       var i, _i, _len, _results;
       if (typeof name === "string") name = [name];
@@ -658,6 +704,7 @@
       }
       return _results;
     };
+
     BCP.prototype.unsubscribe = function(names) {
       var i, _i, _len, _results;
       if (names.length === 0) throw "Use BCP.unsubscribe_all()";
@@ -672,6 +719,7 @@
       }
       return _results;
     };
+
     BCP.prototype.unsubscribe_all = function() {
       this.send({
         "type": "unsubscribe",
@@ -679,12 +727,14 @@
       });
       return this.subscriptions = {};
     };
+
     BCP.prototype.send = function(obj) {
       var s;
       s = JSON.stringify(obj);
       this.log("sending", s);
       return this.stream.send(s + "\x00");
     };
+
     BCP.prototype.error = function(code, details, data) {
       var message;
       message = {
@@ -695,22 +745,31 @@
       if (data) message.data = data;
       return this.send(message);
     };
+
     BCP.prototype.log = function(headline, detail) {
       return console.log(headline + ":" + detail);
     };
+
     return BCP;
+
   })();
+
   context.BCP = BCP;
+
 }).call(this);
 (function() {
   var Operation;
+
   Operation = (function() {
+
     function Operation(instructions) {
       this.instructions = instructions;
     }
+
     Operation.prototype.push = function(i) {
       return this.instructions.push(i);
     };
+
     Operation.prototype.push_list = function(list) {
       var i, _i, _len, _results;
       _results = [];
@@ -720,22 +779,27 @@
       }
       return _results;
     };
+
     Operation.prototype.pushinsert = function(addr, pos, value) {
       return this.push([1, addr, pos, value]);
     };
+
     Operation.prototype.pushdelete = function(addr, victims) {
       return this.push([0, addr].concat(victims));
     };
+
     Operation.prototype.pushflatinsert = function(pos, value, tree) {
       var trace;
       trace = tree.trace_index(pos);
       return this.pushinsert(trace.address, trace.pos, value);
     };
+
     Operation.prototype.pushflatdelete = function(pos, tree) {
       var trace;
       trace = tree.trace_char(pos);
       return this.pushdelete(trace.address, trace.pos);
     };
+
     Operation.prototype.pushflatdeletes = function(pos, amount, tree) {
       var i, _results;
       _results = [];
@@ -744,6 +808,7 @@
       }
       return _results;
     };
+
     Operation.prototype.apply = function(tree) {
       var i, _i, _len, _ref, _results;
       _ref = this.instructions;
@@ -754,6 +819,7 @@
       }
       return _results;
     };
+
     Operation.prototype.apply_instruction = function(tree, i) {
       var type;
       type = i[0];
@@ -764,6 +830,7 @@
           return this.apply_insertion(tree, i);
       }
     };
+
     Operation.prototype.apply_deletion = function(tree, i) {
       var addr, pos, target, victims, _i, _len, _results;
       addr = i[1];
@@ -776,6 +843,7 @@
       }
       return _results;
     };
+
     Operation.prototype.apply_insertion = function(tree, i) {
       var addr, pos, target, value;
       addr = i[1];
@@ -784,12 +852,14 @@
       target = tree.resolve(addr);
       return target.insert(pos, value);
     };
+
     Operation.prototype.proto = function() {
       return {
         "type": "op",
         "instructions": this.instructions
       };
     };
+
     Operation.prototype.victimize_deletions = function(deletions) {
       var i, result, running, _ref;
       running = -1;
@@ -810,9 +880,11 @@
       }
       return result;
     };
+
     Operation.prototype.serialize = function() {
       return JSON.stringify(this.proto());
     };
+
     Operation.prototype.fromTree = function(address, tree) {
       var deletions, key, node, nodeaddr, p, _ref, _results;
       _results = [];
@@ -834,15 +906,22 @@
       }
       return _results;
     };
+
     return Operation;
+
   })();
+
   this.Operation = Operation;
+
 }).call(this);
 (function() {
   var CTree, protostr, protoval, window;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   window = this;
+
   CTree = (function() {
+
     function CTree(value) {
       this._trace_char = __bind(this._trace_char, this);
       this._trace_index = __bind(this._trace_index, this);
@@ -859,11 +938,13 @@
         return {};
       }), this.length + 1);
     }
+
     CTree.prototype.insert = function(pos, childtext) {
       var child;
       child = new CTree(childtext);
       return this.insert_obj(pos, child);
     };
+
     CTree.prototype["delete"] = function(pos) {
       var x, _ref, _ref2;
       if (window.isArray(pos)) {
@@ -875,10 +956,12 @@
       }
       return this;
     };
+
     CTree.prototype.insert_obj = function(pos, child) {
       this.children[pos][child.key] = child;
       return child;
     };
+
     CTree.prototype.flatten = function() {
       var node, nodes, p, result, _i, _len, _ref;
       result = "";
@@ -892,6 +975,7 @@
       }
       return result;
     };
+
     CTree.prototype.resolve = function(addr) {
       var child, key, pos;
       if (addr.length === 0) {
@@ -906,12 +990,15 @@
         return child = this.get(pos, key).resolve(addr);
       }
     };
+
     CTree.prototype.trace_index = function(pos) {
       return this.trace_verify(this._trace_index(pos));
     };
+
     CTree.prototype.trace_char = function(pos) {
       return this.trace_verify(this._trace_char(pos));
     };
+
     CTree.prototype.trace_verify = function(result) {
       if (window.isInteger(result)) {
         throw "CTree.trace: pos > this.flatten().length";
@@ -921,6 +1008,7 @@
       }
       return result;
     };
+
     CTree.prototype._trace_index = function(togo) {
       var k, pos, _i, _len, _ref, _ref2;
       for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
@@ -943,6 +1031,7 @@
       }
       return togo;
     };
+
     CTree.prototype._trace_char = function(togo) {
       var k, pos, _i, _len, _ref, _ref2;
       for (pos = 0, _ref = this.length; 0 <= _ref ? pos <= _ref : pos >= _ref; 0 <= _ref ? pos++ : pos--) {
@@ -967,6 +1056,7 @@
       }
       return togo;
     };
+
     CTree.prototype.get = function(pos, key) {
       if (pos > this.length || pos < 0 || !window.isNumber(pos)) {
         throw "IndexError: CTree.get position out of range (" + pos.toString() + ")";
@@ -976,6 +1066,7 @@
       }
       return this.children[pos][key];
     };
+
     CTree.prototype.keys = function(pos) {
       var key;
       return ((function() {
@@ -987,6 +1078,7 @@
         return _results;
       }).call(this)).sort();
     };
+
     CTree.prototype.kids = function(pos) {
       var key, _i, _len, _ref, _results;
       _ref = this.keys(pos);
@@ -997,6 +1089,7 @@
       }
       return _results;
     };
+
     CTree.prototype.jump = function(pos, key) {
       if (pos === this.length) {
         return [key];
@@ -1004,11 +1097,15 @@
         return [pos, key];
       }
     };
+
     CTree.prototype.apply = function(obj) {
       return obj.apply(this);
     };
+
     return CTree;
+
   })();
+
   protostr = function(item) {
     if (typeof item === "string") {
       return item;
@@ -1016,6 +1113,7 @@
       return "";
     }
   };
+
   protoval = function(list) {
     var i;
     return ((function() {
@@ -1028,6 +1126,7 @@
       return _results;
     })()).join("");
   };
+
   this.CTreeFromProto = function(proto) {
     var deletions, i, pos, tree, value, _i, _j, _len, _len2;
     deletions = proto.pop();
@@ -1048,5 +1147,7 @@
     }
     return tree;
   };
+
   this.CTree = CTree;
+
 }).call(this);

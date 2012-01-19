@@ -1,5 +1,6 @@
 (function() {
   var SHA1, getUrlParameter;
+
   this.arrayFill = function(array, value, count) {
     /* Fills an array with the values returned by value when given an index
     
@@ -29,7 +30,6 @@
             arrayFill [], ((i) -> i * i), 6
                 returns [0, 1, 4, 9, 16, 25]
     */
-
     var i;
     assert(isArray(array), 'array (first argument) must be an array');
     assert(isFunction(value), 'value (second argument) must be a function');
@@ -39,6 +39,7 @@
     }
     return array;
   };
+
   this.isArray = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Array]";
@@ -46,6 +47,7 @@
       return false;
     }
   };
+
   this.isObject = function(obj) {
     if (typeof obj === "object") {
       return Object.prototype.toString.call(obj) === "[object Object]";
@@ -53,6 +55,7 @@
       return false;
     }
   };
+
   this.isFunction = function(obj) {
     if (typeof obj === "function") return true;
     if (typeof obj === "object") {
@@ -61,12 +64,15 @@
       return false;
     }
   };
+
   this.isInteger = function(obj) {
     return isNumber(obj) && Math.floor(obj) === obj;
   };
+
   this.isNumber = function(obj) {
     return typeof obj === "number";
   };
+
   this.isBoolean = function(obj) {
     /* tests if an object is a boolean object
         
@@ -76,12 +82,13 @@
         if obj is true or obj is false then true else false
         
         JS Condition (obj === true || obj === false), not '=='!
-    */
-    return typeof obj === "boolean";
+    */    return typeof obj === "boolean";
   };
+
   this.isString = function(obj) {
     return typeof obj === "string";
   };
+
   this.range = function(start, end, step) {
     var i, _results;
     if (step == null) step = 1;
@@ -116,7 +123,6 @@
             range 5, 0, 2
                 [5, 3, 1]
     */
-
     step = (start < end && step > 0) || (start > end && step < 0) ? step : -step;
     _results = [];
     for (i = start; start <= end ? i < end : i > end; i += step) {
@@ -124,6 +130,7 @@
     }
     return _results;
   };
+
   this.urlParameters = function(url) {
     var i, kv, pairs, params, _i, _len;
     if (url == null) url = this.location.href;
@@ -146,7 +153,6 @@
             to decode urlencoded values, and where possible, these values 
             could be unstringified (1 should be 1 not '1', perhaps?)
     */
-
     params = {};
     pairs = url.slice(url.indexOf('?') + 1).split('&');
     for (_i = 0, _len = pairs.length; _i < _len; _i++) {
@@ -156,6 +162,7 @@
     }
     return params;
   };
+
   this.get_url_variable = getUrlParameter = function(name, def) {
     /* extracts the parameter name from the current page url, or returns def if
         name does not exist.
@@ -181,7 +188,6 @@
             getUrlParameter 'z', 'default'
                 'default'
     */
-
     var params;
     params = urlParameters();
     if (params[name] !== void 0) {
@@ -190,6 +196,28 @@
       return def;
     }
   };
+
+  this.Stream = function(callback, port, host, addr) {
+    var longaddr;
+    if (!(port != null)) port = 9091;
+    if (!(host != null)) host = "localhost";
+    if (!(addr != null)) addr = "/";
+    longaddr = "http://" + host + ":" + port + addr;
+    return this.LoadSIO("http://" + host + ":" + port + "/socket.io/socket.io.js", {
+      port: port
+    }, callback);
+  };
+
+  this.LoadSIO = function(base, options, callback) {
+    console.log(base);
+    return head.js(base, function() {
+      var sock;
+      sock = new io.Socket(void 0, options);
+      sock.connect();
+      return callback(sock);
+    });
+  };
+
   this.isJSON = function(str) {
     try {
       JSON.parse(str);
@@ -198,6 +226,7 @@
       return false;
     }
   };
+
   SHA1 = function(msg) {
     var A, B, C, D, E, H0, H1, H2, H3, H4, Utf8Encode, W, blockstart, cvt_hex, i, j, lsb_hex, msg_len, rotate_left, temp, temp1, temp2, word_array;
     rotate_left = function(n, s) {
@@ -368,6 +397,7 @@
     temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
     return temp.toLowerCase();
   };
+
   this.serial = {
     key: function(str) {
       /* Creates a textual node key
@@ -381,8 +411,7 @@
           Notes:
           
           Examples:
-      */
-      if (str.length > 10) {
+      */      if (str.length > 10) {
         return str.slice(0, 10) + serial.sum(str.slice(10)).slice(0, 6);
       } else {
         return str;
@@ -401,13 +430,13 @@
               http://stackoverflow.com/q/7538590/473479
           
           Examples:
-      */
-      return SHA1(str);
+      */      return SHA1(str);
     },
     strict: function(obj) {
       throw "serial.strict is not yet implemented";
     }
   };
+
   this.assert = function(condition, message) {
     /* throws an error if the condition passed is not true. Optionally provide
         the error message to be thrown.
@@ -431,8 +460,8 @@
         
         Examples:
             assert (isString str), 'str is not a string!'
-    */
-    message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
+    */    message = message !== "" ? "Assertion error: '" + message + "'" : 'Assertion error';
     if (!condition) throw message;
   };
+
 }).call(this);

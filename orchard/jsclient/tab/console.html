@@ -1,4 +1,49 @@
 <script src="js/ctree.js"></script>
+<script>
+	var console_bcp;
+
+	function log(source, msg) {
+		$('#console_log').append("<li><b>"+source.toUpperCase()+": </b>"+msg+"</li>")
+	}
+
+	console_send = function(){
+		value = $('#console_input')[0].value;
+		console_bcp.send(JSON.parse(value));
+	}
+
+	Stream(function(s){
+		console_bcp = new BCP(s, null);
+		console_bcp.log = log;
+	});
+
+	$('#console_input').live('change keydown keyup', function(){
+		value = $('#console_input')[0].value;
+		if (isJSON(value)){
+			$("#console_submit").removeClass("disabled");
+		} else {
+			$("#console_submit").addClass("disabled");
+		}
+	})
+
+	// Wizards
+
+	function make_message(obj){
+		$('#console_input')[0].value = JSON.stringify(obj);
+		$('#console_input').change();
+	}
+
+	function make_login() {
+		username = $('#console__login_username')[0].value;
+		password = $('#console__login_password')[0].value;
+
+		make_message({
+			"username":username,
+			"password":password,
+			"type": "login"
+		});
+	}
+
+</script>
 
 <pre id="console_screen"></pre>
 
@@ -32,6 +77,6 @@
 
 <textarea id="console_input" style="width:100%; margin-bottom:5px;">
 Type your BCP messages here, or use the wizards.</textarea>
-<a id="console_submit" class="btn primary disabled" onclick='bcp_send();'>Send Message</a>
+<a id="console_submit" class="btn primary disabled" onclick='console_send();'>Send Message</a>
 
 <ul id="console_log"></ul>

@@ -1,8 +1,11 @@
 (function() {
   var BCP, context;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   context = window;
+
   BCP = (function() {
+
     function BCP(stream, auth) {
       this.stream = stream;
       this.auth = auth;
@@ -27,6 +30,7 @@
       };
       this.getcached = {};
     }
+
     BCP.prototype.recieve = function(message) {
       var msg;
       message = message.slice(0, -1);
@@ -41,23 +45,24 @@
       }
       this.handle(msg);
     };
+
     BCP.prototype.local = function(op, name) {
       /*
               Process a locally-generated op
-      */
-      console.log("selecting");
+      */      console.log("selecting");
       this.select(name);
       console.log("sending local");
       this.docssend(op, name);
       console.log("sending proto");
       return this.send(op.proto());
     };
+
     BCP.prototype.foreign = function(op, name) {
       /*
               Process a remotely-generated op
-      */
-      return this.docssend(op, name);
+      */      return this.docssend(op, name);
     };
+
     BCP.prototype.select = function(name) {
       assert(typeof name === "string", "Docnames must be a string");
       if (name === this.selected) return;
@@ -67,12 +72,12 @@
       });
       return this.selected = name;
     };
+
     BCP.prototype.get = function(name) {
       /*
               recieve or sync a document
               does not broadcast
-      */
-      if (name === void 0) name = this.selected;
+      */      if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string");
       if (this.getcached[name] === void 0) {
         this.getcached[name] = [[]];
@@ -81,18 +86,19 @@
         return this.sync(name);
       }
     };
+
     BCP.prototype.load = function(name) {
       return this.send({
         "type": "load",
         "docname": name
       });
     };
+
     BCP.prototype.broadcast = function(name) {
       /*
               Send a loaded document to docs as an operation, 
               or flag for it to happen when get returns
       */
-
       var op;
       if (name === void 0) name = this.selected;
       assert(typeof name === "string", "Docnames must be a string.");
@@ -104,6 +110,7 @@
         return this.docssend(op, name);
       }
     };
+
     BCP.prototype.sync = function(name) {
       if (name === void 0) name = this.selected;
       this.select(name);
@@ -112,6 +119,7 @@
         "eras": 0
       });
     };
+
     BCP.prototype.docssend = function(op, name) {
       var doc, _i, _len, _ref, _results;
       _ref = this.docs;
@@ -122,15 +130,19 @@
       }
       return _results;
     };
+
     BCP.prototype.register = function(display) {
       return this.docs.push(display);
     };
+
     BCP.prototype.handle = function(message) {
       return this._handle(message, message.type, this.handlers);
     };
+
     BCP.prototype.errorhandle = function(message) {
       return this._handle(message, message.code, this.ehandlers);
     };
+
     BCP.prototype._handle = function(message, type, handlerset) {
       var f;
       f = handlerset[type];
@@ -138,6 +150,7 @@
       if (!(message.docname != null)) message.docname = this.other.selected;
       return f(this, message);
     };
+
     BCP.prototype.handlers = {
       "select": function(self, message) {
         return self.other.selected = message.docname;
@@ -190,6 +203,7 @@
         return self.error(401);
       }
     };
+
     BCP.prototype.ehandlers = {
       0: function(self, message) {
         var m;
@@ -198,13 +212,16 @@
         return console.error("Server error: " + m);
       }
     };
+
     BCP.prototype.connect = function() {
       return this.log("connection", "started");
     };
+
     BCP.prototype.disconnect = function() {
       this.log("connection", "broken");
       return console.error("Connection broken");
     };
+
     BCP.prototype.subscribe = function(name, type) {
       var i, _i, _len, _results;
       if (typeof name === "string") name = [name];
@@ -220,6 +237,7 @@
       }
       return _results;
     };
+
     BCP.prototype.unsubscribe = function(names) {
       var i, _i, _len, _results;
       if (names.length === 0) throw "Use BCP.unsubscribe_all()";
@@ -234,6 +252,7 @@
       }
       return _results;
     };
+
     BCP.prototype.unsubscribe_all = function() {
       this.send({
         "type": "unsubscribe",
@@ -241,12 +260,14 @@
       });
       return this.subscriptions = {};
     };
+
     BCP.prototype.send = function(obj) {
       var s;
       s = JSON.stringify(obj);
       this.log("sending", s);
       return this.stream.send(s + "\x00");
     };
+
     BCP.prototype.error = function(code, details, data) {
       var message;
       message = {
@@ -257,10 +278,15 @@
       if (data) message.data = data;
       return this.send(message);
     };
+
     BCP.prototype.log = function(headline, detail) {
       return console.log(headline + ":" + detail);
     };
+
     return BCP;
+
   })();
+
   context.BCP = BCP;
+
 }).call(this);

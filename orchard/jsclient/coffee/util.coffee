@@ -177,6 +177,23 @@ this.get_url_variable = getUrlParameter = (name, def) ->
     params = urlParameters()
     if params[name] isnt undefined then params[name] else def
 
+this.Stream = (callback, port, host, addr) ->
+    # Works asynchronously because it has to load Socket.IO JS lib
+    port = 9091 if not port?
+    host = "localhost" if not host?
+    addr = "/" if not addr?
+    longaddr = "http://"+host+":"+port+addr
+    this.LoadSIO("http://"+host+":"+port+"/socket.io/socket.io.js", {port:port}, callback)
+
+this.LoadSIO = (url, options, callback) ->
+    # URL should be path to socket.io.js
+    console.log(url)
+    head.js(url, ()->
+      sock = new io.Socket(undefined, options)
+      sock.connect()
+      callback(sock)
+    )
+
 this.isJSON = (str) ->
     # tests if the suppled string is valid JSON
     # Arguments: str: a string. 
