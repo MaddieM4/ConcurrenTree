@@ -41,6 +41,7 @@ function close_tab(name){
 	if (!name) {
 		name = current_tab();
 	}
+	if (name == "console") console_bcp.stream.disconnect()
 	$('#'+name).remove();
 	$('#__tab_'+name).remove();
 	var stab = prev_tab() || next_tab();
