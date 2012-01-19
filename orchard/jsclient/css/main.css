@@ -48,6 +48,10 @@ body {
 	border-color: #CCA;
 }
 
+.tabs-main > li.metatab.close > a {
+	background-color: #FDB;
+}
+
 .console_wizard_parent > form {
 	float: left;
 	padding: 3px;

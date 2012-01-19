@@ -37,3 +37,8 @@ function prebuilt_tab(name){
 	return false;
 }
 
+function close_tab(name){
+	if (!name) {
+		
+	}
+}
