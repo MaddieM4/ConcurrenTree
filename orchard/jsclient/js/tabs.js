@@ -43,7 +43,10 @@ function close_tab(name){
 	}
 	$('#'+name).remove();
 	$('#__tab_'+name).remove();
-	if (num_tabs()==0){
+	var stab = prev_tab() || next_tab();
+	if (stab){
+		select_tab(stab);
+	} else {
 		prebuilt_tab('welcome');
 	}
 }
@@ -54,4 +57,27 @@ function num_tabs(){
 
 function current_tab(){
 	return $('.tab-content > .active').attr('id');
+}
+
+function next_tab(){
+	var c = current_tab();
+	var n = name_each_tab();
+	var i = n.indexOf(c);
+	return n[i+1];
+}
+
+function prev_tab(){
+	var c = current_tab();
+	var n = name_each_tab();
+	var i = n.indexOf(c);
+	return n[i-1];
+}
+
+function name_each_tab(){
+	var tabs = $('.tab-content > *');
+	var names = new Array();
+	for (var i=0; i < tabs.length; i++){
+		names.push($(tabs[i]).attr('id'));
+	}
+	return names;
 }
