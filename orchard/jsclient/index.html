@@ -12,12 +12,15 @@
 	<script src="js/tabs.js"></script>
 	<script src="bootstrap/js/bootstrap-dropdown.js"></script>
 	<script src="bootstrap/js/bootstrap-tabs.js"></script>
+	<script src="bootstrap/js/bootstrap-modal.js"></script>
+	<script src="bootstrap/js/bootstrap-buttons.js"></script>
 
 	<script>
 
 		$(document).ready( function() {
 			$('.topbar').dropdown();
 			prebuilt_tab('welcome');
+			$('#nu_modal').modal({backdrop:true,keyboard:true});
 		});
 
 	</script>
@@ -41,7 +44,7 @@
           <ul class="dropdown-menu">
             <li><a href="#">No users registered</a></li>
             <li class="divider"></li>
-            <li><a href="/account/form"> + New User</a></li>
+            <li><a href="#" data-controls-modal="nu_modal"> + New User</a></li>
           </ul>
         </li>
       </ul>
@@ -66,6 +69,32 @@
   <div class="content toplevel">
     <div class="tab-content">
     </div>
+  </div>
+</div>
+
+<div id="nu_modal" class="modal hide fade" style="display:none;">
+  <div class="modal-header">
+    <a href="#" class="close">x</a>
+    <h3>Create a new user</h3>
+  </div>
+  <div class="modal-body">
+    <form>
+      <fieldset>
+        <div class="clearfix">
+          <label for="nu_modal_username">Username:</label>
+          <div class="input"><input id="nu_modal_username" type="text"></div>
+        </div>
+        <div class="clearfix">
+          <label for="nu_modal_password">Password:</label>
+          <div class="input"><input id="nu_modal_password" type="text"></div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn primary" data-loading-text="Generating RSA Key..." 
+onclick='$("#nu_modal .btn.primary").button("loading")'>Create User</a>
+    <a href="#" class="btn secondary" onclick="$('#nu_modal').modal('hide')">Cancel</a>
   </div>
 </div>
 
