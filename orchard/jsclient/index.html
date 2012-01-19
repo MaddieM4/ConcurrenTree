@@ -30,10 +30,12 @@
 			btn.button('loading')
 
 			function success(){
-				alert("SUCCESS");
+				btn.attr('style', 'display:none;')
+				$('#nu_modal .btn.success').attr('style', '');
 			}
 
 			function error(){
+				btn.button('reset');
 				alert("Account could not be created.");
 			}
 
@@ -47,6 +49,12 @@
 				success:success,
 				error:error
 			});
+		}
+
+		function nu_reset(){
+			$('#nu_modal').modal('hide');
+			$('#nu_modal .btn.success').attr('style', 'display:none;')
+			$('#nu_modal .btn.primary').button('reset').attr('style', '');
 		}
 	</script>
 </head>
@@ -117,6 +125,7 @@
     </form>
   </div>
   <div class="modal-footer">
+    <a href="#" class="btn success" style="display:none;" onclick="nu_reset(); return false;">Success!</a>
     <a href="#" class="btn primary" data-loading-text="loading stuff..."
 onclick='new_user(); return false;'>Create User</a>
     <a href="#" class="btn secondary" onclick="$('#nu_modal').modal('hide')">Cancel</a>
