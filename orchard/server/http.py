@@ -29,7 +29,6 @@ class HTTP(http.HTTPServer):
 		http.Alias(self, "/js/stream/ws.js", "ws.js", js)
 
 		http.Callback(self, "/account/new", self.newAccount, method="POST")
-		http.Callback(self, "/account/form", self.newAccountForm)
 
 		self.rootpath = jsclient
 		self.port = port
@@ -41,16 +40,6 @@ class HTTP(http.HTTPServer):
 			self.auth.new(d['username'], d['password'])
 			return ["Created successfully!"]
 		return ["Missing username or password arguments."]
-
-	def newAccountForm(self, request):
-		return [
-			"<html><head><title>Make a new account</title></head>",
-			"<body><form method='POST' action='/account/new'>",
-			"Username: <input type='text' name='username'><br/>",
-			"Password: <input type='password' name='password'><br/>",
-			"<input type='submit'>",
-			"</form></body></html>"
-		]
 
 	def open(self, location="/"):
 		''' Open a new browser window '''
