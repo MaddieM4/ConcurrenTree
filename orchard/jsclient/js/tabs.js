@@ -43,6 +43,13 @@ function close_tab(name){
 	}
 	$('#'+name).remove();
 	$('#__tab_'+name).remove();
+	if (num_tabs()==0){
+		prebuilt_tab('welcome');
+	}
+}
+
+function num_tabs(){
+	return $('.tab-content > *').length;
 }
 
 function current_tab(){
