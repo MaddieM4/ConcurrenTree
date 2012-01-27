@@ -1,11 +1,11 @@
 Contents
-    About
-    Dependencies
+========
+* About
+* Dependencies
 
 
------
 About
------
+=====
 
 ## SIMPLE VERSION:
 
@@ -55,11 +55,10 @@ to the larger project implementing CTree to do stuff. CTree is not so much its
 own thing, as it is something that's embedded in other projects as a simple
 backend that handles all your network concurrency.
 
-------------
 Dependencies
-------------
-python 2.6.6+
-python-gevent
-pycrypto (2.3): https://www.dlitz.net/software/pycrypto/
-node.js 0.4.11 (More recent versions may not work!)
-npm 1.0.106+
+============
+* python 2.6.6+
+* python-gevent
+* pycrypto (2.3): https://www.dlitz.net/software/pycrypto/
+* node.js 0.4.11 (More recent versions may not work!)
+* npm 1.0.106+
