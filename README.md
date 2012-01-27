@@ -6,6 +6,19 @@ Contents
 -----
 About
 -----
+
+## SIMPLE VERSION:
+
+[JSON](http://json.org/) is a format that lets you take programming-type objects, like a list or a dictionary, and encode them as text. You can encode pretty much anything as JSON.
+
+MCP is the open standard protocol I'm working on, which allows you to connect to a worldwide network and share document updates. These documents can hold any JSON object, have a permissions system built in, and it's set up so you can't download an out-of-date copy of the document or have "write collisions" (where two people try to write at the same time, so nobody knows what it actually should be).
+
+Orchard is a proof-of-concept MCP node with a friendly web interface. It encrypts all your data when storing it to disk, and part of MCP is that all data going through it is encrypted anyways. There are no central servers, and it's designed so that the network works just as well with just you and your friend, as it does years down the road with thousands of people on it.
+
+The point of it is not so much MCP, though. That's the underlying protocol. The important thing is what you can build *on top* of MCP, like a distributed version of Google Wave, or a software repository that supports live typing for code collaboration in real time. It's even possible to have a P2P image editor made out of nothing but a web page!
+
+## TECHNICAL VERSION:
+
 ConcurrenTree is a concurrency solution that does the heavy lifting for you.
 It was originally called OT+, but has diverged so much from OT that the name
 was beginning to be deceptive.
