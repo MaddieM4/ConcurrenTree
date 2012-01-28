@@ -33,11 +33,10 @@ class Router(object):
 
 	def jack(self, addr):
 		# Return jack registered at addr, or None
-		addr = addr[0]
-		if addr in self._jacks:
-			return self._jacks[addr]
-		else:
-			return None
+		for (t, l) in self._jacks:
+			if t == addr[0]:
+				return self._jacks[(t,l)]
+		return None
 
 	def client(self, addr):
 		# Return client registered at addr, or None
@@ -57,11 +56,11 @@ class Router(object):
 			self._loadclient(c)
 
 	def _loadjack(self, jack):
-		key = jack.interface[0]
+		key = rtuple(jack.interface[:2])
 		self._jacks[key] = jack
 
 	def _loadclient(self, client):
-		key = tuple(client.interface[:3])
+		key = rtuple(client.interface[:3])
 		self._clients[key] = client
 
 def rtuple(obj):
