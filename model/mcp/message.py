@@ -17,12 +17,14 @@ class Message(object):
 	def _load(self, data):
 		self.type = data[0]
 		sep = data.index('\x00')
-		self.straddr = data[:sep]
+		self.straddr = data[1:sep]
 		self.ciphercontent = data[sep+1:]
 		self.addr = json.loads(self.straddr)
+		if (type(self.addr) != list or len(self.addr)<3):
+			raise ValueError("Bad address: "+repr(self.addr))
 
 	def __str__(self):
-		return self.type+self.straddr+'\x00'+self.ciphercontent)
+		return self.type+self.straddr+'\x00'+self.ciphercontent
 
 	def decode(self, encryptor):
 		if not self.decoded:
