@@ -6,11 +6,12 @@
 
 import jack
 import socket
+import message
 
 class UDPJack(jack.Jack):
-	def __init__(self, router, address=('::', 3972, 0, 0)):
-		jack.Jack.__init__(self, router)
-		self.address = address
+	def __init__(self, router, host='::', port=3972):
+		jack.Jack.__init__(self, router, ('udp', (host, port)))
+		self.address = (host, port, 0, 0)
 		self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 		self.sock.bind(self.address)
 
@@ -22,5 +23,5 @@ class UDPJack(jack.Jack):
 
 	def run(self):
 		while True:
-			data, addr = self.sock.recvfrom(4096)
+			data = self.sock.recv(message.PACKET_SIZE)
 			self.send(data)

@@ -65,7 +65,7 @@ class Router(object):
 
 def rtuple(obj):
 	# Convert lists into tuples recursively
-	for i in range(len(obj)):
-		if type(obj[i]) in (list, tuple):
-			obj[i] = rtuple(obj[i])
-	return tuple(obj)
+	if type(obj) in (list, tuple):
+		return tuple([rtuple(i) for i in obj])
+	else:
+		return obj

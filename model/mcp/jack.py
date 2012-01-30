@@ -6,8 +6,10 @@
 '''
 
 class Jack(object):
-	def __init__(self, router):
+	def __init__(self, router, interface):
 		self.router = router
+		self.interface = interface
+		self.router._loadjack(self)
 
 	def route(self, msg):
 		# Send a message.Message from the router
