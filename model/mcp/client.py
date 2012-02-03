@@ -33,23 +33,49 @@ class SimpleClient(BaseClient):
 
 	def route(self, msg):
 		# Recieve message from router (will be type 'r', which contains message)
-		msg = self.unpack(msg)
-		if msg.type == 'r':
-			self.send(msg)
-		elif msg.type == 's':
-			print "Recieved from %s: %s" % (repr(msg.addr),repr(self.unpack(msg).content))
+		unp = self.unpack(msg)
+		unp.decode(self.getencryptor(msg.addr))
+		print "Unpacked: "+repr(str(unp))
+		if unp.type == 'r':
+			self.send(unp)
+		elif unp.type == 's':
+			print "Recieved from %s: %s" % (repr(msg.addr),repr(unp.content))
 
 	def unpack(self, msg):
 		# Return the message inside a Type R
 		encryptor = self.getencryptor(msg.addr)
-		if msg.addr = self.interface:
+		if msg.addr == self.interface:
 			encryptor = Flip(encryptor)
 		msg.decode(encryptor)
-		return message.Message(msg)
+		return message.Message(msg.content)
 
 	def write(self, addr, txt):
 		# Write and send a message to addr
 		sig_s = self.getencryptor(self.interface)
-		msg   = message.make('s', self.interface, sig_e, txt)
+		msg   = message.make('s', self.interface, sig_s, txt)
 		sig_r = self.getencryptor(addr)
 		self.send(message.make('r', addr, sig_r, str(msg)))
+
+if __name__ == "__main__":
+	import router, udpjack
+	from ConcurrenTree.util.crypto.rotate import RotateEncryptor
+
+	def getencryptor(iface):
+		return RotateEncryptor(0)
+
+	r = router.Router()
+	j = udpjack.UDPJack(r, port=int(raw_input("Host on port: ")))
+	i = j.interface + ("sample",)
+	c = SimpleClient(r, i, getencryptor)
+	j.run_threaded() 
+	try:
+		while 1:
+			si = raw_input("Interface to send to: ")
+			if not si:
+				continue
+			else:
+				si = eval(si)
+			msg = raw_input("Message to send: ")
+			c.write(si, msg)
+	except KeyboardInterrupt:
+		j.close()

@@ -14,14 +14,22 @@ class UDPJack(jack.Jack):
 		self.address = (host, port, 0, 0)
 		self.sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 		self.sock.bind(self.address)
+		self.closed = False
 
 	def route(self, msg):
 		# Send message to somewhere
 		location = msg.addr[1]
 		addr = (location[0], location[1], 0,0)
-		self.sock.sendto(str(message), addr)
+		self.sock.sendto(str(msg), addr)
 
 	def run(self):
-		while True:
+		while not self.closed:
 			data = self.sock.recv(message.PACKET_SIZE)
-			self.send(data)
+			self.recv(data)
+
+	def run_threaded(self):
+		import thread
+		self.thread = thread.start_new_thread(self.run, ())
+
+	def close(self):
+		self.closed = True

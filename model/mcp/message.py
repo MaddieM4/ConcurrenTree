@@ -11,11 +11,9 @@ PACKET_SIZE = 8192
 
 class Message(object):
 	def __init__(self, data):
-		if type(data) in (str, unicode):
+		if type(data) in (str, unicode, Message):
 			data = str(data)
 			self._load(data)
-		elif type(data) == Message:
-			self = Message
 
 	def _load(self, data):
 		self.type = data[0]
