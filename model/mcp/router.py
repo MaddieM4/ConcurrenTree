@@ -16,7 +16,7 @@ class Router(object):
 
 	def recv(self, msg):
 		# Accepts string or message.Message
-		print "\nRouter incoming message: "+repr(str(msg))
+		#print "\nRouter incoming message: "+repr(str(msg))
 		try:
 			msg = Message(msg)
 		except Exception as e:

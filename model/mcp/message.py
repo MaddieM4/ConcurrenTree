@@ -45,6 +45,7 @@ def onion(msg, hops=[]):
 		with the plaintext as "msg" and only one (addr, encryptor)
 		tuple in "hops".
 	'''
+	hops.reverse()
 	for (addr, encryptor) in hops:
 		msg = str(make('r', addr, encryptor, str(msg)))
 	if len(msg) > PACKET_SIZE:

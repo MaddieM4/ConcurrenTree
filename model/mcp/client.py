@@ -39,7 +39,7 @@ class SimpleClient(BaseClient):
 		if unp.type == 'r':
 			self.send(unp)
 		elif unp.type == 's':
-			print "Recieved from %s: %s" % (repr(msg.addr),repr(unp.content))
+			print "Recieved from %s: %s" % (repr(unp.addr),repr(unp.content))
 
 	def unpack(self, msg):
 		# Return the message inside a Type R
@@ -72,8 +72,10 @@ if __name__ == "__main__":
 		return RotateEncryptor(int(hasher.checksum(iface)[:4], 16))
 
 	r = router.Router()
-	j = udpjack.UDPJack(r, port=int(raw_input("Host on port: ")))
+	host = raw_input("Host addr (IPv6, leave blank for '::'): ") or '::'
+	j = udpjack.UDPJack(r, host=host, port=int(raw_input("Host on port: ")))
 	i = j.interface + ("sample",)
+	print "This client's interface is", i
 	c = SimpleClient(r, i, getencryptor)
 	j.run_threaded() 
 	
@@ -109,3 +111,4 @@ if __name__ == "__main__":
 				target, proxy = command("target")
 	except KeyboardInterrupt:
 		j.close()
+		print "\n"
