@@ -56,7 +56,7 @@ def onion(msg, hops=[]):
 		chunks = split_text(msg, chunksize)
 		hashes = [hasher.make(c) for c in chunks]
 
-		mpmsg = json.dumps({
+		mpmsg = hasher.strict({
 			'type':'multipart',
 			'parts':hashes,
 			'id':hasher.make(msg)
@@ -67,7 +67,7 @@ def onion(msg, hops=[]):
 		return [msg]
 
 def make(type, addr, encryptor, content):
-	straddr = json.dumps(addr)
+	straddr = hasher.strict(addr)
 	ciphercontent = encryptor.encrypt(content)
 	msg = Message(type +straddr+'\x00'+ciphercontent)
 	msg.content = content

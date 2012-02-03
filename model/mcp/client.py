@@ -34,7 +34,7 @@ class SimpleClient(BaseClient):
 	def route(self, msg):
 		# Recieve message from router (will be type 'r', which contains message)
 		unp = self.unpack(msg)
-		unp.decode(self.getencryptor(msg.addr))
+		unp.decode(self.getencryptor(unp.addr))
 		print "Unpacked: "+repr(str(unp))
 		if unp.type == 'r':
 			self.send(unp)
@@ -59,9 +59,10 @@ class SimpleClient(BaseClient):
 if __name__ == "__main__":
 	import router, udpjack
 	from ConcurrenTree.util.crypto.rotate import RotateEncryptor
+	from ConcurrenTree.util import hasher
 
 	def getencryptor(iface):
-		return RotateEncryptor(0)
+		return RotateEncryptor(int(hasher.checksum(iface)[:4], 16))
 
 	r = router.Router()
 	j = udpjack.UDPJack(r, port=int(raw_input("Host on port: ")))
