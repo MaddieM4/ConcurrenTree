@@ -46,7 +46,7 @@ def onion(msg, hops=[]):
 		tuple in "hops".
 	'''
 	for (addr, encryptor) in hops:
-		msg = make('r', addr, encryptor, str(msg))
+		msg = str(make('r', addr, encryptor, str(msg)))
 	if len(msg) > PACKET_SIZE:
 		# Split into multiple parts
 		straddr = msg[1:msg.index('\x00')]

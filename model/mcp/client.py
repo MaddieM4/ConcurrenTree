@@ -51,15 +51,22 @@ class SimpleClient(BaseClient):
 
 	def write(self, addr, txt):
 		# Write and send a message to addr
+		self.owrite([addr], txt)
+
+	def owrite(self, hoplist, txt):
 		sig_s = self.getencryptor(self.interface)
 		msg   = message.make('s', self.interface, sig_s, txt)
-		sig_r = self.getencryptor(addr)
-		self.send(message.make('r', addr, sig_r, str(msg)))
+		hoplist = [(a, self.getencryptor(a)) for a in hoplist]
+		for m in message.onion(msg, hoplist):
+			self.send(m)
 
 if __name__ == "__main__":
 	import router, udpjack
 	from ConcurrenTree.util.crypto.rotate import RotateEncryptor
 	from ConcurrenTree.util import hasher
+
+	target = None
+	proxy = []
 
 	def getencryptor(iface):
 		return RotateEncryptor(int(hasher.checksum(iface)[:4], 16))
@@ -69,14 +76,36 @@ if __name__ == "__main__":
 	i = j.interface + ("sample",)
 	c = SimpleClient(r, i, getencryptor)
 	j.run_threaded() 
+	
+	def command(cmd):
+		target = globals()['target']
+		proxy  = globals()['proxy']
+
+		def input(prompt):
+			i = ""
+			while not i:
+				i = raw_input(prompt)
+			return i
+
+		cmd = cmd.lower()
+		if cmd=="target":
+			target = eval(input("Interface to send to: "))
+		elif cmd=="msg":
+			c.owrite(proxy+[target], input("Message to send: "))
+		elif cmd=="proxy":
+			proxy = eval(input("List of addresses: "))
+		else:
+			print "Unknown command."
+		return target, proxy
+
 	try:
 		while 1:
-			si = raw_input("Interface to send to: ")
-			if not si:
-				continue
+			if target:
+				print "target:", repr(target)
+				print "proxy: ", repr(proxy)
+				target, proxy = command(
+					raw_input("Command ['target' | 'msg' | 'proxy']: "))
 			else:
-				si = eval(si)
-			msg = raw_input("Message to send: ")
-			c.write(si, msg)
+				target, proxy = command("target")
 	except KeyboardInterrupt:
 		j.close()
