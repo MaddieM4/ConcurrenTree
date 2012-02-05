@@ -18,3 +18,7 @@ class Jack(object):
 	def recv(self, data):
 		# Send a string to the router (must be complete message)
 		self.router.recv(data)
+
+	@property
+	def ifacetype(self):
+		return self.interface[0]

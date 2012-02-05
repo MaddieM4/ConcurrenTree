@@ -72,12 +72,21 @@ if __name__ == "__main__":
 		return RotateEncryptor(int(hasher.checksum(iface)[:4], 16))
 
 	r = router.Router()
-	host = raw_input("Host addr (IPv6, leave blank for '::'): ") or '::'
-	j = udpjack.UDPJack(r, host=host, port=int(raw_input("Host on port: ")))
-	i = j.interface + ("sample",)
+	i = []
+	host = raw_input("Host addr (IPv6, leave blank for no IPv6 jack: ")
+	if host:
+		j = udpjack.UDPJack(r, host=host, port=int(raw_input("Host on port: ")))
+		j.run_threaded() 
+		i.append(j.interface + ("sample",))
+	host = raw_input("Host addr (IPv4, leave blank for no IPv4 jack: ")
+	if host:
+		j4 = udpjack.UDPJack(r, host=host, port=int(raw_input("Host on port: ")), ipv=4)
+		j4.run_threaded() 
+		i.append(j4.interface + ("sample",))
+	istr = " or ".join([repr(x) for x in i])
+	i = eval(raw_input("Client interface [%s]: "% istr) or istr)
 	print "This client's interface is", i
 	c = SimpleClient(r, i, getencryptor)
-	j.run_threaded() 
 	
 	def command(cmd):
 		target = globals()['target']
