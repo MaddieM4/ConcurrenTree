@@ -1,89 +1,65 @@
 import node
+import single
 
 class MapNode(node.Node):
 	def __init__(self, source={}):
-		self._value = {}
+		self._data = {}
 		self.update(source)
+
+	def update(self, source):
+		# Items must already be nodes
+		for k in source:
+			s = single.SingleNode()
+			s.put(0, source[k])
+			self[k] = s
 
 	@property
 	def value(self):
-		return self._value
+		return {}
 
 	@property
 	def key(self):
-		return self.keysum("{%s}" % ",".join(self.value))
+		return "{}"
 
-	def flatten(self, existing = None):
-		# Having existing = {} in function definition leads to weird persistance bug
-		# that uses the same dict every call.
-		if existing == None:
-			existing = {}
-		result = existing
-		for k in self:
-			i = self.index(k)
-			if self._deletions[i]:
-				del result[k]
-			else:
-				obj = self[k]
-				if obj!=None:
-					obj = obj.flatten()
-				result[k] = obj
-		for i in self.extension.values:
-			result = i.flatten(result)
+	def flatten(self):
+		result = {}
+		for i in self._data:
+			result[i] = self._data[i].flatten()
 		return result
 
 	def get(self, pos, key):
-		if type(pos) != int:
-			raise TypeError("pos must be an int")
-		if type(key) != str:
-			raise TypeError("key must be a str")
-		if pos == len(self):
-			return self.extension[key]
-		else:
-			return self._children[pos][key]
+		# Due to mapping semantics, "pos" is the key, and "key" must be "/single".
+		if key != "/single":
+			raise KeyError("Mapping can only contain SingleNodes")
+		if type(pos) != str:
+			raise TypeError("pos must be str")
+		return self._data[pos]
 
 	def put(self, pos, obj):
-		if type(pos) != int:
-			raise TypeError("pos must be an int")
-		if not isinstance(obj,node.Node):
-			raise TypeError("obj must be a subclass of Node")
-		if pos == len(self):
-			self.extension.insert(obj)
-		else:
-			self._children[pos].insert(obj)
+		# "pos" should be a string key.
+		if type(pos) != str:
+			raise TypeError("pos must be str")
+		if not isinstance(obj,single.SingleNode):
+			raise TypeError("obj must be a SingleNode")
+		self._data[pos] = obj
+
+	def delete(self, pos):
+		raise node.Undelable()
 
 	@property
 	def children(self):
-		return self._children + [self.extension]
+		return []
 
 	def proto(self):
 		pass #TODO - figure out protocol representation for advanced types
 
-	# Operations - all functions in this section return Operation objects
-
-	def extend(self, values={}):
-		''' Equivalent to dict.update, creating children as necessary '''
-		if len(self.extension)==0:
-			pass
-
 	# Plumbing
 
-	def index(self, key):
-		return self.value.index(key)
-
-	def __len__(self):
-		return self._length
-
 	def __iter__(self):
-		return self.value.__iter__()
+		return self._data.__iter__()
 
 	def __getitem__(self, key):
-		try:
-			return self._children[self.index(key)].head
-		except ValueError:
-			raise KeyError("Key %s not present in MapNode" % repr(key))
-		except IndexError:
-			return None
+		return self.get(key, "/single")
 
 	def __setitem__(self, key, obj):
-		self.put(self.index(key), obj)
+		self.put(key, obj)
