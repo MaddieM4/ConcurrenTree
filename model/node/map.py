@@ -1,19 +1,9 @@
 import node
 
 class MapNode(node.Node):
-	def __init__(self, source={}, keys=[]):
-		self._value = list(set(keys).union(set(source.keys()))) # unique all the keys
-		self._value = [str(x) for x in self.value] # convert them to strings
-		self._value.sort()
-		self._length = len(self._value)
-		self._children = [node.ChildSet() for i in range(0, len(self))]
-		self._deletions = [False for i in range(0, len(self))]
-		self.extension = node.ChildSet(MapNode)
-		for i in source:
-			# Will throw exception if fed non-Node contents, use ConcurrenTree.model.node.make()
-			self[str(i)] = source[i]
-
-	# Node interface
+	def __init__(self, source={}):
+		self._value = {}
+		self.update(source)
 
 	@property
 	def value(self):
@@ -62,16 +52,9 @@ class MapNode(node.Node):
 		else:
 			self._children[pos].insert(obj)
 
-	def delete(self, pos):
-		self._deletions[pos] = True
-
 	@property
 	def children(self):
 		return self._children + [self.extension]
-
-	@property
-	def deletions(self):
-		return node.ce_deletions(self._deletions)
 
 	def proto(self):
 		pass #TODO - figure out protocol representation for advanced types
