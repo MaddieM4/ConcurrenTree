@@ -42,11 +42,6 @@ class Node(ModelBase):
 		''' Return a compressed list of deletions '''
 		raise NotImplementedError("Subclasses of Node must provide property 'deletions'")		
 
-	@property
-	def children(self):
-		''' Return a list of childsets '''
-		raise NotImplementedError("Subclasses of Node must provide property 'children'")		
-
 	def proto(self):
 		ModelBase.proto(self)
 

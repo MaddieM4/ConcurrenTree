@@ -46,10 +46,6 @@ class MapNode(node.Node):
 	def delete(self, pos):
 		raise node.Undelable()
 
-	@property
-	def children(self):
-		return []
-
 	def proto(self):
 		pass #TODO - figure out protocol representation for advanced types
 

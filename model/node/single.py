@@ -34,10 +34,6 @@ class SingleNode(node.Node):
 		raise node.Undelable("SingleNodes do not support deletion. Recursive set to null instead.")
 
 	@property
-	def children(self):
-		return [self._children]
-
-	@property
 	def deletions(self):
 		return []
 

@@ -35,10 +35,6 @@ class TrinaryNode(node.Node):
 		raise node.Undelable("TrinaryNodes can contain no children")
 
 	@property
-	def children(self):
-		return []
-
-	@property
 	def deletions(self):
 		return []
 

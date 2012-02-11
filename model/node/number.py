@@ -40,10 +40,6 @@ class NumberNode(node.Node):
 		raise node.Undelable("NumberNode does not support deletion")
 
 	@property
-	def children(self):
-		return [self._children]
-
-	@property
 	def deletions(self):
 		return []
 
