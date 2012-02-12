@@ -38,5 +38,6 @@ class TrinaryNode(node.Node):
 	def deletions(self):
 		return []
 
-	def proto(self):
-		return self.value
+	@property
+	def children(self):
+		return {}

@@ -7,7 +7,7 @@ class LinearNode(node.Node):
 		self._value = value
 		self._length = len(value)
 		self._children = [node.ChildSet(childtypes) for i in range(len(self)+1)]
-		self._deletions = [False for i in range(len(self))]
+		self._del = [False for i in range(len(self))]
 		self.type = type(self.value)
 
 	# Node Interface
@@ -16,12 +16,16 @@ class LinearNode(node.Node):
 	def value(self):
 		return self._value
 
+	@property
+	def _deletions(self):
+		return node.enumerate_deletions(self._del)
+
 	def flatten(self):
 		result = self.type() # blank object of same type as self.value
 		for i in range(len(self)+1):
 			for child in self._children[i].values:
 				result += self.encapsulate(child.flatten())
-			if i < len(self) and not self._deletions[i]:
+			if i < len(self) and not self._del[i]:
 				result += self.encapsulate(self.flatitem(i))
 		return result
 
@@ -32,15 +36,7 @@ class LinearNode(node.Node):
 		self._children[pos].insert(obj)
 
 	def delete(self, pos):
-		self._deletions[pos] = True
-
-	@property
-	def children(self):
-		return self._children
-
-	@property
-	def deletions(self):
-		return node.ce_deletions(self._deletions)
+		self._del[pos] = True
 
 	# Subclass responsibilities
 
@@ -55,9 +51,6 @@ class LinearNode(node.Node):
 	@property
 	def key(self, obj):
 		raise NotImplementedError("Subclasses of LinearNode must define property 'key'")
-
-	def proto(self):
-		node.Node.proto(self)
 
 	# Plumbing
 
