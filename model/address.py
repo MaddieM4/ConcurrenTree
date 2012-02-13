@@ -19,22 +19,20 @@ class Address(ModelBase):
 			raise TypeError("Expected list or address.Address, got "+str(type(target)))
 
 	def parse(self, l):
-		''' Reads and processes a list '''
+		''' Reads and checks a list '''
 		pos = None
 		progress = list(self.layers)
 		for i in expand(l):
 			if type(i)==int:
 				if pos==None:
 					pos = i
+					progress.append(i)
 				else:
 					raise ValueError("Address list cannot contain consecutive ints")
 
 			elif type(i) in (str, unicode):
-				if pos==None:
-					progress.append(i)
-				else:
-					progress.append((pos,i))
-					pos = None
+				progress.append(i)
+				pos = None
 			else:
 				raise TypeError("Address cannot parse element %s" % str(i))
 		if pos == None:
@@ -43,26 +41,18 @@ class Address(ModelBase):
 			raise ValueError("Address list cannot end with int")
 
 	def resolve(self, tree):
-		x = tree
-		error = 0
-		for i in self.layers:
-			error += 1
-			if type(i) in (str, unicode):
-				i = (len(x), i)
-			x = x.get(i[0],i[1])
-		return x
-
+		return tree.resolve(self.layers)
 
 	def proto(self):
 		return expand(self.layers)
 
 	def append(self, value):
 		''' Value may be a 2-tuple or a string '''
-		self.layers.append(value)
+		self.layers.append(expand(value))
 
 	def prepend(self, value):
 		''' Value may be a 2-tuple or a string '''
-		self.layers.insert(0,value)
+		self.layers.insert(0,expand(value))
 
 	def jump(self, pos, max, key):
 		if pos==max:

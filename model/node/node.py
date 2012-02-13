@@ -67,6 +67,23 @@ class Node(ModelBase):
 	def keysum(self, string):
 		return hasher.key(string)
 
+	def resolve(self, addrlist):
+		''' Map overrides this '''
+		if len(addrlist) == 0:
+			return self
+		if type(addrlist[0])==int:
+			pos = addrlist[0]
+			key = addrlist[1]
+			return self.get(pos, key).resolve(addrlist[2:])
+		else:
+			pos = len(self)
+			key = addrlist[0]
+			return self.get(pos, key).resolve(addrlist[1:])
+
+	def context(self):
+		from ConcurrenTree.model import context
+		return context.make(self)
+
 class UnsupportedInstructionError(Exception): pass
 
 class Unputable(UnsupportedInstructionError): pass
