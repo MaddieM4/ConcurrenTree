@@ -94,10 +94,7 @@ class Address(ModelBase):
 		return len(self.layers)
 
 	def __eq__(self, other):
-		return self.layers == other.layers
-
-	def __ne__(self, other):
-		return self.layers != other.layers
+		return type(self)==type(other) and self.layers == other.layers
 
 	def __add__(self, other):
 		new = Address(self) # Copy layers

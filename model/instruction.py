@@ -49,7 +49,11 @@ class Instruction(ModelBase):
 				tree.delete(i)
 
 	def _apply_insert(self, tree):
-		tree.put(self.position, self.value_node)
+		vn = self.value_node
+		try:
+			tree.get(self.position, vn.key)
+		except:
+			tree.put(self.position, vn)
 
 	def sanitycheck(self, tree):
 		''' Check a tree to make sure this instruction can be applied. '''
