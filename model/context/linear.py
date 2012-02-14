@@ -48,8 +48,6 @@ class LinearContext(context.Context):
 					node.get(i,c), addr+[i,c], False)
 				if naddr != None:
 					return naddr, pos
-			if len(node._children[i]):
-				pos += 1
 
 			# Check for finish, kill one for nondeleted characters
 			if pos == 0:
