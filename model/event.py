@@ -14,7 +14,7 @@ class EventGrid(object):
 		self[label].append(func)
 
 	def happen(self, label):
-		callbacks = self[label]
+		callbacks = list(self[label])
 		if label != "all":
 			callbacks += self['all']
 		for i in callbacks:

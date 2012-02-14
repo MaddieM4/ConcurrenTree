@@ -52,8 +52,8 @@ class Node(ModelBase):
 
 	def put(self, pos, n):
 		self._put(pos, n)
-		n.register('insert', lambda: self.evgrid.happen('childinsert'))
-		n.register('delete', lambda: self.evgrid.happen('childdelete'))
+		n.register('insert', lambda grid, label: self.evgrid.happen('childinsert'))
+		n.register('delete', lambda grid, label: self.evgrid.happen('childdelete'))
 		self.evgrid.happen('insert')
 
 	def delete(self, pos):
