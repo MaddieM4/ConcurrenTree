@@ -1,7 +1,7 @@
 from ConcurrenTree.model import node
-import string, map, linear
+import string, map, linear, number
 
-def make(node_obj):
+def make(node_obj, *args):
 	# Create a context object
 	t = type(node_obj)
 	if t in (node.StringNode, node.ListNode):
@@ -10,3 +10,5 @@ def make(node_obj):
 		return map.MapContext(node_obj)
 	elif t == node.SingleNode:
 		return single.SingleContext(node_obj)
+	elif t == node.NumberNode:
+		return number.NumberContext(node_obj, *args)

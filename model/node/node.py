@@ -80,9 +80,9 @@ class Node(ModelBase):
 			key = addrlist[0]
 			return self.get(pos, key).resolve(addrlist[1:])
 
-	def context(self):
+	def context(self, *args):
 		from ConcurrenTree.model import context
-		return context.make(self)
+		return context.make(self, *args)
 
 class UnsupportedInstructionError(Exception): pass
 

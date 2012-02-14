@@ -12,12 +12,13 @@ class NumberNode(node.Node):
 
 	@property
 	def value(self):
-		return self._value[0]
+		return self._value
 
 	@property
 	def key(self):
-		return self.keysum("n"+str(
-			int(json.loads(self.value)) + self.unique
+		return self.keysum("n%d/%d" % (
+			int(json.loads(self.value)),
+			self.unique
 		))
 
 	def flatten(self):
@@ -42,3 +43,21 @@ class NumberNode(node.Node):
 	@property
 	def deletions(self):
 		return []
+
+	def resolve(self, addr):
+		if len(addr)==0:
+			return self
+		else:
+			return self.get(0, addr[0]).resolve(addr[1:])
+
+	# Extra
+
+	def head(self):
+		# return (addr, node) for deepest node
+		winner = ([], self)
+		for i in self._children[0]:
+			addr, n = self.get(0,i).head()
+			addr = [i] + addr
+			if len(addr) > len(winner[0]):
+				winner = addr, n
+		return winner
