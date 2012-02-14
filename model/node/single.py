@@ -2,6 +2,7 @@ import node
 
 class SingleNode(node.Node):
 	def __init__(self):
+		node.Node.__init__(self)
 		self._children = [node.ChildSet(), node.ChildSet()]
 
 	# Node interface
@@ -21,13 +22,13 @@ class SingleNode(node.Node):
 		else:
 			return None
 
-	def get(self, pos, key):
+	def _get(self, pos, key):
 		return self._children[pos][key]
 
-	def put(self, pos, obj):
+	def _put(self, pos, obj):
 		self._children[pos].insert(obj)
 
-	def delete(self):
+	def _delete(self):
 		raise node.Undelable("SingleNodes do not support deletion. Recursive set to null instead.")
 
 	@property

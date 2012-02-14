@@ -1,9 +1,13 @@
-from ConcurrenTree.model import ModelBase
+from ConcurrenTree.model import ModelBase, event
 from ConcurrenTree.util import hasher
 from ConcurrenTree.model.address import Address
 
 class Node(ModelBase):
 	''' Base class for all node types. '''
+
+	def __init__(self):
+		self.evgrid = event.EventGrid(['insert','delete',
+			'childinsert', 'childdelete'])
 
 	# Stuff to be filled in by subclass:
 
@@ -21,15 +25,15 @@ class Node(ModelBase):
 		''' Current value in Python types '''
 		raise NotImplementedError("Subclasses of Node must provide function 'flatten'")
 
-	def get(self, pos, key):
+	def _get(self, pos, key):
 		''' Retrieves child at position "pos" and key "key" '''
 		raise NotImplementedError("Subclasses of Node must provide function 'get'")
 
-	def put(self, pos, obj):
+	def _put(self, pos, obj):
 		''' Set a child at pos, acquiring the key from the object's .key property '''
 		raise NotImplementedError("Subclasses of Node must provide function 'put'")
 
-	def delete(self, pos):
+	def _delete(self, pos):
 		''' Mark value[pos] as deleted '''
 		raise NotImplementedError("Subclasses of Node must provide function 'delete'")
 
@@ -42,6 +46,22 @@ class Node(ModelBase):
 		# self._deletions and self._children will not be used externally.
 
 	# Provided by base class:
+
+	def get(self, pos, key):
+		return self._get(pos, key)
+
+	def put(self, pos, n):
+		self._put(pos, n)
+		n.register('insert', lambda: self.evgrid.happen('childinsert'))
+		n.register('delete', lambda: self.evgrid.happen('childdelete'))
+		self.evgrid.happen('insert')
+
+	def delete(self, pos):
+		self._delete(pos)
+		self.evgrid.happen('delete')
+
+	def register(self, *args):
+		self.evgrid.register(*args)
 
 	@property
 	def deletions(self):

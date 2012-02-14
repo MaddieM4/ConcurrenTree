@@ -4,6 +4,7 @@ class LinearNode(node.Node):
 	''' Base class for StringNode and ListNode, do not use directly '''
 
 	def __init__(self, value, childtypes=None):
+		node.Node.__init__(self)
 		self._value = value
 		self._length = len(value)
 		self._children = [node.ChildSet(childtypes) for i in range(len(self)+1)]
@@ -29,13 +30,13 @@ class LinearNode(node.Node):
 				result += self.encapsulate(self.flatitem(i))
 		return result
 
-	def get(self, pos, key):
+	def _get(self, pos, key):
 		return self._children[pos][key]
 
-	def put(self, pos, obj):
+	def _put(self, pos, obj):
 		self._children[pos].insert(obj)
 
-	def delete(self, pos):
+	def _delete(self, pos):
 		self._del[pos] = True
 
 	# Subclass responsibilities

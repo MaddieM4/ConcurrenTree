@@ -3,6 +3,7 @@ import single
 
 class MapNode(node.Node):
 	def __init__(self, source={}):
+		node.Node.__init__(self)
 		self._data = {}
 		self.update(source)
 
@@ -27,7 +28,7 @@ class MapNode(node.Node):
 			result[i] = self._data[i].flatten()
 		return result
 
-	def get(self, pos, key):
+	def _get(self, pos, key):
 		# Due to mapping semantics, "pos" is the key, and "key" must be "/single".
 		if key != "/single":
 			raise KeyError("Mapping can only contain SingleNodes")
@@ -35,7 +36,7 @@ class MapNode(node.Node):
 			raise TypeError("pos must be str")
 		return self._data[pos]
 
-	def put(self, pos, obj):
+	def _put(self, pos, obj):
 		# "pos" should be a string key.
 		if type(pos) != str:
 			raise TypeError("pos must be str")
@@ -43,7 +44,7 @@ class MapNode(node.Node):
 			raise TypeError("obj must be a SingleNode")
 		self._data[pos] = obj
 
-	def delete(self, pos):
+	def _delete(self, pos):
 		raise node.Undelable()
 
 	@property
