@@ -17,4 +17,5 @@ class ListNode(LinearNode):
 
 	@property
 	def key(self):
-		return "[]" # TODO - fix
+		raw = "[%s]" % ",".join(x.key for x in self)
+		return self.keysum(raw)

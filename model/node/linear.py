@@ -24,7 +24,7 @@ class LinearNode(node.Node):
 		result = self.type() # blank object of same type as self.value
 		for i in range(len(self)+1):
 			for child in self._children[i].values:
-				result += self.encapsulate(child.flatten())
+				result += child.flatten()
 			if i < len(self) and not self._del[i]:
 				result += self.encapsulate(self.flatitem(i))
 		return result
