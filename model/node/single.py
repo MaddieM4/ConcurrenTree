@@ -2,7 +2,7 @@ import node
 
 class SingleNode(node.Node):
 	def __init__(self):
-		self._children = node.ChildSet()
+		self._children = [node.ChildSet(), node.ChildSet()]
 
 	# Node interface
 
@@ -15,20 +15,17 @@ class SingleNode(node.Node):
 		return "/single"
 
 	def flatten(self):
-		if len(self._children) > 0:
-			return self._children.head.flatten()
+		v = self.head()[1].value_node()
+		if v:
+			return v.flatten()
 		else:
 			return None
 
 	def get(self, pos, key):
-		if pos != 0:
-			raise IndexError("SingleNode only has children at pos 0")
-		return self._children[key]
+		return self._children[pos][key]
 
 	def put(self, pos, obj):
-		if pos != 0:
-			raise IndexError("SingleNode only has children at pos 0")
-		self._children.insert(obj)
+		self._children[pos].insert(obj)
 
 	def delete(self):
 		raise node.Undelable("SingleNodes do not support deletion. Recursive set to null instead.")
@@ -37,5 +34,16 @@ class SingleNode(node.Node):
 	def deletions(self):
 		return []
 
-	def proto(self):
-		pass # TODO - protocol rep of adv types
+	# Extra
+	def head(self):
+		if len(self._children[1]) > 0:
+			addr, node = self._children[1]['/single'].head()
+			return [1, '/single'] + addr, node
+		else:
+			return [], self
+
+	def value_node(self):
+		if len(self._children[0]) > 0:
+			return self._children[0].head
+		else:
+			return None

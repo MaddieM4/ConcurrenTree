@@ -5,7 +5,7 @@ from ConcurrenTree.model.address import Address
 class Node(ModelBase):
 	''' Base class for all node types. '''
 
-	# Stuff to be filled in by subclass
+	# Stuff to be filled in by subclass:
 
 	@property
 	def value(self):
@@ -33,19 +33,32 @@ class Node(ModelBase):
 		''' Mark value[pos] as deleted '''
 		raise NotImplementedError("Subclasses of Node must provide function 'delete'")
 
-	def make_flatcontext(self, addr):
-		''' Return a context object for self that prefixes instructions with addr '''
-		raise NotImplementedError("Subclasses of Node must provide function 'make_flatcontext'")
+	# Properties to be defined by subclass:
+
+		# self._deletions - list of deleted positions
+		# self._children  - list of node.ChildSets
+
+		# If you define self.deletions and self.children, respectively,
+		# self._deletions and self._children will not be used externally.
+
+	# Provided by base class:
 
 	@property
 	def deletions(self):
 		''' Return a compressed list of deletions '''
-		raise NotImplementedError("Subclasses of Node must provide property 'deletions'")		
+		return compress_deletions(self._deletions)
+
+	@property
+	def children(self):
+		''' Return a dict of position: childhashes, each of which is a dict of key:hash. '''
+		positions = {}
+		for p in range(len(self._children)):
+			if self._children[p]:
+				positions[p] = self._children[p].proto()
+		return positions
 
 	def proto(self):
-		ModelBase.proto(self)
-
-	# Provided by base class
+		return [self.key, self.children, self.deletions]
 
 	def apply(self, op):
 		''' For operations, instructions, and anything else that takes self.apply(tree) '''
@@ -54,9 +67,22 @@ class Node(ModelBase):
 	def keysum(self, string):
 		return hasher.key(string)
 
-	def flatcontext(self, address=[]):
-		addr = Address(address)
-		return addr.resolve(self).make_flatcontext(addr)
+	def resolve(self, addrlist):
+		''' Map overrides this '''
+		if len(addrlist) == 0:
+			return self
+		if type(addrlist[0])==int:
+			pos = addrlist[0]
+			key = addrlist[1]
+			return self.get(pos, key).resolve(addrlist[2:])
+		else:
+			pos = len(self)
+			key = addrlist[0]
+			return self.get(pos, key).resolve(addrlist[1:])
+
+	def context(self, *args):
+		from ConcurrenTree.model import context
+		return context.make(self, *args)
 
 class UnsupportedInstructionError(Exception): pass
 

@@ -17,7 +17,5 @@ class ListNode(LinearNode):
 
 	@property
 	def key(self):
-		return "[]" # TODO - fix
-
-	def proto(self):
-		return [] # TODO - advanced type representations
+		raw = "[%s]" % ",".join(x.key for x in self)
+		return self.keysum(raw)
