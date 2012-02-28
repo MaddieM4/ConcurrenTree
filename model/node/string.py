@@ -18,20 +18,3 @@ class StringNode(LinearNode):
 	@property
 	def key(self):
 		return self.keysum("t"+self.value)
-
-	def proto(self):
-		runningstr = ""
-		result = []
-		for i in range(len(self)+1):
-			if len(self.children[i]) > 0:
-				# Append children
-				if runningstr:
-					result.append(runningstr)
-					runningstr = ""
-				result.append(self.children[i].proto())
-			if i < len(self):
-				runningstr += self.value[i]
-		if runningstr:
-			result.append(runningstr)
-		result.append(self.deletions)
-		return result

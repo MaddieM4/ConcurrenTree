@@ -48,10 +48,20 @@ class MapNode(node.Node):
 
 	@property
 	def children(self):
+		result = {}
+		for k in self:
+			result[k] = {"/single":self[k].hash}
+		return result
+
+	@property
+	def deletions(self):
 		return []
 
-	def proto(self):
-		pass #TODO - figure out protocol representation for advanced types
+	def resolve(self, addrlist):
+		if len(addrlist) == 0:
+			return self
+		else:
+			return self.get(addrlist[0],addrlist[1]).resolve(addrlist[2:])
 
 	# Plumbing
 
