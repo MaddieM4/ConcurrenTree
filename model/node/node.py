@@ -125,7 +125,12 @@ class ChildSet:
 			raise ValueError("Key mismatch: cannot insert object with key %s as key %s" % (repr(value.key), repr(key)))
 		if self.limit != None and key != self.limit:
 			raise ValueError("Childset only accepts key "+self.limit)
+		if key in self:
+			print "Warning: clobbering over key "+repr(key)
 		self.children[key] = value
+
+	def __contains(self, key):
+		return key in self.children
 
 	def __getitem__(self, key):
 		return self.children[key]
