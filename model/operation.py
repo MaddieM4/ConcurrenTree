@@ -106,6 +106,9 @@ class Operation(ModelBase):
 		elif isinstance(other, Address):
 			self.prefix(other)		
 
+		else:
+			raise ValueError("Unknown type being added to operation")
+
 	def __iadd__(self, other):
 		# Operation
 		if isinstance(other, Operation):
@@ -119,6 +122,8 @@ class Operation(ModelBase):
 		elif isinstance(other, Address):
 			self.prefix(other)
 
+		else:
+			raise ValueError("Unknown type being added to operation")
 		return self
 
 def FromChildren(n):
