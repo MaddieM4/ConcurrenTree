@@ -91,7 +91,7 @@ class Ungetable(UnsupportedInstructionError): pass
 class Undelable(UnsupportedInstructionError): pass
 
 class ChildSet:
-	def __init__(self, types=None):
+	def __init__(self, types=None, limit=None):
 		if types != None:
 			try:
 				self.types = tuple(types)
@@ -99,6 +99,7 @@ class ChildSet:
 				self.types = (types,)
 		else:
 			self.types = None
+		self.limit = limit
 		self.children = {}
 
 	def insert(self, obj):
@@ -122,6 +123,8 @@ class ChildSet:
 			raise KeyError("Key must be a string of 1-16 characters")
 		if key != value.key:
 			raise ValueError("Key mismatch: cannot insert object with key %s as key %s" % (repr(value.key), repr(key)))
+		if self.limit != None and key != self.limit:
+			raise ValueError("Childset only accepts key "+self.limit)
 		self.children[key] = value
 
 	def __getitem__(self, key):

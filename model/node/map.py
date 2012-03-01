@@ -1,9 +1,15 @@
 import node
 import single
+from ConcurrenTree.util import hasher
 
 class MapNode(node.Node):
-	def __init__(self, source={}):
+	def __init__(self, limit={}, source={}):
+		self._value = limit
 		self._data = {}
+		for k in self.value:
+			print "Setting limit on", k
+			s = single.SingleNode(limit=self.value[k])
+			self[k] = s
 		self.update(source)
 
 	def update(self, source):
@@ -15,11 +21,11 @@ class MapNode(node.Node):
 
 	@property
 	def value(self):
-		return {}
+		return self._value
 
 	@property
 	def key(self):
-		return "{}"
+		return self.keysum(hasher.strict(self.value))
 
 	def flatten(self):
 		result = {}

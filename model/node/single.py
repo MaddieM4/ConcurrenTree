@@ -1,8 +1,10 @@
 import node
 
 class SingleNode(node.Node):
-	def __init__(self):
-		self._children = [node.ChildSet(), node.ChildSet()]
+	def __init__(self, limit=None):
+		self.limit = limit
+		self._children = [node.ChildSet(limit=self.limit),
+			node.ChildSet(types=(SingleNode,))]
 
 	# Node interface
 

@@ -1,5 +1,3 @@
-* Add limit to ChildSets
-* Add limit to SingleNodes
 * Confirm non-clobbering
 * Add a value parameter back to Map
   * Initialize SingleNodes in map by value

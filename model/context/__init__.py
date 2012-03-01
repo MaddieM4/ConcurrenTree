@@ -1,5 +1,5 @@
 from ConcurrenTree.model import node
-import string, map, linear, number
+import string, map, linear, number, single
 
 def make(node_obj, *args):
 	# Create a context object
