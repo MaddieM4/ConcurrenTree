@@ -4,6 +4,7 @@ import json
 class NumberNode(node.Node):
 
 	def __init__(self, value, unique):
+		node.Node.__init__(self)
 		self._value = str(value) # Store value as string to avoid loss of precision
 		self.unique = int(unique)
 		self._children = [node.ChildSet(NumberNode)]
@@ -27,17 +28,17 @@ class NumberNode(node.Node):
 			result += i.flatten()
 		return result
 
-	def get(self, pos, key):
+	def _get(self, pos, key):
 		if pos != 0:
 			raise IndexError("NumberNode only has children at position 0.")
 		return self._children[0][key]
 
-	def put(self, pos, obj):
+	def _put(self, pos, obj):
 		if pos != 0:
 			raise IndexError("NumberNode only has children at position 0.")
 		self._children[0].insert(obj)
 
-	def delete(self, pos):
+	def _delete(self, pos):
 		raise node.Undelable("NumberNode does not support deletion")
 
 	@property
