@@ -1,0 +1,86 @@
+Raw message layer
+  Async
+  Acked
+    Type a, contains hash
+    Must be sent to the same iface as it came from
+
+Multipart
+  Control message
+    Contains sorted hash list
+    Can be sent as a multipart
+  p Messages
+    Hash applies to contents
+    Not applied until assembled based on control message
+
+Operations
+  Track 1
+    Will not break verification if out of sync
+    Type '1'
+    Still subject to individual verification
+    Version number indicates which track 2 block it works on
+  Track 2
+    Breaks verification if out of sync
+    Community-verified with DDD
+    Type '2'
+    Version number indicates which version it aims to be
+    Consists of a set of Track 1 op hashes and a single Track 2 op
+      type: op
+      version: 3
+      includes: [Track1Hash1, Track1Hash2... Track2HashN]
+      instructions: [...]
+    Flattens the document afterwards
+    It is perfectly legitimate to use a "blank" Track 2 op (instructions=[])
+    just to flatten the document.
+
+Digitally Distributed Democracy
+  Integrated with permissions system
+  Works on an interface basis
+  An interface can trust other interfaces by percentages
+  This only takes effect when the interface has manually gone offline
+  Silence from a supposedly live interface can deadlock a vote
+  Consensus is only necessary for Track 2 operations.
+  Trust:
+    drop
+      threshold - percentage of dropper consensus necessary to drop this interface
+      trusted   - Who an interface trusts as droppers
+
+      If enough droppers agree and it surpasses the threshold, an interface can
+      be put into offline mode without personally consenting.
+
+    mod - Who an interface trusts when offline to validate Track 2 changes.
+    online - boolean, marks whether interface is considered "online" or not.
+
+    drop.trusted and mod are both dicts, keyed on interface, that contain dicts of
+    trustedthing:amount, using interfaces and ints 0-100, respectively.
+    Online is a dict of booleans keyed on interface.
+
+  Document modification consensus
+    For any document, W>=R and W+R>T
+    Each interface has one natural "vote"
+    Thus T=len(ifaces)
+    Inside the permissions object, is a "consensus" property
+      write: int
+      read: int
+    Any Track 2 that violates W>=R, W<=T, R<=T, or W+R>T is invalid and rejected
+    ifaces are linked to identities with permissions.owners
+      dict of iface:owner
+
+  permissions:
+    trust
+      drop
+        threshold
+        trusted
+      mod
+      online
+    consensus
+      write
+      read
+    universal (lists of ifaces)
+      write: Can make changes to the document (still validated in other ways)
+      read: Can read the document and see that it exists
+      write-meta: Can add interfaces to write
+      read-meta: Can add interfaces to read
+      meta-meta: Can add interfaces to meta-meta, write-meta, and read-meta
+    specific
+      Properties specific to the document type.
+    owners
