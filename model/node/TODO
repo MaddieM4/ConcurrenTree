@@ -1,3 +1,0 @@
-* Change how list value param works
-  * Use value based on input
-  * Initialize childsets with limits based on value

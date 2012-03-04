@@ -1,15 +1,25 @@
 import node
+from ConcurrenTree.util.hasher import strict
 
 class ListNode(node.Node):
 
-	def __init__(self, value):
+	def __init__(self, value=[]):
 		node.Node.__init__(self)
 		try:
-			self._value = [str(x) for x in value]
+			self._value = value
 		except:
 			raise TypeError("ListNode value must list of keys")
-		self._length = len(self._value)
-		self._children = [node.ChildSet(childtypes) for i in range(self.biglength)]
+		self._length = sum(x for x in value if type(x)==int) + \
+			len([None for x in value if type(x)!=int])
+		self.limit = {}
+		i = 0
+		for x in value:
+			if type(x)==int:
+				i += x
+			else:
+				self.limit[i] = x
+				i += 1
+		self._children = [node.ChildSet() for i in range(self.biglength)]
 		self._del = [False for i in range(len(self))]
 
 	@property
@@ -18,7 +28,7 @@ class ListNode(node.Node):
 
 	@property
 	def key(self):
-		return self.keysum("[%s]" % ",".join(self.value))
+		return strict(self.value)
 
 	def flatten(self):
 		result = []
@@ -26,7 +36,11 @@ class ListNode(node.Node):
 			for c in self.index(i):
 				result += self.index(i)[c].flatten()
 			if i<len(self) and not self._del[i]:
-				result.append(self.elem(i).head.flatten())
+				val = None
+				if len(self.elem(i)) > 0:
+					val=self.elem(i).head.flatten()
+				result.append(val)
+		return result
 
 	def _get(self, pos, key):
 		return self._children[pos][key]

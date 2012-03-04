@@ -8,7 +8,7 @@ class StringNode(node.Node):
 		except:
 			raise TypeError("StringNode value must str, or something that can be turned into one")
 		self._length = len(self._value)
-		self._children = [node.ChildSet(childtypes) for i in range(len(self)+1)]
+		self._children = [node.ChildSet((StringNode,)) for i in range(len(self)+1)]
 		self._del = [False for i in range(len(self))]
 
 	@property
@@ -20,7 +20,7 @@ class StringNode(node.Node):
 		return self.keysum("t"+self.value)
 
 	def flatten(self):
-		result = self.type() # blank object of same type as self.value
+		result = ""
 		for i in range(len(self)+1):
 			for child in self._children[i].values:
 				result += child.flatten()
