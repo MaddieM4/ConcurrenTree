@@ -2,6 +2,7 @@ import node
 
 class TrinaryNode(node.Node):
 	def __init__(self, value):
+		node.Node.__init__(self)
 		if value in (True, False, None):
 			self._value = value
 		else:

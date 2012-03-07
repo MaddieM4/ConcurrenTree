@@ -34,6 +34,8 @@ class MapNode(node.Node):
 		result = {}
 		for i in self._data:
 			result[i] = self._data[i].flatten()
+			if result[i] == None:
+				del result[i]
 		return result
 
 	def _get(self, pos, key):

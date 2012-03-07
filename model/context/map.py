@@ -9,7 +9,8 @@ class MapContext(context.Context):
 		return self.node.get(key, "/single")
 
 	def set(self, key, value):
-		if key in self:
+		if self.has(key):
+			# Use existing SingleNode
 			r = self.get(key).context().set(value)
 			return address.Address([key, "/single"])+r
 		else:

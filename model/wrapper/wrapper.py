@@ -1,3 +1,5 @@
+from ConcurrenTree.model.address import Address
+
 class Wrapper(object):
 	# Lets you treat nodes directly like the objects they
 	# represent, with implementation details abstracted
@@ -8,3 +10,15 @@ class Wrapper(object):
 		self.node = node
 		self.opsink = opsink
 		self.context = self.node.context()
+
+	def childsink(self, address):
+		# A simple mechanism to ripple ops to the top level.
+		# You should use this as the default opsink when creating child wrappers.
+		address = Address(address)
+		def sink(op):
+			self.opsink(address+op)
+		return sink
+
+	@property
+	def value(self):
+		return self.context.value

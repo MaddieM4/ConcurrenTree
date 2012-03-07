@@ -1,11 +1,13 @@
 from ConcurrenTree.model import node
-import string, map, linear, number, single
+import string, map, list, number, single
 
 def make(node_obj, *args):
 	# Create a context object
 	t = type(node_obj)
-	if t in (node.StringNode, node.ListNode):
-		return linear.LinearContext(node_obj)
+	if t == node.StringNode:
+		return string.StringContext(node_obj)
+	elif t == node.ListNode:
+		return list.ListContext(node_obj)
 	elif t == node.MapNode:
 		return map.MapContext(node_obj)
 	elif t == node.SingleNode:

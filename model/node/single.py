@@ -50,3 +50,6 @@ class SingleNode(node.Node):
 			return self._children[0].head
 		else:
 			return None
+
+	def __len__(self):
+		return 2

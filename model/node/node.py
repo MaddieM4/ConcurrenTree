@@ -104,6 +104,10 @@ class Node(ModelBase):
 		from ConcurrenTree.model import context
 		return context.make(self, *args)
 
+	def wrapper(self, *args):
+		from ConcurrenTree.model import wrapper
+		return wrapper.make(self, *args)
+
 class UnsupportedInstructionError(Exception): pass
 
 class Unputable(UnsupportedInstructionError): pass
