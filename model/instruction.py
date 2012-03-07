@@ -146,7 +146,7 @@ def InsertNode(address, pos, n):
 	if type(n) == node.StringNode:
 		return InsertText(address, pos, n.value)
 	elif type(n) == node.MapNode:
-		return InsertMap(address, pos)
+		return InsertMap(address, pos, n.value)
 	elif type(n) == node.ListNode:
 		return InsertList(address, pos, n.value)
 	elif type(n) == node.NumberNode:

@@ -8,6 +8,8 @@ class MapNode(node.Node):
 		self._value = limit
 		self._data = {}
 		for k in self.value:
+			if isinstance(self.value[k], node.Node):
+				self._value[k] = self.value[k].key
 			print "Setting limit on", k
 			s = single.SingleNode(limit=self.value[k])
 			self[k] = s
