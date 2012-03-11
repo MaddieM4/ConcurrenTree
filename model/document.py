@@ -9,6 +9,7 @@ class Document(ModelBase):
 		self.root = make(root)
 
 		self.applied = set(applied)
+		self.participants = set()
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
@@ -19,6 +20,12 @@ class Document(ModelBase):
 	def load(self, json):
 		self.apply(Operation(json[0]), False)
 		self.applied = set(json[1])
+
+	def opsink(self, op):
+		print op.proto()
+
+	def wrapper(self):
+		return self.root.wrapper(self.opsink)
 
 	def flatten(self):
 		return self.root.flatten()

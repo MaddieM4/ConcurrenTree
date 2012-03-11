@@ -1,4 +1,5 @@
 from ConcurrenTree.util.hasher import strict
+from ConcurrenTree.model import document
 import jack
 
 class Gear(object):
@@ -13,11 +14,41 @@ class Gear(object):
 		self.makejack(interface)
 		interface = strict(interface)
 		if not interface in self.clients:
-			self.clients[interface] = self.mkclient(self.router, interface)
+			self.clients[interface] = self.mkclient(self.router, interface, self.resolve)
 		return self.clients[interface]
 
 	def document(self, docname):
-		return self.storage[docname]
+		if docname in self.storage:
+			# Return existing document
+			return self.setdocsink(docname)
+		else:
+			# Create blank document
+			self.storage[docname] = document.Document({})
+			return self.setdocsink(docname)
+
+	def setdocsink(self, docname):
+		doc = self.storage[docname]
+		def opsink(op):
+			self.send(docname, op, doc.participants)
+		doc.opsink = opsink
+		return doc
+
+	def send(self, docname, op, ifaces):
+		proto = op.proto()
+		proto['track'] = 1
+		proto['docname'] = docname
+		proto['version'] = 0
+		for i in ifaces:
+			self.client_send(i, strict(proto))
+
+	def send_client(self, iface, msg):
+		# Try multiple clients until it sends or fails
+		for c in self.clients:
+			try:
+				return self.clients[c].send(iface, msg)
+			except:
+				print>>stderr, c,"->",iface,"failed"
+		print>>stderr, "All clients failed to contact", iface
 
 	def makejack(self, iface):
 		iface = tuple(iface[:2])

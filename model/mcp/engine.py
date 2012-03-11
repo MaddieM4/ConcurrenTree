@@ -4,10 +4,10 @@ from client import SimpleClient
 class Engine(object):
 	# Produces gears
 
-	def __init__(self, auth=None, router=None, clientclass = SimpleClient):
+	def __init__(self, auth=None, router=None, mkclient = SimpleClient):
 		self.auth = auth or default_auth()
 		self.router = router or default_router()
-		self.clientclass = clientclass
+		self.mkclient = mkclient
 
 	def make(self, username, password):
 		# Fail if it does not exist yet
@@ -24,7 +24,7 @@ class Engine(object):
 		return self.auth.verify(username, password)
 
 	def gear(self, storage):
-		return Gear(storage, self.router, self.clientclass)
+		return Gear(storage, self.router, self.mkclient)
 
 def default_auth():
 	from ConcurrenTree.util.storage.default import DefaultAuth
