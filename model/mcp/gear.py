@@ -29,6 +29,7 @@ class Gear(object):
 	def setdocsink(self, docname):
 		doc = self.storage[docname]
 		def opsink(op):
+			self.document(docname).apply(op)
 			self.send(docname, op, doc.participants)
 		doc.opsink = opsink
 		return doc
@@ -52,14 +53,14 @@ class Gear(object):
 
 	def makejack(self, iface):
 		iface = tuple(iface[:2])
-		if not iface in self.router._jacks:
+		if not self.router.jack(iface):
 			return jack.make(self.router, iface)
 
 	def resolve(self, iface):
 		iface = strict(iface)
 		return self.resolve_table[iface][0]
 
-	def resolve_set(self, iface, key, sigs = [])
+	def resolve_set(self, iface, key, sigs = []):
 		iface = strict(iface)
 		value = [key, sigs]
 		self.resolve_table[iface] = value

@@ -22,7 +22,7 @@ class BaseStorage(object):
 
 		self.flushing = True
 		self.needflush = threading.Event()
-		self.flusherthread = thread.start_new_thread(self.flush_loop)
+		self.flusherthread = thread.start_new_thread(self.flush_loop, ())
 
 	def find(self, docname):
 		if docname in self:
