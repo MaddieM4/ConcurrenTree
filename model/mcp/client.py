@@ -5,7 +5,7 @@
 '''
 
 import message
-from ConcurrenTree.util.crypto.encryptor import Flip
+from ConcurrenTree.util.crypto.encryptor import Flip, make
 
 class BaseClient(object):
 	def __init__(self, router):
@@ -24,12 +24,13 @@ class SimpleClient(BaseClient):
 	def __init__(self, router, interface, getencryptor):
 		'''
 			getencryptor should be a function that accepts an argument "iface"
-			and returns an object that fits the "encryptor" API - that is, it
-			has member functions encrypt(string) and decrypt(string).
+			and returns an encryptor prototype (2-element list, like ["rotate", 5]).
 		'''
 		self.interface = interface
 		BaseClient.__init__(self, router)
-		self.getencryptor = getencryptor
+		def get_e(iface):
+			return make(getencryptor(iface))
+		self.getencryptor = get_e
 
 	def route(self, msg):
 		# Recieve message from router (will be type 'r', which contains message)
@@ -52,9 +53,10 @@ class SimpleClient(BaseClient):
 		encryptor = self.getencryptor(msg.addr)
 		if encryptor == None:
 			return message.Message(msg.ciphercontent)
-		if msg.addr == self.interface:
-			encryptor = Flip(encryptor)
+		#if msg.addr == self.interface:
+		#	encryptor = Flip(encryptor)
 		msg.decode(encryptor)
+		print msg.content
 		return message.Message(msg.content)
 
 	def write(self, addr, txt):
@@ -74,7 +76,7 @@ class SimpleClient(BaseClient):
 		obj = {
 			"type":"hello",
 			"interface":iface,
-			"key":self.getencryptor(self.interface),
+			"key":self.getencryptor(self.interface).public(),
 			"sigs":[]
 		}
 		enc = self.getencryptor(target)

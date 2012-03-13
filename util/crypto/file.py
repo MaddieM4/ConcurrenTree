@@ -21,5 +21,9 @@ class KeyFileOpener(object):
 	def has(self, username):
 		return os.path.exists(self.filename(username))
 
+	def delete(self, username):
+		import os
+		os.remove(self.filename(username))
+
 	def filename(self, username):
 		return os.path.join(self.dir, sum(username))

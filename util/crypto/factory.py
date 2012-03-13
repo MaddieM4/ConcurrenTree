@@ -27,6 +27,9 @@ class CryptoFactory(object):
 			self.passwdcache[username]
 		))
 
+	def delete(self, username):
+		self.keystorage.delete(username)
+
 	def unlock(self, keystr, password):
 		return self.locker(password).decrypt(keystr)
 

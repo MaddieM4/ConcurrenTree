@@ -86,6 +86,15 @@ class Gear(object):
 		iface = strict(iface)
 		return json.loads(str(self.resolve_table[iface]))[0]
 
+	def resolve_self(self):
+		# Client encryptor prototypes
+		result = {}
+		for iface in self.clients:
+			if iface in self.resolve_table:
+				result[iface] = self.resolve_table[iface]
+			else:
+				result[iface] = None
+
 	def resolve_set(self, iface, key, sigs = []):
 		iface = strict(iface)
 		value = strict([key, sigs])

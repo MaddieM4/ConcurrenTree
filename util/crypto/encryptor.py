@@ -7,6 +7,12 @@ class Encryptor(ModelBase):
 	def decrypt(self, s):
 		raise NotImplementedError("Encryptor must define 'decrypt'")
 
+	def public(self):
+		# Returns a prototype for the public version of the key.
+		# Assumes shared key = your key, overwrite for key types
+		# where your public key and private key are different.
+		return self.proto()
+
 class Flip(Encryptor):
 	def __init__(self, parent):
 		self.encrypt = parent.decrypt
@@ -27,4 +33,5 @@ def make(data):
 	elif t=="rsa":
 		import rsa
 		return rsa.RSA(*args)
-
+	else:
+		raise TypeError("Unsupported encryption type: "+str(data))
