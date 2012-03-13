@@ -1,6 +1,7 @@
 from ConcurrenTree.util.hasher import strict
-from ConcurrenTree.model import document
+from ConcurrenTree.model import document, operation
 import jack
+import json
 
 class Gear(object):
 	# Tracks clients in router, and documents.
@@ -10,11 +11,17 @@ class Gear(object):
 		self.mkclient = mkclient
 		self.clients = {}
 
-	def client(self, interface):
+	def client(self, interface, encryptor=None):
 		self.makejack(interface)
-		interface = strict(interface)
-		if not interface in self.clients:
-			self.clients[interface] = self.mkclient(self.router, interface, self.resolve)
+		iface = strict(interface)
+		if encryptor != None:
+			self.resolve_set(interface, encryptor)
+		if not iface in self.clients:
+			self.clients[iface] = self.mkclient(self.router, interface, self.resolve)
+		return self.setclientcallback(iface)
+
+	def setclientcallback(self, interface):
+		self.clients[interface].rcv_callback = self.rcv_callback
 		return self.clients[interface]
 
 	def document(self, docname):
@@ -51,18 +58,37 @@ class Gear(object):
 				print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
+	def rcv_callback(self, msg):
+		if msg.type == "j":
+			self.rcv_json(msg.ciphercontent)
+
+	def rcv_json(self, content, sender = None):
+		content = json.loads(content)
+		t = content['type']
+		if t == "hello":
+			self.resolve_set(content['interface'], content['key'])
+		elif t == "op":
+			op = operation.Operation(content.instructions)
+			self.storage.op(content['docname'], op)
+
+	def hello(self, target):
+		for c in self.clients:
+			self.clients[c].hello(target)
+
 	def makejack(self, iface):
 		iface = tuple(iface[:2])
 		if not self.router.jack(iface):
-			return jack.make(self.router, iface)
+			j = jack.make(self.router, iface)
+			j.run_threaded()
+			return j
 
 	def resolve(self, iface):
 		iface = strict(iface)
-		return self.resolve_table[iface][0]
+		return json.loads(str(self.resolve_table[iface]))[0]
 
 	def resolve_set(self, iface, key, sigs = []):
 		iface = strict(iface)
-		value = [key, sigs]
+		value = strict([key, sigs])
 		self.resolve_table[iface] = value
 
 	@property

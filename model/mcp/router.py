@@ -47,6 +47,10 @@ class Router(object):
 		else:
 			return None
 
+	def thread_all(self):
+		# Run all Jack threads
+		for i in self._jacks:
+			self._jacks[i].run_threaded()
 
 	def _loadjacks(self, jacks):
 		for j in jacks:

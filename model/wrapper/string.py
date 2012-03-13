@@ -23,6 +23,9 @@ class StringWrapper(Wrapper):
 	def __len__(self):
 		return len(self.value)
 
+	def __str__(self):
+		return self.value
+
 	def __add__(self, y):
 		return self.value+y
 

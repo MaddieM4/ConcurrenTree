@@ -11,6 +11,10 @@ class Jack(object):
 		self.interface = interface
 		self.router._loadjack(self)
 
+	def run(self):
+		# Receive loop
+		raise NotImplementedError("Subclasses of Jack must define run")
+
 	def route(self, msg):
 		# Send a message.Message from the router
 		raise NotImplementedError("Subclasses of Jack must define route")
@@ -18,6 +22,13 @@ class Jack(object):
 	def recv(self, data):
 		# Send a string to the router (must be complete message)
 		self.router.recv(data)
+
+	def run_threaded(self):
+		if hasattr(self, "closed") and self.closed==False:
+			# Already running
+			return None
+		import thread
+		self.thread = thread.start_new_thread(self.run, ())
 
 	@property
 	def ifacetype(self):

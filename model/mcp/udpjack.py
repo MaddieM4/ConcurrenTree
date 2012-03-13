@@ -22,7 +22,7 @@ class UDPJack(jack.Jack):
 		jack.Jack.__init__(self, router, (ifacetype, (host, port)))
 		self.sock = socket.socket(sockfamily, socket.SOCK_DGRAM)
 		self.sock.bind(self.address)
-		self.closed = False
+		self.closed = True
 
 	def route(self, msg):
 		# Send message to somewhere
@@ -31,16 +31,15 @@ class UDPJack(jack.Jack):
 			addr = (location[0], location[1], 0,0)
 		else:
 			addr = (location[0], location[1])
-		print "UDPJack out:", len(str(msg)), "/", self.sock.sendto(str(msg), addr)
+		print "UDPJack out:", len(str(msg)), "/", self.sock.sendto(str(msg), addr), \
+			self.address, "->", addr
+		print repr(str(msg))
 
 	def run(self):
+		self.closed = False
 		while not self.closed:
 			data = self.sock.recv(message.PACKET_SIZE)
 			self.recv(data)
-
-	def run_threaded(self):
-		import thread
-		self.thread = thread.start_new_thread(self.run, ())
 
 	def close(self):
 		self.closed = True
