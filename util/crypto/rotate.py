@@ -15,3 +15,6 @@ class RotateEncryptor(encryptor.Encryptor):
 		for i in source:
 			result += chr((ord(i)+offset) % 256)
 		return result
+
+	def proto(self):
+		return ['rotate', self.offset]

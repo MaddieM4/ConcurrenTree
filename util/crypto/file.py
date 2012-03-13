@@ -11,9 +11,15 @@ class KeyFileOpener(object):
 			print "Creating dir:", repr(self.dir)
 
 	def get(self, username):
-		filename = os.path.join(self.dir, sum(username))
-		return open(filename, 'r').read()
+		if not self.has(username):
+			raise KeyError(username)
+		return open(self.filename(username), 'r').read()
 
 	def set(self, username, value):
-		filename = os.path.join(self.dir, sum(username))
-		open(filename, 'w').write(value)
+		open(self.filename(username), 'w').write(value)
+
+	def has(self, username):
+		return os.path.exists(self.filename(username))
+
+	def filename(self, username):
+		return os.path.join(self.dir, sum(username))

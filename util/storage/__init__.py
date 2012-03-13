@@ -72,6 +72,10 @@ class BaseStorage(object):
 		self.event("op", docname, op)
 		self[docname].apply(op)
 
+	def uncache(self, docname):
+		# Remove document from cache
+		raise NotImplementedError("uncache must be overwritten by Storage subclasses")
+
 	# Dict access
 	def __getitem__(self, i):
 		if i in self:

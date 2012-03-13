@@ -1,14 +1,18 @@
-from Crypto.PublicKey import RSA as rsalib
-from aes import AESUnlocker
+import thread
+import encryptor
 
-class RSA(object):
-	def __init__(self, keystr, password):
+from Crypto.PublicKey import RSA as rsalib
+
+class RSA(encryptor.Encryptor):
+	def __init__(self, keystr):
 		self.keystr = keystr
-		self.password = password
+		self._key = None
+		self.genlock = thread.allocate()
 		if keystr == None:
+			self.genlock.acquire()
 			self.generate()
 		else:
-			self.unlock()
+			self._key = rsalib.importKey(keystr)
 
 	def encrypt(self, value):
 		return self.key.encrypt(str(value), "")[0] # No K value for RSA
@@ -16,13 +20,19 @@ class RSA(object):
 	def decrypt(self, value):
 		return self.key.decrypt(str(value))
 
-	def unlock(self):
-		self.key = rsalib.importKey(AESUnlocker(self.password).decrypt(self.keystr))
-
-	def lock(self):
-		return AESUnlocker(self.password).encrypt(self.key.exportKey())
+	@property
+	def key(self):
+		with self.genlock:
+			return self._key
 
 	def generate(self, bits=1024):
-		# TODO - move to external process so that CPU-bound
-		# generation does not freeze greenlet reactor loop
-		self.key = rsalib.generate(bits)
+		thread.start_new_thread(self._generate, (bits,))
+
+	def _generate(self, bits):
+		try:
+			self._key = rsalib.generate(bits)
+		finally:
+			self.genlock.release()
+
+	def proto(self):
+		return ['rsa', self.key.exportKey()]
