@@ -29,8 +29,10 @@ class FileStorage(BaseStorage):
         self._dirty.add(docname) 
 
     def delete(self, docname):
-        del self._cache[docname]
-        self._dirty.remove(docname)
+	if docname in self._cache:
+		del self._cache[docname]
+	if docname in self._dirty:
+		self._dirty.remove(docname)
         path = self.filename(docname)
         if os.path.exists(path):
             os.remove(path)

@@ -40,9 +40,12 @@ def make(value, unique=bigrandom):
 
 	# List (the name 'list' is overridden by a module reference, we use type([]) to reference the builtin type)
 	elif type(value) in (type([]), tuple):
-		for i in range(len(value)):
-			value[i] = make(value[i])
-		return ListNode(value)
+		values = [make(x) for x in value]
+		keys = [x.key for x in values]
+		n = ListNode(value=keys)
+		for x in range(len(values)):
+			n.put(x, values[x])
+		return n
 
 	# Number
 	elif type(value) in (int, float, long):

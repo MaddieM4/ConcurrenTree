@@ -1,9 +1,13 @@
-from ConcurrenTree.model import ModelBase
+from ConcurrenTree.model import ModelBase, event
 from ConcurrenTree.util import hasher
 from ConcurrenTree.model.address import Address
 
 class Node(ModelBase):
 	''' Base class for all node types. '''
+
+	def __init__(self):
+		self.evgrid = event.EventGrid(['insert','delete',
+			'childinsert', 'childdelete'])
 
 	# Stuff to be filled in by subclass:
 
@@ -21,15 +25,15 @@ class Node(ModelBase):
 		''' Current value in Python types '''
 		raise NotImplementedError("Subclasses of Node must provide function 'flatten'")
 
-	def get(self, pos, key):
+	def _get(self, pos, key):
 		''' Retrieves child at position "pos" and key "key" '''
 		raise NotImplementedError("Subclasses of Node must provide function 'get'")
 
-	def put(self, pos, obj):
+	def _put(self, pos, obj):
 		''' Set a child at pos, acquiring the key from the object's .key property '''
 		raise NotImplementedError("Subclasses of Node must provide function 'put'")
 
-	def delete(self, pos):
+	def _delete(self, pos):
 		''' Mark value[pos] as deleted '''
 		raise NotImplementedError("Subclasses of Node must provide function 'delete'")
 
@@ -42,6 +46,22 @@ class Node(ModelBase):
 		# self._deletions and self._children will not be used externally.
 
 	# Provided by base class:
+
+	def get(self, pos, key):
+		return self._get(pos, key)
+
+	def put(self, pos, n):
+		self._put(pos, n)
+		n.register('insert', lambda grid, label: self.evgrid.happen('childinsert'))
+		n.register('delete', lambda grid, label: self.evgrid.happen('childdelete'))
+		self.evgrid.happen('insert')
+
+	def delete(self, pos):
+		self._delete(pos)
+		self.evgrid.happen('delete')
+
+	def register(self, *args):
+		self.evgrid.register(*args)
 
 	@property
 	def deletions(self):
@@ -84,6 +104,10 @@ class Node(ModelBase):
 		from ConcurrenTree.model import context
 		return context.make(self, *args)
 
+	def wrapper(self, *args):
+		from ConcurrenTree.model import wrapper
+		return wrapper.make(self, *args)
+
 class UnsupportedInstructionError(Exception): pass
 
 class Unputable(UnsupportedInstructionError): pass
@@ -91,7 +115,7 @@ class Ungetable(UnsupportedInstructionError): pass
 class Undelable(UnsupportedInstructionError): pass
 
 class ChildSet:
-	def __init__(self, types=None):
+	def __init__(self, types=None, limit=None):
 		if types != None:
 			try:
 				self.types = tuple(types)
@@ -99,6 +123,7 @@ class ChildSet:
 				self.types = (types,)
 		else:
 			self.types = None
+		self.limit = limit
 		self.children = {}
 
 	def insert(self, obj):
@@ -122,7 +147,14 @@ class ChildSet:
 			raise KeyError("Key must be a string of 1-16 characters")
 		if key != value.key:
 			raise ValueError("Key mismatch: cannot insert object with key %s as key %s" % (repr(value.key), repr(key)))
+		if self.limit != None and key != self.limit:
+			raise ValueError("Childset only accepts key "+self.limit)
+		if key in self:
+			print "Warning: clobbering over key "+repr(key)
 		self.children[key] = value
+
+	def __contains(self, key):
+		return key in self.children
 
 	def __getitem__(self, key):
 		return self.children[key]

@@ -22,7 +22,7 @@ class BaseStorage(object):
 
 		self.flushing = True
 		self.needflush = threading.Event()
-		self.flusherthread = thread.start_new_thread(self.flush_loop)
+		self.flusherthread = thread.start_new_thread(self.flush_loop, ())
 
 	def find(self, docname):
 		if docname in self:
@@ -71,6 +71,10 @@ class BaseStorage(object):
 	def op(self, docname, op):
 		self.event("op", docname, op)
 		self[docname].apply(op)
+
+	def uncache(self, docname):
+		# Remove document from cache
+		raise NotImplementedError("uncache must be overwritten by Storage subclasses")
 
 	# Dict access
 	def __getitem__(self, i):

@@ -88,7 +88,7 @@ class Instruction(ModelBase):
 		if self.code == 1:
 			return node.StringNode(self.value)
 		elif self.code == 2:
-			return node.MapNode()
+			return node.MapNode(self.value)
 		elif self.code == 3:
 			return node.ListNode(self.value)
 		elif self.code == 4:
@@ -117,9 +117,9 @@ def InsertText(address, pos, value):
 	''' Accepts value type str or unicode '''
 	return Instruction([1, address, pos, value])
 
-def InsertMap(address, pos):
+def InsertMap(address, pos, value):
 	''' Accepts list of sorted keys as value '''
-	return Instruction([2, address, pos])
+	return Instruction([2, address, pos, value])
 
 def InsertList(address, pos, value):
 	''' Accepts list of descendant node keys as value '''
@@ -146,7 +146,7 @@ def InsertNode(address, pos, n):
 	if type(n) == node.StringNode:
 		return InsertText(address, pos, n.value)
 	elif type(n) == node.MapNode:
-		return InsertMap(address, pos)
+		return InsertMap(address, pos, n.value)
 	elif type(n) == node.ListNode:
 		return InsertList(address, pos, n.value)
 	elif type(n) == node.NumberNode:

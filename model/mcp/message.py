@@ -20,9 +20,12 @@ class Message(object):
 		sep = data.index('\x00')
 		self.straddr = data[1:sep]
 		self.ciphercontent = data[sep+1:]
-		self.addr = json.loads(self.straddr)
-		if (type(self.addr) != list or len(self.addr)<3):
-			raise ValueError("Bad address: "+repr(self.addr))
+		if self.straddr:
+			self.addr = json.loads(self.straddr)
+			if (type(self.addr) != list or len(self.addr)<3):
+				raise ValueError("Bad address: "+repr(self.addr))
+		else:
+			self.addr = None
 
 	def __str__(self):
 		return self.type+self.straddr+'\x00'+self.ciphercontent
@@ -31,6 +34,10 @@ class Message(object):
 		if not self.decoded:
 			self.content = encryptor.decrypt(self.ciphercontent)
 		return self.content
+
+	def raw_decode(self):
+		# Unencrypted content
+		self.content = self.ciphercontent
 
 	@property
 	def decoded(self):
@@ -68,8 +75,10 @@ def onion(msg, hops=[]):
 		return [msg]
 
 def make(type, addr, encryptor, content):
-	straddr = hasher.strict(addr)
-	ciphercontent = encryptor.encrypt(content)
+	straddr = ""
+	if addr != None:
+		straddr = hasher.strict(addr)
+	ciphercontent = (encryptor and encryptor.encrypt(content)) or content
 	msg = Message(type +straddr+'\x00'+ciphercontent)
 	msg.content = content
 	return msg

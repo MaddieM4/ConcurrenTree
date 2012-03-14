@@ -1,7 +1,7 @@
 from ConcurrenTree.model import operation, instruction, address, node
 import context
 
-class LinearContext(context.Context):
+class ListContext(context.Context):
 	def insert(self, pos, value):
 		iaddr, ipos = self._traceindex(pos)
 		i = instruction.InsertNode(iaddr, ipos, node.make(value))

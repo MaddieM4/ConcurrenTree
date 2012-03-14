@@ -1,8 +1,11 @@
+import encryptor
+
 from Crypto.Hash import SHA
 from Crypto.Cipher import AES
 
-class AESUnlocker(object):
+class AESEncryptor(encryptor.Encryptor):
 	def __init__(self, password):
+		self.password = password
 		hash = SHA.new(password).digest()
 		self.cipher = AES.new(hash[:16]) # Must be multiple of 16, cuts 20 char digest to 16 char
 
@@ -18,3 +21,6 @@ class AESUnlocker(object):
 		length = int(code[:split])
 		code = code[split+1:]
 		return code[:length]
+
+	def proto(self):
+		return ['aes', self.password]

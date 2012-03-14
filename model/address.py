@@ -96,6 +96,8 @@ class Address(ModelBase):
 			self.parse(other)
 		elif isinstance(other, Address):
 			self.layers += other.layers
+		elif isinstance(other, ModelBase):
+			return other + self
 		else:
 			self += [other]
 		return self

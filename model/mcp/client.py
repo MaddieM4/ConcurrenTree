@@ -5,7 +5,7 @@
 '''
 
 import message
-from ConcurrenTree.util.crypto.encryptor import Flip
+from ConcurrenTree.util.crypto import make
 
 class BaseClient(object):
 	def __init__(self, router):
@@ -24,40 +24,71 @@ class SimpleClient(BaseClient):
 	def __init__(self, router, interface, getencryptor):
 		'''
 			getencryptor should be a function that accepts an argument "iface"
-			and returns an object that fits the "encryptor" API - that is, it
-			has member functions encrypt(string) and decrypt(string).
+			and returns an encryptor prototype (2-element list, like ["rotate", 5]).
 		'''
 		self.interface = interface
 		BaseClient.__init__(self, router)
-		self.getencryptor = getencryptor
+		def get_e(iface):
+			return make(getencryptor(iface))
+		self.getencryptor = get_e
 
 	def route(self, msg):
-		# Recieve message from router (will be type 'r', which contains message)
-		unp = self.unpack(msg)
-		unp.decode(self.getencryptor(unp.addr))
-		print "Unpacked: "+repr(str(unp))
-		if unp.type == 'r':
-			self.send(unp)
-		elif unp.type == 's':
-			print "Recieved from %s: %s" % (repr(unp.addr),repr(unp.content))
+		# Recieve message from router (will be type 'r' or 's', which contains message)
+		if msg.type == 'r':
+			if msg.addr != self.interface:
+				self.send(msg)
+			else:
+				self.route(self.unpack(msg))
+		elif msg.type == 's':
+			self.route(self.unpack(msg))
+		elif msg.type == 'a':
+			print "Ack:", msg.content
+		elif msg.type == 'j':
+			self.rcv_callback(msg, self)
+		elif msg.type == 'p':
+			print "Part:", msg.content
+
+	def rcv_callback(self, msg, client_obj):
+		print "Recieved from %s: %s" % (repr(msg.addr),repr(msg.content))
 
 	def unpack(self, msg):
-		# Return the message inside a Type R
+		# Return the message inside a Type R or S
 		encryptor = self.getencryptor(msg.addr)
-		if msg.addr == self.interface:
-			encryptor = Flip(encryptor)
-		msg.decode(encryptor)
-		return message.Message(msg.content)
+		if encryptor == None:
+			msg.raw_decode()
+		else:
+			if msg.type == "s":
+				encryptor = encryptor.flip()
+			msg.decode(encryptor)
+		#print msg.content
+		result = message.Message(msg.content)
+		if result.addr == None:
+			result.addr = msg.addr
+		return result
 
 	def write(self, addr, txt):
 		# Write and send a message to addr
 		self.owrite([addr], txt)
 
 	def owrite(self, hoplist, txt):
-		sig_s = self.getencryptor(self.interface)
+		sig_s = self.getencryptor(self.interface).flip()
 		msg   = message.make('s', self.interface, sig_s, txt)
 		hoplist = [(a, self.getencryptor(a)) for a in hoplist]
 		for m in message.onion(msg, hoplist):
+			self.send(m)
+
+	def hello(self, target):
+		from ConcurrenTree.util.hasher import strict
+		iface = self.interface
+		obj = {
+			"type":"hello",
+			"interface":iface,
+			"key":self.getencryptor(self.interface).public(),
+			"sigs":[]
+		}
+		enc = self.getencryptor(target)
+		msg = message.make('j', None, None, strict(obj))
+		for m in message.onion(msg, [(target, enc)]):
 			self.send(m)
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from ConcurrenTree.model import operation, instruction, node
+from ConcurrenTree.model import operation, instruction, address, node
 import context
 
 class MapContext(context.Context):
@@ -9,9 +9,10 @@ class MapContext(context.Context):
 		return self.node.get(key, "/single")
 
 	def set(self, key, value):
-		if key in self:
+		if self.has(key):
 			# Use existing SingleNode
-			return [key, "/single"]+self.get(key).context().set(value)
+			r = self.get(key).context().set(value)
+			return address.Address([key, "/single"])+r
 		else:
 			# Make Singlenode
 			s = instruction.InsertSingle([], key)

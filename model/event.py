@@ -2,7 +2,7 @@ class EventGrid(object):
 	# Stores callbacks (they should take args (evgrid, label))
 	def __init__(self, labels=[]):
 		self.handlers = {}
-		self.setup_labels(labels)
+		self.setup_labels(labels+['all'])
 
 	def setup_labels(self, labels):
 		for i in labels:
@@ -10,11 +10,14 @@ class EventGrid(object):
 
 	def register(self, label, func):
 		if func in self[label]:
-			del self[label].index(func)
+			self[label].remove(func)
 		self[label].append(func)
 
 	def happen(self, label):
-		for i in self[label]:
+		callbacks = list(self[label])
+		if label != "all":
+			callbacks += self['all']
+		for i in callbacks:
 			i(self, label)
 
 	def __getitem__(self, label):
