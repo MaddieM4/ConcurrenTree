@@ -28,11 +28,12 @@ class RSA(encryptor.Encryptor):
 
 	def decrypt(self, value):
 		value = str(value)
-		blocks = len(value) // 128
 		result = []
-		for i in range(blocks):
-			s, e = i*128, i*128+128
-			result.append(self.key.decrypt(value[s:e]))
+		marker = 0
+		totallen = len(value)
+		while marker < totallen:
+			result.append(self.key.decrypt(value[marker:marker+128]))
+			marker += 128
 		return "".join(result)
 
 	@property
@@ -45,7 +46,8 @@ class RSA(encryptor.Encryptor):
 		# If you try to encrypt strings longer than the block size...
 		# well, enjoy your heaping helping of useless gibberish.
 		# This wrapper class handles blocking and deblocking for you.
-		return self.key.size()/8-11 # May be overzealous, but better than not.
+		#return self.key.size()/8-11 # May be overzealous, but better than not.
+		return 128
 
 	def generate(self, bits=1024):
 		thread.start_new_thread(self._generate, (bits,))

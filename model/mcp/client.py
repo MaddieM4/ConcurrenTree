@@ -60,7 +60,7 @@ class SimpleClient(BaseClient):
 			if msg.type == "s":
 				encryptor = encryptor.flip()
 			msg.decode(encryptor)
-		print "Unpacking:",repr(msg.content)
+		#print "Unpacking:",repr(msg.content)
 		result = message.Message(msg.content)
 		if result.addr == None:
 			result.addr = msg.addr
@@ -74,8 +74,6 @@ class SimpleClient(BaseClient):
 		# Write a message and send through a list of addresses
 		sig_s = self.getencryptor(self.interface).flip()
 		msg   = message.make('s', self.interface, sig_s, txt)
-		print "owrite:", repr(msg.ciphercontent)
-		#print "owrite encryptor:", sig_s
 		hoplist = [(a, self.getencryptor(a)) for a in hoplist]
 		for m in message.onion(msg, hoplist):
 			self.send(m)
