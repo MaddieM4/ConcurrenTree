@@ -13,6 +13,9 @@ class Encryptor(ModelBase):
 		# where your public key and private key are different.
 		return self.proto()
 
+	def flip(self):
+		return Flip(self)
+
 class Flip(Encryptor):
 	def __init__(self, parent):
 		self.encrypt = parent.decrypt

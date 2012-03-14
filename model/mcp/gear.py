@@ -1,5 +1,9 @@
+from ConcurrenTree.util import crypto
 from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import document, operation
+import message
+
+from sys import stderr
 import jack
 import json
 
@@ -51,16 +55,17 @@ class Gear(object):
 
 	def send_client(self, iface, msg):
 		# Try multiple clients until it sends or fails
+		if type(msg) == dict:
+			msg = 'j\x00' + strict(msg)
 		for c in self.clients:
 			try:
-				return self.clients[c].send(iface, msg)
+				return self.clients[c].write(iface, msg)
 			except:
 				print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
-	def rcv_callback(self, msg):
-		if msg.type == "j":
-			self.rcv_json(msg.ciphercontent)
+	def rcv_callback(self, msg, client):
+		self.rcv_json(msg.ciphercontent, msg.addr)
 
 	def rcv_json(self, content, sender = None):
 		content = json.loads(content)
@@ -70,10 +75,16 @@ class Gear(object):
 		elif t == "op":
 			op = operation.Operation(content.instructions)
 			self.storage.op(content['docname'], op)
+		elif t == "dm":
+			print "Direct message from", sender
+			print repr(content['contents'])
 
 	def hello(self, target):
 		for c in self.clients:
 			self.clients[c].hello(target)
+
+	def dm(self, target, message):
+		self.send_client(target, {"type":"dm", "contents":message})
 
 	def makejack(self, iface):
 		iface = tuple(iface[:2])

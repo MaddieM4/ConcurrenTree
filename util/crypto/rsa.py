@@ -36,3 +36,7 @@ class RSA(encryptor.Encryptor):
 
 	def proto(self):
 		return ['rsa', self.key.exportKey()]
+
+	def public(self):
+		key = self.key.publickey()
+		return ['rsa', key.exportKey()]

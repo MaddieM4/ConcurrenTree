@@ -6,6 +6,7 @@
 '''
 
 from message import Message
+from ConcurrenTree.util.crashnicely import Guard
 
 class Router(object):
 	def __init__(self, jacks=[], clients=[]):
@@ -26,7 +27,8 @@ class Router(object):
 		if msg.type == "r":
 			recvr = self.client(msg.addr) or self.jack(msg.addr)
 			if recvr:
-				recvr.route(msg)
+				with Guard():
+					recvr.route(msg)
 			else:
 				print "Could not deliver message:", str(msg.addr)
 		elif msg.type == "s":
