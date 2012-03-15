@@ -2,12 +2,19 @@ from ConcurrenTree.model import operation, instruction, address, node
 import context
 
 class ListContext(context.Context):
+	def get(self, i):
+		# Return (addr, node) for node at position i in self.value
+		laddr, index = self._traceelem(i)
+		n = self.node.resolve(laddr)._children[index].head
+		addr = laddr + [index, n.key]
+		return addr, n
+
 	def insert(self, pos, value):
 		iaddr, ipos = self._traceindex(pos)
-		i = instruction.InsertNode(iaddr, ipos, node.make(value))
-		return operation.Operation([i])
+		n = node.make([value])
+		return iaddr + operation.FromNode(n, ipos)
 
-	def delete(self, pos, size):
+	def delete(self, pos, size=1):
 		killzones = [self._traceelem(pos+x) for x in range(size)]
 		return operation.Operation([instruction.Delete(*k) for k in killzones])
 
@@ -17,11 +24,12 @@ class ListContext(context.Context):
 		addr = address.Address(addr)
 
 		for i in range(len(node)+1):
-			for c in node._children[i]:
+			for c in node.index(i):
+				index = i+len(node)
 				# naddr = new address
 				# pos   = overwritten with leftovers
 				naddr, pos = self._traceelem(pos,
-					node.get(i,c), addr+[i,c], False)
+					node.get(index,c), addr+[index,c], False)
 				if naddr != None:
 					return naddr, pos
 			if i < len(node) and not node._del[i]:
@@ -41,17 +49,18 @@ class ListContext(context.Context):
 		addr = address.Address(addr)
 
 		for i in range(len(node)+1):
-			for c in node._children[i]:
+			for c in node.index(i):
+				index = i+len(node)
 				# naddr = new address
 				# pos   = overwritten with leftovers
 				naddr, pos = self._traceindex(pos,
-					node.get(i,c), addr+[i,c], False)
+					node.get(index,c), addr+[index,c], False)
 				if naddr != None:
 					return naddr, pos
 
 			# Check for finish, kill one for nondeleted characters
 			if pos == 0:
-				return addr, i
+				return addr, i+len(node)
 			elif i < len(node) and not node._del[i]:
 				pos -= 1
 		if fail:

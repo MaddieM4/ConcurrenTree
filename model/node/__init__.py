@@ -44,7 +44,7 @@ def make(value, unique=bigrandom):
 		keys = [x.key for x in values]
 		n = ListNode(value=keys)
 		for x in range(len(values)):
-			n.put(x, values[x])
+			n.put(x, make(values[x]))
 		return n
 
 	# Number

@@ -132,10 +132,10 @@ def FromChildren(n):
 
 	children = n.children
 	if children != None:
-		for i in range(len(children)):
+		for i in children:
 			child = children[i]
 			for k in child:
-				op += FromNode(child[k], i)
+				op += FromNode(n.get(i,k), i)
 	return op
 
 def FromNode(n, pos):

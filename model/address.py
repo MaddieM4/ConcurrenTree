@@ -83,6 +83,9 @@ class Address(ModelBase):
 		''' Number of hops '''
 		return len(self.layers)
 
+	def __iter__(self):
+		return self.proto().__iter__()
+
 	def __eq__(self, other):
 		return type(self)==type(other) and self.layers == other.layers
 

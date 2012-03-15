@@ -22,3 +22,6 @@ class Wrapper(object):
 	@property
 	def value(self):
 		return self.context.value
+
+	def __repr__(self):
+		return "w<%r>" % self.value

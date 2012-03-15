@@ -89,6 +89,7 @@ class Node(ModelBase):
 
 	def resolve(self, addrlist):
 		''' Map overrides this '''
+		addrlist = list(addrlist)
 		if len(addrlist) == 0:
 			return self
 		if type(addrlist[0])==int:

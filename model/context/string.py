@@ -7,7 +7,7 @@ class StringContext(context.Context):
 		i = instruction.InsertNode(iaddr, ipos, node.make(value))
 		return operation.Operation([i])
 
-	def delete(self, pos, size):
+	def delete(self, pos, size=1):
 		killzones = [self._traceelem(pos+x) for x in range(size)]
 		return operation.Operation([instruction.Delete(*k) for k in killzones])
 
