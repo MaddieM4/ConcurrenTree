@@ -5,7 +5,8 @@ class StringWrapper(Wrapper):
 		return self.value[i]
 
 	def __setitem__(self, i, x):
-		raise NotImplementedError("__setitem__ not written yet for StringWrapper")
+		del self[i]
+		self.insert(i, x)
 
 	def __delitem__(self, i):
 		self.opsink(self.context.delete(i,1))
