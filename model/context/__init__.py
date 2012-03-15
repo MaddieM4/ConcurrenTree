@@ -1,5 +1,5 @@
 from ConcurrenTree.model import node
-import string, map, list, number, single
+import string, map, list, number, single, trinary
 
 def make(node_obj, *args):
 	# Create a context object
@@ -14,3 +14,5 @@ def make(node_obj, *args):
 		return single.SingleContext(node_obj)
 	elif t == node.NumberNode:
 		return number.NumberContext(node_obj, *args)
+	elif t == node.TrinaryNode:
+		return trinary.TrinaryContext(node_obj, *args)

@@ -21,7 +21,7 @@ class SingleContext(context.Context):
 		vn = head.value_node()
 		if vn == None:
 			return (None, None)
-		return addr+[vn.key], vn
+		return addr+[0, vn.key], vn
 
 	def head(self):
 		# Return (addr, node) for the current head SingleNode
