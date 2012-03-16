@@ -15,6 +15,8 @@ class Gear(object):
 		self.mkclient = mkclient
 		self.clients = {}
 
+		self.storage.listen(self.on_storage_event)
+
 	def client(self, interface, encryptor=None):
 		self.makejack(interface)
 		iface = strict(interface)
@@ -40,8 +42,9 @@ class Gear(object):
 	def setdocsink(self, docname):
 		doc = self.storage[docname]
 		def opsink(op):
-			self.document(docname).apply(op)
-			self.send(docname, op, doc.participants)
+			self.storage.op(docname, op)
+			#self.document(docname).apply(op)
+			#self.send(docname, op, doc.participants)
 		doc.opsink = opsink
 		return doc
 
@@ -51,17 +54,17 @@ class Gear(object):
 		proto['docname'] = docname
 		proto['version'] = 0
 		for i in ifaces:
-			self.client_send(i, strict(proto))
+			self.send_client(i, proto)
 
 	def send_client(self, iface, msg):
 		# Try multiple clients until it sends or fails
+		from ConcurrenTree.util.crashnicely import Guard
 		if type(msg) == dict:
 			msg = 'j\x00' + strict(msg)
 		for c in self.clients:
-			try:
+			with Guard():
 				return self.clients[c].write(iface, msg)
-			except:
-				print>>stderr, c,"->",iface,"failed"
+			print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
 	def rcv_callback(self, msg, client):
@@ -73,11 +76,16 @@ class Gear(object):
 		if t == "hello":
 			self.resolve_set(content['interface'], content['key'])
 		elif t == "op":
-			op = operation.Operation(content.instructions)
+			print content
+			op = operation.Operation(content['instructions'])
 			self.storage.op(content['docname'], op)
 		elif t == "dm":
 			print "Direct message from", sender
 			print repr(content['contents'])
+
+	def on_storage_event(self, typestr, docname, data):
+		if typestr == "op":
+			self.send(docname, data, self.document(docname).participants)
 
 	def hello(self, target):
 		for c in self.clients:

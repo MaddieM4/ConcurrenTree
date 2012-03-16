@@ -64,13 +64,22 @@ class BaseStorage(object):
 
 	# Events
 
+	def listen(self, handler):
+		# handler(typestr, docname, data)
+		self.event_listeners.add(handler)
+
+	def unlisten(self, handler):
+		self.event_listeners.remove(handler)
+
 	def event(self, typestr, docname, data):
 		for ear in self.event_listeners:
 			ear(typestr, docname, data)
 
 	def op(self, docname, op):
-		self.event("op", docname, op)
-		self[docname].apply(op)
+		doc = self[docname]
+		if not doc.is_applied(op):
+			self.event("op", docname, op)
+			doc.apply(op)
 
 	def uncache(self, docname):
 		# Remove document from cache

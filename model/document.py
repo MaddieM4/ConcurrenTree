@@ -17,6 +17,9 @@ class Document(ModelBase):
 		if track:
 			self.applied.add(op.hash)
 
+	def is_applied(self, op):
+		return op.hash in self.applied
+
 	def load(self, json):
 		self.apply(Operation(json[0]), False)
 		self.applied = set(json[1])

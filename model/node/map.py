@@ -42,14 +42,14 @@ class MapNode(node.Node):
 		# Due to mapping semantics, "pos" is the key, and "key" must be "/single".
 		if key != "/single":
 			raise KeyError("Mapping can only contain SingleNodes")
-		if type(pos) != str:
+		if type(pos) not in (unicode, str):
 			raise TypeError("pos must be str")
 		return self._data[pos]
 
 	def _put(self, pos, obj):
 		# "pos" should be a string key.
-		if type(pos) != str:
-			raise TypeError("pos must be str")
+		if type(pos) not in (unicode, str):
+			raise TypeError("pos must be str, got %r instead" % pos)
 		if not isinstance(obj,single.SingleNode):
 			raise TypeError("obj must be a SingleNode")
 		self._data[pos] = obj
