@@ -55,6 +55,81 @@ to the larger project implementing CTree to do stuff. CTree is not so much its
 own thing, as it is something that's embedded in other projects as a simple
 backend that handles all your network concurrency.
 
+Demo
+====
+
+With the most recent library code, you can get started now and see how much
+stuff the library just automagically handles for you. You'll need to install
+the files by running "install.sh" as root. Then start up two python terminals, and
+call them Bridget and Bob. The code is divided into multiple parts, each of
+which is sectioned out by who should be calling that part of the code. It is,
+however, fully chronological, and should be called in the order it's given.
+
+	### Starting up communication
+
+	# Both
+
+	from ConcurrenTree.model.mcp import engine
+	e = engine.Engine()
+	g = e.make('hello','goodbye')
+	g.storage.delete("?resolve")
+	g.resolve_table
+	bob = ['udp4', ['127.0.0.1', 3939], "bob"]
+	bridget = ['udp4', ['127.0.0.1', 3940], "bridget"]
+
+	# "Bob"
+	g.client(bob, ["rotate", 3])
+
+	# "Bridget"
+	g.client(bridget, ["rotate", -7])
+	g.resolve_set(bob, ["rotate", 3])
+	g.hello(bob)
+	g.dm(bob, "Hello, Bob!")
+
+	# Bob again
+	g.dm(bridget, "Hey there, Bridget :)")
+
+	### Track 1 Ops
+
+	# Both
+	g.storage.delete("hello")
+	hello = g.document("hello")
+	hw = hello.wrapper()
+
+	# Bob
+	hello.participants = [bridget]
+	hw["goofy"] = "gorsh"
+
+	# Bridget
+	hw
+	hello.participants = [bob]
+	hw["Blabarsylt"] = "Swedish jelly"
+	hw["Blabarsylt"] = "Made of blueberries"
+
+	# Bob
+	hw
+
+	### RSA
+
+	# Bob
+
+	from ConcurrenTree.util import crypto
+	key = crypto.make(['rsa', None]).proto()
+	g.resolve_set(bob, key)
+	g.hello(bridget)
+
+	# Bridget
+
+	g.dm(bob, "Your RSA works, Bob.")
+	from ConcurrenTree.util import crypto
+	key = crypto.make(['rsa', None]).proto()
+	g.resolve_set(bridget, key)
+	g.hello(bob)
+
+	# Bob
+
+	g.dm(bridget, "As does yours. Hooray for bidirectionally encrypted communication!")
+
 Dependencies
 ============
 * python 2.6.6+
