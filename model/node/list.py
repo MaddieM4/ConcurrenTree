@@ -28,7 +28,7 @@ class ListNode(node.Node):
 
 	@property
 	def key(self):
-		return strict(self.value)
+		return self.keysum(strict(self.value))
 
 	def flatten(self):
 		result = []

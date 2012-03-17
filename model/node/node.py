@@ -101,6 +101,8 @@ class Node(ModelBase):
 			key = addrlist[0]
 			return self.get(pos, key).resolve(addrlist[1:])
 
+	# High level imports
+
 	def context(self, *args):
 		from ConcurrenTree.model import context
 		return context.make(self, *args)
@@ -108,6 +110,11 @@ class Node(ModelBase):
 	def wrapper(self, *args):
 		from ConcurrenTree.model import wrapper
 		return wrapper.make(self, *args)
+
+	def op(self, pos, addr = []):
+		from ConcurrenTree.model import operation
+		addr = Address(addr)
+		return addr + operation.FromNode(self, pos)
 
 class UnsupportedInstructionError(Exception): pass
 

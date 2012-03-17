@@ -103,7 +103,7 @@ class Gear(object):
 
 	def resolve(self, iface):
 		iface = strict(iface)
-		return json.loads(str(self.resolve_table[iface]))[0]
+		return self.resolve_table[iface].value[0]
 
 	def resolve_self(self):
 		# Client encryptor prototypes
@@ -116,7 +116,7 @@ class Gear(object):
 
 	def resolve_set(self, iface, key, sigs = []):
 		iface = strict(iface)
-		value = strict([key, sigs])
+		value = [key, sigs]
 		self.resolve_table[iface] = value
 
 	@property

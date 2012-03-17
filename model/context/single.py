@@ -12,7 +12,7 @@ class SingleContext(context.Context):
 			head = head.head()[1]
 		# Insert value
 		vnode = node.make(value)
-		op += instruction.InsertNode(addr, 0, vnode)
+		op += vnode.op(0, addr)
 		return op
 
 	def get(self):

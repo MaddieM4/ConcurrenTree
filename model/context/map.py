@@ -17,8 +17,8 @@ class MapContext(context.Context):
 			# Make Singlenode
 			s = instruction.InsertSingle([], key)
 			# Make actual node
-			n = instruction.InsertNode([key, "/single"], 0, node.make(value))
-			return operation.Operation([s,n])
+			n = node.make(value).op(0, [key, "/single"])
+			return s + n
 
 	def has(self, key):
 		return key in self.node._data

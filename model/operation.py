@@ -108,6 +108,7 @@ class Operation(ModelBase):
 
 		else:
 			raise ValueError("Unknown type being added to operation")
+		return self
 
 	def __iadd__(self, other):
 		# Operation
