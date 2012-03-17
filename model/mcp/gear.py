@@ -56,6 +56,11 @@ class Gear(object):
 		for i in ifaces:
 			self.send_client(i, proto)
 
+	def send_full(self, docname):
+		doc = self.document(docname)
+		ifaces = doc.participants
+		self.send(docname, doc.root.childop(), ifaces)
+
 	def send_client(self, iface, msg):
 		# Try multiple clients until it sends or fails
 		from ConcurrenTree.util.crashnicely import Guard
@@ -85,7 +90,13 @@ class Gear(object):
 
 	def on_storage_event(self, typestr, docname, data):
 		if typestr == "op":
-			self.send(docname, data, self.document(docname).participants)
+			participants = self.document(docname).participants
+			# Take out our own interfaces
+			for c in self.clients:
+				c = json.loads(c)
+				if c in participants:
+					participants.remove(c)
+			self.send(docname, data, participants)
 
 	def hello(self, target):
 		for c in self.clients:

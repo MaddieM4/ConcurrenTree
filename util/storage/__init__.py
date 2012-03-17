@@ -78,8 +78,8 @@ class BaseStorage(object):
 	def op(self, docname, op):
 		doc = self[docname]
 		if not doc.is_applied(op):
-			self.event("op", docname, op)
 			doc.apply(op)
+			self.event("op", docname, op)
 
 	def uncache(self, docname):
 		# Remove document from cache

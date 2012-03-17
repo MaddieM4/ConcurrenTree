@@ -116,6 +116,10 @@ class Node(ModelBase):
 		addr = Address(addr)
 		return addr + operation.FromNode(self, pos)
 
+	def childop(self):
+		from ConcurrenTree.model import operation
+		return operation.FromChildren(self)
+
 class UnsupportedInstructionError(Exception): pass
 
 class Unputable(UnsupportedInstructionError): pass

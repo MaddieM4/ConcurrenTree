@@ -9,7 +9,7 @@ class Document(ModelBase):
 		self.root = make(root)
 
 		self.applied = set(applied)
-		self.participants = set()
+		self.routing
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
@@ -26,6 +26,7 @@ class Document(ModelBase):
 
 	def opsink(self, op):
 		print op.proto()
+		self.apply(op)
 
 	def wrapper(self):
 		return self.root.wrapper(self.opsink)
@@ -37,8 +38,51 @@ class Document(ModelBase):
 		''' Fully serializes document. Not a terribly fast function. '''
 		return [FromNode(self.root, 0).proto(), self.applylist]
 
+	def pretty(self):
+		# Pretty-prints the JSON content
+		import json
+		print json.dumps(self.flatten(), indent=4)
+
 	@property
 	def applylist(self):
 		result = list(self.applied)
 		result.sort()
 		return result
+
+	# Metadata properties
+
+	def prop(self, key, default = {}):
+		# Returns a wrapped top-level property
+		wrap = self.wrapper()
+		if not key in self.root:
+			wrap[key] = default
+		return wrap[key]
+
+	@property
+	def content(self):
+		return self.prop("content")
+
+	@property
+	def routing(self):
+		return self.prop("routing")
+
+	@property
+	def participants(self):
+		# All routing sends and recieves
+		if not "routing" in self.root:
+			return []
+		parts = set()
+		routes = self.routing
+		for sender in routes:
+			parts.add(sender)
+			for reciever in routes[sender]:
+				parts.add(reciever.strict)
+		import json
+		return [json.loads(s) for s in parts]
+
+	def add_participant(self, iface):
+		from ConcurrenTree.util.hasher import strict
+		routes = self.routing
+		iface = strict(iface)
+		if not iface in routes:
+			routes[iface] = {}

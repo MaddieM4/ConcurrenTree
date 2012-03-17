@@ -97,17 +97,17 @@ however, fully chronological, and should be called in the order it's given.
 	hw = hello.wrapper()
 
 	# Bob
-	hello.participants = [bridget]
+	hello.add_participant(bridget)
 	hw["goofy"] = "gorsh"
 
 	# Bridget
 	hw
-	hello.participants = [bob]
+	hello.add_participant(bob)
 	hw["Blabarsylt"] = "Swedish jelly"
 	hw["Blabarsylt"] = "Made of blueberries"
 
 	# Bob
-	hw
+	hello.pretty()
 
 	### RSA
 
