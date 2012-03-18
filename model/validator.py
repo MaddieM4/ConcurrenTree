@@ -1,5 +1,8 @@
 class Validator(dict):
-	# Callback collector for validating operations
+	# Callback collector for validating operations.
+	# If things look wrong to your callback, raise an exception.
+	# Return values are ignored.
+
 	def __init__(self):
 		dict.__init__(self)
 		self['pre'] = set()

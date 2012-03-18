@@ -2,10 +2,12 @@ from ConcurrenTree.model import ModelBase
 from ConcurrenTree.model.node import make
 from ConcurrenTree.model.operation import Operation, FromNode
 
+from ConcurrenTree.util.hasher import strict
+
 class Document(ModelBase):
 	''' Stores a node and tracks operations. '''
 
-	def __init__(self, root, applied = []):
+	def __init__(self, root={}, applied = []):
 		self.root = make(root)
 
 		self.applied = set(applied)
@@ -36,12 +38,11 @@ class Document(ModelBase):
 
 	def proto(self):
 		''' Fully serializes document. Not a terribly fast function. '''
-		return [FromNode(self.root, 0).proto(), self.applylist]
+		return [self.root.childop().proto(), self.applylist]
 
 	def pretty(self):
 		# Pretty-prints the JSON content
-		import json
-		print json.dumps(self.flatten(), indent=4)
+		print self.wrapper().pretty()
 
 	@property
 	def applylist(self):
@@ -67,6 +68,25 @@ class Document(ModelBase):
 		return self.prop("routing")
 
 	@property
+	def version(self):
+		# Document format version, not related to blockchain
+		return self.prop("version", 0)
+
+	@property
+	def permissions(self):
+		return self.prop("permissions", {
+			"universal": {
+				"read":{},
+				"write":{},
+				"read-meta":{},
+				"write-meta":{},
+				"meta-meta":{}
+			}
+		})
+
+	# Advanced properties and metadata functions
+
+	@property
 	def participants(self):
 		# All routing sends and recieves
 		if not "routing" in self.root:
@@ -81,8 +101,42 @@ class Document(ModelBase):
 		return [json.loads(s) for s in parts]
 
 	def add_participant(self, iface):
-		from ConcurrenTree.util.hasher import strict
 		routes = self.routing
 		iface = strict(iface)
 		if not iface in routes:
 			routes[iface] = {}
+
+	def has_permission(self, iface, category, name):
+		perm = self.permissions[category][name]
+		return strict(iface) in perm
+
+	def add_permission(self, iface, category, name):
+		self.permissions[category][name][strict(iface)] = True
+
+	def remove_permission(self, iface, category, name):
+		del self.permissions[category][name][strict(iface)]
+
+	def can_read(self, iface):
+		return self.has_permission(iface, "universal", "read")
+
+	def can_write(self, iface):
+		return self.has_permission(iface, "universal", "write")
+
+	def routes_to(self, iface):
+		# Returns which interfaces this interface sends to.
+		return [x for x in self.routes_to_unfiltered(iface) if self.can_read(x)]
+
+	def routes_to_unfiltered(self, iface):
+		# Does not take read permissions into account.
+		istr = strict(iface)
+		if istr in self.routing and len(self.routing[istr]) > 0:
+			result = set()
+			for target in self.routing[istr]:
+				result.add(target)
+			import json
+			return [json.loads(s) for s in result]
+		else:
+			parts = self.participants
+			if iface in parts:
+				parts.remove(iface)
+			return parts

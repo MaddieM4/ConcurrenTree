@@ -81,7 +81,7 @@ class Gear(object):
 		if t == "hello":
 			self.resolve_set(content['interface'], content['key'])
 		elif t == "op":
-			print content
+			#print content
 			op = operation.Operation(content['instructions'])
 			self.storage.op(content['docname'], op)
 		elif t == "dm":

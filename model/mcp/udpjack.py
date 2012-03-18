@@ -33,7 +33,7 @@ class UDPJack(jack.Jack):
 			addr = (location[0], location[1])
 		print "UDPJack out:", len(str(msg)), "/", self.sock.sendto(str(msg), addr), \
 			self.address, "->", addr
-		print repr(str(msg))
+		#print repr(str(msg))
 
 	def run(self):
 		self.closed = False

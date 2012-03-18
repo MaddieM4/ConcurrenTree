@@ -28,19 +28,20 @@ class Operation(ModelBase):
 		self.validator.update(validator)
 
 	def apply(self, tree):
-		#self.sanitycheck(tree)
-
 		if not isinstance(tree, node.Node):
 			return tree.apply(self)
 
 		backup = deepcopy(tree)
-		for i in self.instructions:
-			try:
+		try:
+			self.validator.pre(self, tree)
+			for i in self.instructions:
+				self.validator.instr(self, tree, i)
 				i.apply(tree)
-			except Exception as e:
-				tree = backup
-				traceback.print_exc()
-				raise OpApplyError()
+			self.validator.post(self, tree)
+		except Exception as e:
+			tree = backup
+			traceback.print_exc()
+			raise OpApplyError()
 
 	def prefix(self, addr):
 		''' Prepend all instruction addresses with addr '''

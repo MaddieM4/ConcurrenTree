@@ -36,7 +36,7 @@ def make(value, unique=bigrandom):
 	elif type(value) == dict:
 		for i in value:
 			value[i] = make(value[i])
-		return MapNode(value)
+		return MapNode(source=value)
 
 	# List (the name 'list' is overridden by a module reference, we use type([]) to reference the builtin type)
 	elif type(value) in (type([]), tuple):

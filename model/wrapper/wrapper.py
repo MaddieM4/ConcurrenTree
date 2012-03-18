@@ -1,5 +1,6 @@
 from ConcurrenTree.model.address import Address
 from ConcurrenTree.util.hasher import strict
+import json
 
 class Wrapper(object):
 	# Lets you treat nodes directly like the objects they
@@ -24,6 +25,9 @@ class Wrapper(object):
 		# Create a child wrapper based on a childsink
 		from ConcurrenTree.model.wrapper import make
 		return make(node, self.childsink(address))
+
+	def pretty(self):
+		return json.dumps(self.value, indent=4)
 
 	@property
 	def value(self):

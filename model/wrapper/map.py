@@ -22,6 +22,9 @@ class MapWrapper(Wrapper):
 	def __iter__(self):
 		return self.node.__iter__()
 
+	def __len__(self):
+		return len(self.value)
+
 	def apply(self, op):
 		self.node.apply(op)
 
