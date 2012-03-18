@@ -1,7 +1,10 @@
-from ConcurrenTree.model import ModelBase, node
 import ConcurrenTree.util.hasher as hasher
-import instruction
+
+from ConcurrenTree.model import ModelBase, node
 from address import Address
+from validator import Validator
+import instruction
+
 from copy import deepcopy
 import traceback
 import json
@@ -9,8 +12,9 @@ import json
 class Operation(ModelBase):
 	''' A collection of instructions '''
 
-	def __init__(self, instructions = [], protostring = None):
-		''' If protostring is present, uses that existing serialized instruction set. If not, use instructions. '''
+	def __init__(self, instructions = [], protostring = None, validator={}):
+		# If protostring is present, uses that existing serialized instruction set. 
+		# If not, use instructions.
 		if type(instructions) == Operation:
 			self.instructions = list(instructions.instructions)
 		else:
@@ -20,6 +24,8 @@ class Operation(ModelBase):
 				self.instructions = instruction.set(instructions)
 			except:
 				raise ParseError()
+		self.validator = Validator()
+		self.validator.update(validator)
 
 	def apply(self, tree):
 		#self.sanitycheck(tree)
