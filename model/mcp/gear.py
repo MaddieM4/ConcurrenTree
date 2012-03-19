@@ -17,6 +17,8 @@ class Gear(object):
 
 		self.storage.listen(self.on_storage_event)
 
+	# Functional creators
+
 	def client(self, interface, encryptor=None):
 		self.makejack(interface)
 		iface = strict(interface)
@@ -25,10 +27,6 @@ class Gear(object):
 		if not iface in self.clients:
 			self.clients[iface] = self.mkclient(self.router, interface, self.resolve)
 		return self.setclientcallback(iface)
-
-	def setclientcallback(self, interface):
-		self.clients[interface].rcv_callback = self.rcv_callback
-		return self.clients[interface]
 
 	def document(self, docname):
 		if docname in self.storage:
@@ -39,6 +37,12 @@ class Gear(object):
 			self.storage[docname] = document.Document({})
 			return self.setdocsink(docname)
 
+	# Assistants to the functional creators
+
+	def setclientcallback(self, interface):
+		self.clients[interface].rcv_callback = self.rcv_callback
+		return self.clients[interface]
+
 	def setdocsink(self, docname):
 		doc = self.storage[docname]
 		def opsink(op):
@@ -48,29 +52,71 @@ class Gear(object):
 		doc.opsink = opsink
 		return doc
 
-	def send(self, docname, op, ifaces):
-		proto = op.proto()
-		proto['track'] = 1
-		proto['docname'] = docname
-		proto['version'] = 0
-		for i in ifaces:
-			self.send_client(i, proto)
+	def makejack(self, iface):
+		iface = tuple(iface[:2])
+		if not self.router.jack(iface):
+			j = jack.make(self.router, iface)
+			j.run_threaded()
+			return j
 
-	def send_full(self, docname):
-		doc = self.document(docname)
-		ifaces = doc.participants
-		self.send(docname, doc.root.childop(), ifaces)
+	# Basic messages
 
-	def send_client(self, iface, msg):
+	def hello(self, target):
+		# Send your encryption credentials to an interface
+		for c in self.clients:
+			self.clients[c].hello(target)
+
+	def dm(self, target, message):
+		# Send a direct message to an interface
+		self.send(target, {"type":"dm", "contents":message})
+
+	# Sender functions
+
+	def send(self, iface, msg, senders=None):
 		# Try multiple clients until it sends or fails
-		from ConcurrenTree.util.crashnicely import Guard
+		# Will use self.clients unless variable "senders" is set.
+
+		# Convert dicts to type J messages.
 		if type(msg) == dict:
 			msg = 'j\x00' + strict(msg)
-		for c in self.clients:
+
+		# Create a list of interfaces to try.
+		clients = senders or self.clients
+
+		# Try until something sends without raising an exception.
+		from ConcurrenTree.util.crashnicely import Guard
+		for c in clients:
+			if type(c) not in (str, unicode):
+				c = strict(c)
 			with Guard():
 				return self.clients[c].write(iface, msg)
 			print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
+
+	def send_op(self, docname, op, ifaces=[]):
+		# Send an operation message.
+		# If you specify the interfaces variable, it will send only to those interfaces.
+		# Otherwise, it'll use the result of the document's routes_to().
+		proto = op.proto()
+		proto['docname'] = docname
+		proto['version'] = 0
+		if ifaces:
+			for i in ifaces:
+				self.send(i, proto)
+		else:
+			for c in self.clients:
+				client = self.clients[c]
+				ciface = client.interface
+				targets = self.document(docname).routes_to(ciface)
+				for t in targets:
+					self.send(t, proto, [c])
+
+	def send_full(self, docname, ifaces=[]):
+		# Send a full copy of a document.
+		doc = self.document(docname)
+		self.send_op(docname, doc.root.childop(), ifaces)
+
+	# Callbacks for incoming data
 
 	def rcv_callback(self, msg, client):
 		self.rcv_json(msg.ciphercontent, msg.addr)
@@ -89,47 +135,40 @@ class Gear(object):
 			print repr(content['contents'])
 
 	def on_storage_event(self, typestr, docname, data):
+		# Callback for storage events
 		if typestr == "op":
-			participants = self.document(docname).participants
-			# Take out our own interfaces
-			for c in self.clients:
-				c = json.loads(c)
-				if c in participants:
-					participants.remove(c)
-			self.send(docname, data, participants)
+			self.send_op(docname, data)
 
-	def hello(self, target):
-		for c in self.clients:
-			self.clients[c].hello(target)
+	# Utilities and conveninence functions.
 
-	def dm(self, target, message):
-		self.send_client(target, {"type":"dm", "contents":message})
-
-	def makejack(self, iface):
-		iface = tuple(iface[:2])
-		if not self.router.jack(iface):
-			j = jack.make(self.router, iface)
-			j.run_threaded()
-			return j
+	def add_participant(self, docname, iface):
+		# Adds person as a participant and sends them the full contents of the document.
+		doc = self.document(docname)
+		doc.add_participant(iface)
+		self.send_full(docname, [iface])
 
 	def resolve(self, iface):
+		# Return the cached encryptor proto for an interface.
 		iface = strict(iface)
 		return self.resolve_table[iface].value[0]
 
 	def resolve_self(self):
-		# Client encryptor prototypes
+		# Encryptor protos for each of your clients.
 		result = {}
 		for iface in self.clients:
 			if iface in self.resolve_table:
 				result[iface] = self.resolve_table[iface]
 			else:
 				result[iface] = None
+		return result
 
 	def resolve_set(self, iface, key, sigs = []):
+		# Set the encryptor proto for an interface in the cache table.
 		iface = strict(iface)
 		value = [key, sigs]
 		self.resolve_table[iface] = value
 
 	@property
 	def resolve_table(self):
+		# Cache table document for interface:encryptor proto relationships.
 		return self.document("?resolve").wrapper()

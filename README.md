@@ -97,12 +97,12 @@ however, fully chronological, and should be called in the order it's given.
 	hw = hello.wrapper()
 
 	# Bob
-	hello.add_participant(bridget)
+	g.add_participant("hello", bridget)
 	hw["goofy"] = "gorsh"
 
 	# Bridget
 	hw
-	hello.add_participant(bob)
+	g.add_participant("hello", bob)
 	hw["Blabarsylt"] = "Swedish jelly"
 	hw["Blabarsylt"] = "Made of blueberries"
 

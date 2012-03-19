@@ -100,11 +100,17 @@ class Document(ModelBase):
 		import json
 		return [json.loads(s) for s in parts]
 
-	def add_participant(self, iface):
+	def add_participant(self, iface, permissions=[], can_read=True, can_write=True):
 		routes = self.routing
-		iface = strict(iface)
+		striface = strict(iface)
+		if can_read:
+			permissions.append(("universal", "read"))
+		if can_write:
+			permissions.append(("universal", "write"))
+		for cat, name in permissions:
+			self.add_permission(iface, cat, name)
 		if not iface in routes:
-			routes[iface] = {}
+			routes[striface] = {}
 
 	def has_permission(self, iface, category, name):
 		perm = self.permissions[category][name]
