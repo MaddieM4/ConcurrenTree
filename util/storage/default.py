@@ -1,4 +1,4 @@
-import filestorage
+import ramstorage
 from ConcurrenTree.util.crypto import *
 from ConcurrenTree.model.auth import Auth
 
@@ -7,7 +7,7 @@ def DefaultFactory():
 	opener = file.KeyFileOpener("~/.ConcurrenTree/keys")
 	cfac = factory.CryptoFactory(opener)
 	# Storage
-	return filestorage.FileStorageFactory(encryptorFactory=cfac)
+	return ramstorage.RAMStorageFactory(encryptorFactory=cfac)
 
 def DefaultAuth():
 	fac = DefaultFactory()

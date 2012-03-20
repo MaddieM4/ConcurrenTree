@@ -72,7 +72,6 @@ however, fully chronological, and should be called in the order it's given.
 	from ConcurrenTree.model.mcp import engine
 	e = engine.Engine()
 	g = e.make('hello','goodbye')
-	g.storage.delete("?resolve")
 	g.resolve_table
 	bob = ['udp4', ['127.0.0.1', 3939], "bob"]
 	bridget = ['udp4', ['127.0.0.1', 3940], "bridget"]
@@ -93,7 +92,6 @@ however, fully chronological, and should be called in the order it's given.
 
 	# Both
 	helloname = g.mkname(bob, "hello")
-	g.storage.delete(helloname)
 	hello = g.document(helloname)
 	hw = hello.content
 
