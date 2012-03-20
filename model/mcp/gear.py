@@ -165,17 +165,19 @@ class Gear(object):
 		elif t == "op":
 			docname = content['docname']
 			if not docname in self.storage:
-				if self.want_docname(docname):
-					self.document(docname)
-				else:
-					print "Dropping op for unwanted docname %r" % docname
-					return
+				print "Dropping op for unwanted docname %r" % docname
+				return self.error(sender, message="Unsolicited op")
 			if not self.can_write(sender, docname):
 				return self.error(sender, message="You don't have write permissions.")
 			op = operation.Operation(content['instructions'])
 			self.storage.op(docname, op)
 		elif t == "invite":
-			self.load(sender, content['docname'], True)
+			docname = content['docname']
+			if self.want_docname(docname):
+				self.document(docname)
+				self.load(sender, docname, True)
+			else:
+				print "Ignoring invitation to document %r" % docname
 		elif t == "load":
 			docname, owner_only = content['docname'], content['owner only']
 			if owner_only:
@@ -199,7 +201,14 @@ class Gear(object):
 			self.send_op(docname, data)
 
 	def want_docname(self, docname):
-		return False
+		if docname in self.storage:
+			return True
+		print
+		x = ""
+		while x not in ("y", "n"):
+			x = raw_input("Accept document %r? [y|n] " % docname).lower()
+		print
+		return x == "y"
 
 	# Utilities and conveninence functions.
 
