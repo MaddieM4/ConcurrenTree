@@ -14,6 +14,7 @@ class Gear(object):
 		self.router = router
 		self.mkclient = mkclient
 		self.clients = {}
+		self.structures = {}
 
 		self.storage.listen(self.on_storage_event)
 
@@ -90,10 +91,11 @@ class Gear(object):
 		# Invite an interface to try to load a docname
 		self.send(target, {"type":"invite", "docname":docname})
 
-	def load(self, target, docname, owner_only=False):
+	def load(self, target, docname, accepts=[]):
 		# Requests a full structural op for a document.
-		# If owner_only is true, the response should be "from" the owner.
-		self.send(target, {"type":"load", "docname":docname, "owner only":owner_only})
+		# accepts is a list of interfaces the structure would be accepted from
+		# The owner is always inferred whether present or not
+		self.send(target, {"type":"load", "docname":docname, "accepts":accepts})
 
 	def error(self, target, code=500, message=""):
 		self.send(target, {"type":"error", "code":code, "contents":message})
@@ -121,17 +123,25 @@ class Gear(object):
 			print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
-	def send_op(self, docname, op, targets=[], senders=[]):
+	def send_op(self, docname, op, targets=[], senders=[], structure=False):
 		# Send an operation message.
 		# targets defaults to document.routes_to for every sender.
 		# senders defaults to self.clients
 		proto = op.proto()
 		proto['docname'] = docname
 		proto['version'] = 0
+		proto['structure'] = structure
 
 		if not senders:
 			senders = [json.loads(x) for x in self.clients]
 		senders = [x for x in senders if self.can_write(x, docname)]
+
+		if structure:
+			# Sign it
+			sigs = {}
+			for s in senders:
+				sigs[s] = self.sign(proto, s)
+			proto['sigs'] = sigs
 
 		if targets:
 			for i in targets:
@@ -147,7 +157,7 @@ class Gear(object):
 	def send_full(self, docname, targets=[], senders=[]):
 		# Send a full copy of a document.
 		doc = self.document(docname)
-		self.send_op(docname, doc.root.childop(), targets, senders)
+		self.send_op(docname, doc.root.childop(), targets, senders, structure=True)
 
 	# Callbacks for incoming data
 
@@ -164,10 +174,26 @@ class Gear(object):
 			print repr(content['contents'])
 		elif t == "op":
 			docname = content['docname']
+
+			# Check if we have interest in this op
 			if not docname in self.storage:
 				print "Dropping op for unwanted docname %r" % docname
 				return self.error(sender, message="Unsolicited op")
-			if not self.can_write(sender, docname):
+
+			# Permissions
+			validsig = False
+			if content['structure'] == True:
+				# check for any valid signature
+				sigs = content['sigs']
+				sigless = dict(content)
+				del sigless['sigs']
+				for iface in sigs:
+					if self.sig_verify(iface, sigless, sigs[iface]):
+						validsig=True
+						self.structure[docname][iface] = content
+
+			# Check for sender's write permission
+			if not self.can_write(sender, docname) and not validsig:
 				return self.error(sender, message="You don't have write permissions.")
 			op = operation.Operation(content['instructions'])
 			self.storage.op(docname, op)
@@ -175,20 +201,26 @@ class Gear(object):
 			docname = content['docname']
 			if self.want_docname(docname):
 				self.document(docname)
-				self.load(sender, docname, True)
+				self.load(sender, docname)
 			else:
 				print "Ignoring invitation to document %r" % docname
 		elif t == "load":
-			docname, owner_only = content['docname'], content['owner only']
-			if owner_only:
-				owner = self.owner(docname)
-				if owner in self.clients:
-					self.send_full(docname, [sender], [owner])
-				else:
-					# Check for cached owner msg
-					self.error(sender, message="No cached owner message")
+			docname, accepts = content['docname'], content['accepts']
+			# New logic
+			owner = self.owner(docname)
+			if owner in self.clients:
+				# You own the document
+				self.send_full(docname, [sender], [owner])
 			else:
-				self.send_full(docname, [sender])
+				# Check cache
+				if docname in self.structures:
+					accepts.append(owner)
+					for i in accepts:
+						if i in self.structures[docname]:
+							# Send cached structure
+							msg = self.structures[docname][i]
+							return self.send(sender, msg)
+				self.error(sender, message="No cached structure for %r" % docname)
 		elif t == "error":
 			print "Error from:", sender, ", code", content["code"]
 			print repr(content['contents'])
@@ -211,6 +243,15 @@ class Gear(object):
 		return x == "y"
 
 	# Utilities and conveninence functions.
+	def sign(self, iface, obj):
+		return self.clients[iface].sign(iface, obj)
+
+	def sig_verify(self, iface, obj, sig):
+		for c in self.clients:
+			try:
+				return self.clients[c].sig_verify(iface, obj, sig)
+			except KeyError:
+				return False
 
 	def add_participant(self, docname, iface):
 		# Adds person as a participant and sends them the full contents of the document.

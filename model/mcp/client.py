@@ -92,6 +92,20 @@ class SimpleClient(BaseClient):
 		for m in message.onion(msg, [(target, enc)]):
 			self.send(m)
 
+	# Encryption
+
+	def sign(self, iface, obj):
+		enc = self.getencryptor(iface)
+		return enc.encrypt(self.hash(obj))
+
+	def sig_verify(self, iface, obj, sig):
+		hash = self.hash(obj)
+		return hash == self.getencryptor(iface).decode(sig)
+
+	def hash(self, obj):
+		txt = strict(obj)
+		return make(['sha1']).encrypt(txt)
+
 if __name__ == "__main__":
 	import router, udpjack
 	from ConcurrenTree.util.crypto.rotate import RotateEncryptor
