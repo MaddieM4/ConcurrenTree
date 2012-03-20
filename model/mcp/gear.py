@@ -163,11 +163,17 @@ class Gear(object):
 			print "Direct message from", sender
 			print repr(content['contents'])
 		elif t == "op":
-			#print content
-			if not self.can_write(sender, content['docname']):
+			docname = content['docname']
+			if not docname in self.storage:
+				if self.want_docname(docname):
+					self.document(docname)
+				else:
+					print "Dropping op for unwanted docname %r" % docname
+					return
+			if not self.can_write(sender, docname):
 				return self.error(sender, message="You don't have write permissions.")
 			op = operation.Operation(content['instructions'])
-			self.storage.op(content['docname'], op)
+			self.storage.op(docname, op)
 		elif t == "invite":
 			self.load(sender, content['docname'], True)
 		elif t == "load":
@@ -191,6 +197,9 @@ class Gear(object):
 		# Callback for storage events
 		if typestr == "op":
 			self.send_op(docname, data)
+
+	def want_docname(self, docname):
+		return False
 
 	# Utilities and conveninence functions.
 

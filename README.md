@@ -1,12 +1,3 @@
-Contents
-========
-* About
-* Dependencies
-
-
-About
-=====
-
 ## SIMPLE VERSION:
 
 [JSON](http://json.org/) is a format that lets you take programming-type objects, like a list or a dictionary, and encode them as text. You can encode pretty much anything as JSON.
