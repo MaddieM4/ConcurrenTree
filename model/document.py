@@ -10,8 +10,10 @@ class Document(ModelBase):
 	def __init__(self, root={}, applied = []):
 		self.root = make(root)
 
+		self.own_opsink = True
 		self.applied = set(applied)
 		self.routing
+		self.content
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
@@ -27,7 +29,7 @@ class Document(ModelBase):
 		self.applied = set(json[1])
 
 	def opsink(self, op):
-		print op.proto()
+		#print op.proto()
 		self.apply(op)
 
 	def wrapper(self):
@@ -113,6 +115,9 @@ class Document(ModelBase):
 			routes[striface] = {}
 
 	def has_permission(self, iface, category, name):
+		# If self.permissions does not already exist, will always return false.
+		if "permissions" not in self.root:
+			return False
 		perm = self.permissions[category][name]
 		return strict(iface) in perm
 

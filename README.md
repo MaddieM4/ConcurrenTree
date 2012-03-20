@@ -92,22 +92,24 @@ however, fully chronological, and should be called in the order it's given.
 	### Track 1 Ops
 
 	# Both
-	g.storage.delete("hello")
-	hello = g.document("hello")
-	hw = hello.wrapper()
+	helloname = g.mkname(bob, "hello")
+	g.storage.delete(helloname)
+	hello = g.document(helloname)
+	hw = hello.content
 
 	# Bob
-	g.add_participant("hello", bridget)
+	g.add_participant(helloname, bridget)
 	hw["goofy"] = "gorsh"
 
 	# Bridget
 	hw
-	g.add_participant("hello", bob)
+	hello.permissions
 	hw["Blabarsylt"] = "Swedish jelly"
 	hw["Blabarsylt"] = "Made of blueberries"
 
 	# Bob
 	hello.pretty()
+	hello.routes_to(bob)
 
 	### RSA
 

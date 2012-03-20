@@ -44,12 +44,28 @@ class Gear(object):
 		return self.clients[interface]
 
 	def setdocsink(self, docname):
+		# Set document operation sink callback and add owner with full permissions
 		doc = self.storage[docname]
-		def opsink(op):
-			self.storage.op(docname, op)
-			#self.document(docname).apply(op)
-			#self.send(docname, op, doc.participants)
-		doc.opsink = opsink
+		if doc.own_opsink:
+			# Prevent crazy recursion
+			doc.own_opsink = False
+
+			# Add owner with full permissions
+			try:
+				owner = json.loads(self.owner(docname))
+				self.add_participant(docname, owner)
+			except ValueError:
+				pass # No author could be decoded
+
+			# Define opsink callback
+			def opsink(op):
+				if self.can_write(None, docname):
+					self.storage.op(docname, op)
+				else:
+					print "Not applying op, you don't have permission"
+
+			# Set document to use the above function
+			doc.opsink = opsink
 		return doc
 
 	def makejack(self, iface):
@@ -69,6 +85,18 @@ class Gear(object):
 	def dm(self, target, message):
 		# Send a direct message to an interface
 		self.send(target, {"type":"dm", "contents":message})
+
+	def invite(self, target, docname):
+		# Invite an interface to try to load a docname
+		self.send(target, {"type":"invite", "docname":docname})
+
+	def load(self, target, docname, owner_only=False):
+		# Requests a full structural op for a document.
+		# If owner_only is true, the response should be "from" the owner.
+		self.send(target, {"type":"load", "docname":docname, "owner only":owner_only})
+
+	def error(self, target, code=500, message=""):
+		self.send(target, {"type":"error", "code":code, "contents":message})
 
 	# Sender functions
 
@@ -93,28 +121,33 @@ class Gear(object):
 			print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
-	def send_op(self, docname, op, ifaces=[]):
+	def send_op(self, docname, op, targets=[], senders=[]):
 		# Send an operation message.
-		# If you specify the interfaces variable, it will send only to those interfaces.
-		# Otherwise, it'll use the result of the document's routes_to().
+		# targets defaults to document.routes_to for every sender.
+		# senders defaults to self.clients
 		proto = op.proto()
 		proto['docname'] = docname
 		proto['version'] = 0
-		if ifaces:
-			for i in ifaces:
-				self.send(i, proto)
+
+		if not senders:
+			senders = [json.loads(x) for x in self.clients]
+		senders = [x for x in senders if self.can_write(x, docname)]
+
+		if targets:
+			for i in targets:
+				self.send(i, proto, senders)
 		else:
-			for c in self.clients:
-				client = self.clients[c]
-				ciface = client.interface
-				targets = self.document(docname).routes_to(ciface)
+			for c in senders:
+				client = self.clients[strict(c)]
+				if not targets:
+					targets = self.document(docname).routes_to(c)
 				for t in targets:
 					self.send(t, proto, [c])
 
-	def send_full(self, docname, ifaces=[]):
+	def send_full(self, docname, targets=[], senders=[]):
 		# Send a full copy of a document.
 		doc = self.document(docname)
-		self.send_op(docname, doc.root.childop(), ifaces)
+		self.send_op(docname, doc.root.childop(), targets, senders)
 
 	# Callbacks for incoming data
 
@@ -126,13 +159,33 @@ class Gear(object):
 		t = content['type']
 		if t == "hello":
 			self.resolve_set(content['interface'], content['key'])
-		elif t == "op":
-			#print content
-			op = operation.Operation(content['instructions'])
-			self.storage.op(content['docname'], op)
 		elif t == "dm":
 			print "Direct message from", sender
 			print repr(content['contents'])
+		elif t == "op":
+			#print content
+			if not self.can_write(sender, content['docname']):
+				return self.error(sender, message="You don't have write permissions.")
+			op = operation.Operation(content['instructions'])
+			self.storage.op(content['docname'], op)
+		elif t == "invite":
+			self.load(sender, content['docname'], True)
+		elif t == "load":
+			docname, owner_only = content['docname'], content['owner only']
+			if owner_only:
+				owner = self.owner(docname)
+				if owner in self.clients:
+					self.send_full(docname, [sender], [owner])
+				else:
+					# Check for cached owner msg
+					self.error(sender, message="No cached owner message")
+			else:
+				self.send_full(docname, [sender])
+		elif t == "error":
+			print "Error from:", sender, ", code", content["code"]
+			print repr(content['contents'])
+		else:
+			print "Unknown msg type %r" % t
 
 	def on_storage_event(self, typestr, docname, data):
 		# Callback for storage events
@@ -145,7 +198,44 @@ class Gear(object):
 		# Adds person as a participant and sends them the full contents of the document.
 		doc = self.document(docname)
 		doc.add_participant(iface)
-		self.send_full(docname, [iface])
+		self.invite(iface, docname)
+
+	def owner(self, docname):
+		# Returns the owner string in a docname
+		return docname.partition("\x00")[0]
+
+	def mkname(self, iface, name):
+		return strict(iface)+"\x00"+name
+
+	def can_read(self, iface, docname):
+		# Returns whether an interface can read a document.
+		# If iface == None, tests all client interfaces.
+		if self.owner(docname) == strict(iface) or docname[0] == "?":
+			return True
+
+		if iface == None:
+			for c in self.clients:
+				if self.can_read(json.loads(c), docname):
+					return True
+			return False
+
+		doc = self.document(docname)
+		return doc.can_read(iface)
+
+	def can_write(self, iface, docname):
+		# Returns whether an interface can write a document.
+		# If iface == None, tests all client interfaces.
+		if self.owner(docname) == strict(iface) or docname[0] == "?":
+			return True
+
+		if iface == None:
+			for c in self.clients:
+				if self.can_write(json.loads(c), docname):
+					return True
+			return False
+
+		doc = self.document(docname)
+		return doc.can_write(iface)
 
 	def resolve(self, iface):
 		# Return the cached encryptor proto for an interface.
