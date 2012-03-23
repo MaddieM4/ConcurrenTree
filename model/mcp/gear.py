@@ -253,6 +253,9 @@ class Gear(object):
 			except KeyError:
 				return False
 
+	def hash(self, obj):
+		return crypto.make(['sha1']).enc(strict(obj))
+
 	def add_participant(self, docname, iface):
 		# Adds person as a participant and sends them the full contents of the document.
 		doc = self.document(docname)

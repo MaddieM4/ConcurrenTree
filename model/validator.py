@@ -27,3 +27,4 @@ class Validator(dict):
 	def remove(self, hook, callback):
 		if callback in self[hook]:
 			self[hook].remove(callback)
+

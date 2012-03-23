@@ -75,6 +75,13 @@ class Document(ModelBase):
 		return self.prop("version", 0)
 
 	@property
+	def consensus(self):
+		return self.prop("consensus", {
+			"read":{},
+			"write":{}
+		})
+
+	@property
 	def permissions(self):
 		return self.prop("permissions", {
 			"universal": {
