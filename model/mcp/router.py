@@ -57,8 +57,9 @@ class Router(object):
 			self.log.append(str(msg))
 
 	def log_dump(self):
-		import json
-		print json.dumps(self.log, indent=4)
+		print "["
+		print ",\n".join([" "*4+repr(x) for x in self.log])
+		print "]"
 
 	def thread_all(self):
 		# Run all Jack threads
