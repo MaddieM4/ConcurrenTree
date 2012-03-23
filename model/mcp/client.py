@@ -73,8 +73,10 @@ class SimpleClient(BaseClient):
 
 	def owrite(self, hoplist, txt):
 		# Write a message and send through a list of addresses
+		self.router.log_add(txt)
 		sig_s = self.getencryptor(self.interface).flip()
 		msg   = message.make('s', self.interface, sig_s, txt)
+		self.router.log_add(msg)
 		hoplist = [(a, self.getencryptor(a)) for a in hoplist]
 		for m in message.onion(msg, hoplist):
 			self.send(m)
