@@ -34,6 +34,7 @@ class SimpleClient(BaseClient):
 
 	def route(self, msg):
 		# Recieve message from router (will be type 'r' or 's', which contains message)
+		self.router.log_add(msg)
 		if msg.type == 'r':
 			if msg.addr != self.interface:
 				self.send(msg)

@@ -20,8 +20,7 @@ class Router(object):
 	def recv(self, msg):
 		# Accepts string or message.Message
 		#print "\nRouter incoming message: "+repr(str(msg))
-		if self.logging:
-			self.log.append(msg)
+		self.log_add(msg)
 		try:
 			msg = Message(msg)
 		except Exception as e:
@@ -52,6 +51,14 @@ class Router(object):
 			return self._clients[addr]
 		else:
 			return None
+
+	def log_add(self, msg):
+		if self.logging:
+			self.log.append(str(msg))
+
+	def log_dump(self):
+		import json
+		print json.dumps(self.log, indent=4)
 
 	def thread_all(self):
 		# Run all Jack threads
