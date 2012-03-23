@@ -14,10 +14,14 @@ class Router(object):
 		self._clients = {}
 		self._loadjacks(jacks)
 		self._loadclients(clients)
+		self.logging = True
+		self.log = []
 
 	def recv(self, msg):
 		# Accepts string or message.Message
 		#print "\nRouter incoming message: "+repr(str(msg))
+		if self.logging:
+			self.log.append(msg)
 		try:
 			msg = Message(msg)
 		except Exception as e:

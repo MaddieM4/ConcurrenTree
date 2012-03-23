@@ -165,7 +165,11 @@ class Gear(object):
 		self.rcv_json(msg.ciphercontent, msg.addr)
 
 	def rcv_json(self, content, sender = None):
-		content = json.loads(content)
+		try:
+			content = json.loads(content)
+		except:
+			print "COULD NOT PARSE JSON:"
+			print content
 		t = content['type']
 		if t == "hello":
 			self.resolve_set(content['interface'], content['key'])
