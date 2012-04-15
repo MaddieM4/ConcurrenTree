@@ -124,5 +124,5 @@ however, fully chronological, and should be called in the order it's given.
 Dependencies
 ============
 * python 2.6.6+
-* python-gevent
+* Works with python-gevent, but doesn't need it.
 * pycrypto (2.3): https://www.dlitz.net/software/pycrypto/
