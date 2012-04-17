@@ -64,8 +64,9 @@ however, fully chronological, and should be called in the order it's given.
 	e = engine.Engine()
 	g = e.make('hello','goodbye')
 	g.host_table
-	bob = ['udp4', ['127.0.0.1', 3939], "bob"]
-	bridget = ['udp4', ['127.0.0.1', 3940], "bridget"]
+	localip = '127.0.0.1'
+	bob = ['udp4', [localip, 3939], "bob"]
+	bridget = ['udp4', [localip, 3940], "bridget"]
 
 	# "Bob"
 	g.client(bob, ["rotate", 3])
