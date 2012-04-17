@@ -306,14 +306,14 @@ class Gear(object):
 	def resolve(self, iface):
 		# Return the cached encryptor proto for an interface.
 		iface = strict(iface)
-		return self.resolve_table[iface].value[0]
+		return self.host(iface)['encryptor'].value[0]
 
 	def resolve_self(self):
 		# Encryptor protos for each of your clients.
 		result = {}
 		for iface in self.clients:
-			if iface in self.resolve_table:
-				result[iface] = self.resolve_table[iface]
+			if iface in self.host_table['content']:
+				result[iface] = self.resolve(iface)
 			else:
 				result[iface] = None
 		return result
@@ -322,9 +322,18 @@ class Gear(object):
 		# Set the encryptor proto for an interface in the cache table.
 		iface = strict(iface)
 		value = [key, sigs]
-		self.resolve_table[iface] = value
+		self.host(iface)['encryptor'] = value
+
+	def host(self, iface):
+		default = {
+			"owner": None,
+			"encryptor": None
+		}
+		if not iface in self.host_table['content']:
+			self.host_table['content'][iface] = default
+		return self.host_table['content'][iface]
 
 	@property
-	def resolve_table(self):
-		# Cache table document for interface:encryptor proto relationships.
-		return self.document("?resolve").wrapper()
+	def host_table(self):
+		# Cached host information
+		return self.document("?host").wrapper()
