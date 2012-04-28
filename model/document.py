@@ -11,7 +11,8 @@ class Document(ModelBase):
 		self.root = make(root)
 
 		self.own_opsink = True
-		self.applied = set(applied)
+		self.private = {}
+		self.applied = applied;
 		self.routing
 		self.content
 
@@ -26,7 +27,7 @@ class Document(ModelBase):
 
 	def load(self, json):
 		self.apply(Operation(json[0]), False)
-		self.applied = set(json[1])
+		self.private = json[1]
 
 	def opsink(self, op):
 		#print op.proto()
@@ -40,17 +41,19 @@ class Document(ModelBase):
 
 	def proto(self):
 		''' Fully serializes document. Not a terribly fast function. '''
-		return [self.root.childop().proto(), self.applylist]
+		return [self.root.childop().proto(), self.private]
 
 	def pretty(self):
 		# Pretty-prints the JSON content
 		print self.wrapper().pretty()
 
 	@property
-	def applylist(self):
-		result = list(self.applied)
-		result.sort()
-		return result
+	def applied(self):
+		return self.private['applied']
+
+	@applied.setter
+	def applied(self, new_applied):
+		self.private['applied'] = new_applied
 
 	# Metadata properties
 
