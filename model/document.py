@@ -11,16 +11,27 @@ class Document(ModelBase):
 		self.root = make(root)
 
 		self.own_opsink = True
-		self.private = {}
+		self.private = {
+			'ops':{
+				'known'  : {},
+				'applied': {}
+				# MCP data
+			}
+		}
 		self.applied = applied;
 		self.routing
 		self.content
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
+		if self.is_applied(op):
+			return
 		op.apply(self.root)
 		if track:
-			self.applied.add(op.hash)
+			ophash = op.hash # cache
+			self.applied.add(ophash)
+			if not ophash in self.private['ops']['known']:
+				self.private['ops']['known'][ophash] = op.proto()
 
 	def is_applied(self, op):
 		return op.hash in self.applied
@@ -49,11 +60,11 @@ class Document(ModelBase):
 
 	@property
 	def applied(self):
-		return self.private['applied']
+		return self.private['ops']['applied']
 
 	@applied.setter
 	def applied(self, new_applied):
-		self.private['applied'] = new_applied
+		self.private['ops']['applied'] = new_applied
 
 	# Metadata properties
 
