@@ -15,7 +15,7 @@ class Document(ModelBase):
 			'ops':{
 				'known'  : {},
 				'applied': {}
-				# MCP data
+				# MCP negotiation data should go here too
 			}
 		}
 		self.applied = applied;
@@ -29,7 +29,8 @@ class Document(ModelBase):
 		op.apply(self.root)
 		if track:
 			ophash = op.hash # cache
-			self.applied.add(ophash)
+			if not ophash in self.applied:
+				self.applied.append(ophash)
 			if not ophash in self.private['ops']['known']:
 				self.private['ops']['known'][ophash] = op.proto()
 
