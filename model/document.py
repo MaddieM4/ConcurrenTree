@@ -85,26 +85,28 @@ class Document(ModelBase):
 		return self.prop("routing")
 
 	@property
-	def version(self):
-		# Document format version, not related to blockchain
-		return self.prop("version", 0)
+	def about(self):
+		return self.prop("about", {
+			"version": 0,
+			"doctype": None,
+			"docname": None,
+			"owners" : {},
+			"sources": {}
+		})
 
 	@property
-	def consensus(self):
-		return self.prop("consensus", {
-			"read":{},
-			"write":{}
-		})
+	def version(self):
+		# Document format version, not related to blockchain
+		return self.about['version']
 
 	@property
 	def permissions(self):
 		return self.prop("permissions", {
-			"universal": {
-				"read":{},
-				"write":{},
-				"read-meta":{},
-				"write-meta":{},
-				"meta-meta":{}
+			"read":{},
+			"write":{},
+			"graph":{
+				"vertices":{},
+				"edges"   :{}
 			}
 		})
 
@@ -124,36 +126,34 @@ class Document(ModelBase):
 		import json
 		return [json.loads(s) for s in parts]
 
-	def add_participant(self, iface, permissions=[], can_read=True, can_write=True):
+	def add_participant(self, iface, can_read=True, can_write=True):
 		routes = self.routing
 		striface = strict(iface)
 		if can_read:
-			permissions.append(("universal", "read"))
+			self.permissions['read'][striface] = True
 		if can_write:
-			permissions.append(("universal", "write"))
-		for cat, name in permissions:
-			self.add_permission(iface, cat, name)
+			self.permissions['write'][striface] = True
 		if not iface in routes:
 			routes[striface] = {}
 
-	def has_permission(self, iface, category, name):
+	def has_permission(self, iface, name):
 		# If self.permissions does not already exist, will always return false.
 		if "permissions" not in self.root:
 			return False
-		perm = self.permissions[category][name]
+		perm = self.permissions[name]
 		return strict(iface) in perm
 
-	def add_permission(self, iface, category, name):
-		self.permissions[category][name][strict(iface)] = True
+	def add_permission(self, iface, name):
+		self.permissions[name][strict(iface)] = True
 
-	def remove_permission(self, iface, category, name):
-		del self.permissions[category][name][strict(iface)]
+	def remove_permission(self, iface, name):
+		del self.permissions[name][strict(iface)]
 
 	def can_read(self, iface):
-		return self.has_permission(iface, "universal", "read")
+		return self.has_permission(iface, "read")
 
 	def can_write(self, iface):
-		return self.has_permission(iface, "universal", "write")
+		return self.has_permission(iface, "write")
 
 	def routes_to(self, iface):
 		# Returns which interfaces this interface sends to.
