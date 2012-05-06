@@ -1,5 +1,5 @@
 import os.path
-from ConcurrenTree.util.hasher import sum
+from ConcurrenTree.util.hasher import make as sum
 
 class KeyFileOpener(object):
 	def __init__(self, dir):

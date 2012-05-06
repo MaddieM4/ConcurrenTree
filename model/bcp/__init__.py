@@ -1,4 +1,4 @@
-__all__ = ["errors", "connection", "peer"]
+__all__ = ["errors", "connection"]
 
 import connection
 import errors
