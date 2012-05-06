@@ -1,4 +1,12 @@
-__all__ = ['address', 'bcp', 'instruction', 'operation', 'node', 'document']
+__all__ = [
+	'address',
+	'bcp',
+	'mcp',
+	'instruction',
+	'operation',
+	'node',
+	'document'
+]
 
 from ConcurrenTree.util import hasher
 

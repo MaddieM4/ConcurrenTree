@@ -42,7 +42,7 @@ class Document(ModelBase):
 		self.private = json[1]
 
 	def opsink(self, op):
-		#print op.proto()
+		print op.proto()
 		self.apply(op)
 
 	def wrapper(self):

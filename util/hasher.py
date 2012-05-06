@@ -41,7 +41,7 @@ def strictify(jsonstring):
 
 def checksum(obj):
 	''' Get the checksum of the strict of an object '''
-	return sum(strict(obj))
+	return make(strict(obj))
 
 def key(string):
 	if len(string)>10:
