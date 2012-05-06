@@ -4,6 +4,12 @@ import json
 HASH_FUNCTION = 'sha1' # was md5
 
 def make(string):
+	'''
+	Create a hash of a string.
+
+	>>> make("Sample string")
+	'e9a47e5417686cf0ac5c8ad9ee90ba2c1d08cc14'
+	'''
 	return new(HASH_FUNCTION, string).hexdigest()
 
 def make6(string):
@@ -11,10 +17,6 @@ def make6(string):
 
 def maken(string, n):
 	return make(string)[:n]
-
-def sum(string, verbose = False):
-	''' Create a hash of the string '''
-	return make(string)
 
 def strict(obj):
 	''' Convert an object into a strict JSON string '''
