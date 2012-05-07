@@ -224,7 +224,9 @@ class Gear(object):
 							# Send cached structure
 							msg = self.structures[docname][i]
 							return self.send(sender, msg)
-				self.error(sender, message="No cached structure for %r" % docname)
+				# Silently drop for now
+				# self.error(sender, message="No cached structure for %r" % docname)
+				return
 		elif t == "error":
 			print "Error from:", sender, ", code", content["code"]
 			print repr(content['contents'])
