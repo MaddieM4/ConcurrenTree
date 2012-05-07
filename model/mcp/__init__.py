@@ -24,4 +24,6 @@ w<{'content': {}, 'routing': {}}>
 >>> gbrg.resolve_set(bob, ["rotate", 3])
 >>> gbrg.hello(bob)
 >>> gbrg.dm(bob, "Hello, Bob!")
+Direct message from [u'udp4', [u'127.0.0.1', 3940], u'bridget']
+u'Hello, Bob!'
 '''
