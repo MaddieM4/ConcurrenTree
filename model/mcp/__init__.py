@@ -21,4 +21,7 @@ w<{'content': {}, 'routing': {}}>
 <ConcurrenTree.model.mcp.client.SimpleClient object at 0x...>
 >>> gbob.client(bob, ["rotate", 3]) #doctest: +ELLIPSIS
 <ConcurrenTree.model.mcp.client.SimpleClient object at 0x...>
+>>> gbrg.resolve_set(bob, ["rotate", 3])
+>>> gbrg.hello(bob)
+>>> gbrg.dm(bob, "Hello, Bob!")
 '''
