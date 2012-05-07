@@ -11,26 +11,27 @@ class Document(ModelBase):
 		self.root = make(root)
 
 		self.own_opsink = True
-		self.private = {
+		self.private = dict({
 			'ops':{
 				'known'  : {},
 				'applied': {}
 				# MCP negotiation data should go here too
 			}
-		}
-		self.applied = applied;
+		})
+		for ophash in applied:
+			self.applied[ophash] = True;
 		self.routing
 		self.content
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
-		#if self.is_applied(op):
-		#	return
+		if self.is_applied(op):
+			return
 		op.apply(self.root)
 		if track:
 			ophash = op.hash # cache
 			if not ophash in self.applied:
-				self.applied.append(ophash)
+				self.applied[ophash] = True
 			if not ophash in self.private['ops']['known']:
 				self.private['ops']['known'][ophash] = op.proto()
 
