@@ -24,8 +24,8 @@ class Document(ModelBase):
 
 	def apply(self, op, track=True):
 		''' Apply an operation and track its application '''
-		if self.is_applied(op):
-			return
+		#if self.is_applied(op):
+		#	return
 		op.apply(self.root)
 		if track:
 			ophash = op.hash # cache
