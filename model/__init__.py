@@ -5,7 +5,8 @@ __all__ = [
 	'instruction',
 	'operation',
 	'node',
-	'document'
+	'document',
+	'validation'
 ]
 
 from ConcurrenTree.util import hasher
