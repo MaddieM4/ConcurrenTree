@@ -29,16 +29,12 @@ class ValidationQueue(object):
 		# Accepts any iterable as optional argument for initial data.
 		self.source = source
 		self.queue = Queue()
-		self.generator = self.gen()
 
 	def __iter__(self):
-		return self
-
-	def next(self):
-		return self.generator.next()
+		return self.gen()
 
 	def gen(self):
-		# Returns the generator used by next().
+		# Returns the generator used by __iter__().
 		for x in self.source:
 			yield x
 		self.source = []
