@@ -43,6 +43,11 @@ u'Hey there, Bridget :)'
 >>> hwbrg = hellobrg.content
 
 >>> gbob.add_participant(helloname, bridget)
+>>> invite = gbrg.validate_pop()
+>>> print str(invite)
+A user invited you to join a document and load a copy from them. author: [u'udp4', [u'127.0.0.1', 3939], u'bob'], docname: u'["udp4",["127.0.0.1",3939],"bob"]\\x00hello'
+>>> invite.approve()
+
 >>> hwbob["goofy"] = "gorsh"
 
 >>> hwbrg

@@ -241,6 +241,10 @@ class Gear(object):
 	def validate(self, request):
 		self.validation_queue.add(request)
 
+	def validate_pop(self):
+		# Get the next item out of the queue
+		return self.validation_queue.pop()
+
 	def validate_invitation(self, author, docname):
 		def callback(result):
 			if result:
