@@ -27,7 +27,7 @@ class ValidationQueue(object):
 
 	def __init__(self, source=[]):
 		# Accepts any iterable as optional argument for initial data.
-		self.source = source
+		self.source = source.__iter__()
 		self.queue = Queue()
 
 	def __iter__(self):
@@ -35,14 +35,18 @@ class ValidationQueue(object):
 
 	def gen(self):
 		# Returns the generator used by __iter__().
-		for x in self.source:
-			yield x
-		self.source = []
 		while True:
-			try:
-				yield self.queue.get_nowait()
-			except Empty:
-				return
+			yield self.pop()
+
+	def pop(self):
+		try:
+			return self.source.next()
+		except StopIteration:
+			pass
+		try:
+			return self.queue.get_nowait()
+		except Empty:
+			raise StopIteration
 
 	def add(self, obj):
 		# Add an object to the internal queue.
