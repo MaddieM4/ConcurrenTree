@@ -1,6 +1,7 @@
 from ConcurrenTree.util import crypto
 from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import document, operation
+from ConcurrenTree.model.validation import invitation, queue
 import message
 
 from sys import stderr
@@ -15,6 +16,7 @@ class Gear(object):
 		self.mkclient = mkclient
 		self.clients = {}
 		self.structures = {}
+		self.validation_queue = queue.ValidationQueue()
 
 		self.storage.listen(self.on_storage_event)
 
@@ -203,11 +205,7 @@ class Gear(object):
 			self.storage.op(docname, op)
 		elif t == "invite":
 			docname = content['docname']
-			if self.want_docname(docname):
-				self.document(docname)
-				self.load(sender, docname)
-			else:
-				print "Ignoring invitation to document %r" % docname
+			self.validate_invitation(sender, docname)
 		elif t == "load":
 			docname, accepts = content['docname'], content['accepts']
 			# New logic
@@ -238,15 +236,21 @@ class Gear(object):
 		if typestr == "op":
 			self.send_op(docname, data)
 
-	def want_docname(self, docname):
-		if docname in self.storage:
-			return True
-		print
-		x = ""
-		while x not in ("y", "n"):
-			x = raw_input("Accept document %r? [y|n] " % docname).lower()
-		print
-		return x == "y"
+	# Validation stuff.
+
+	def validate(self, request):
+		self.validation_queue.add(request)
+
+	def validate_invitation(self, author, docname):
+		def callback(result):
+			if result:
+				self.document(docname)
+				self.load(author, docname)
+			else:
+				print "Ignoring invitation to document %r" % docname
+		self.validate(
+			invitation.Invitation(author, docname, callback)
+		)
 
 	# Utilities and conveninence functions.
 	def sign(self, iface, obj):
