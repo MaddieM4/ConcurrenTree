@@ -47,15 +47,28 @@ u'Hey there, Bridget :)'
 >>> hwbrg = hellobrg.content
 
 >>> gbob.add_participant(helloname, bridget)
+
+>>> load_request = gbrg.validate_pop()
+>>> print str(load_request)
+A user requested to load a document from you. author: [u'udp4', [u'127.0.0.1', 3939], u'bob'], docname: u'["udp4",["127.0.0.1",3939],"bob"]\\x00hello'
+>>> load_request.approve()
+
 >>> invite = gbrg.validate_pop()
 >>> print str(invite)
 A user invited you to join a document and load a copy from them. author: [u'udp4', [u'127.0.0.1', 3939], u'bob'], docname: u'["udp4",["127.0.0.1",3939],"bob"]\\x00hello'
 >>> invite.approve()
 
+>>> load_request = gbob.validate_pop()
+>>> print str(load_request)
+A user requested to load a document from you. author: [u'udp4', [u'127.0.0.1', 3939], u'bob'], docname: u'["udp4",["127.0.0.1",3939],"bob"]\\x00hello'
+>>> load_request.approve()
+
 >>> hwbob["goofy"] = "gorsh"
 
 >>> hwbrg
 w<{u'goofy': 'gorsh'}>
+>>> gbob.can_read(bridget, helloname)
+True
 >>> gbrg.can_read(bridget, helloname)
 True
 >>> hwbrg["Blabarsylt"] = "Swedish jelly"

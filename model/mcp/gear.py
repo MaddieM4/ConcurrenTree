@@ -189,23 +189,7 @@ class Gear(object):
 			self.validate_invitation(sender, docname)
 		elif t == "load":
 			docname, accepts = content['docname'], content['accepts']
-			# New logic
-			owner = self.owner(docname)
-			if owner in self.clients:
-				# You own the document
-				self.send_full(docname, [sender], [owner])
-			else:
-				# Check cache
-				if docname in self.structures:
-					accepts.append(owner)
-					for i in accepts:
-						if i in self.structures[docname]:
-							# Send cached structure
-							msg = self.structures[docname][i]
-							return self.send(sender, msg)
-				# Silently drop for now
-				# self.error(sender, message="No cached structure for %r" % docname)
-				return
+			self.validate_load(sender, docname)
 		elif t == "error":
 			print "Error from:", sender, ", code", content["code"]
 			print repr(content['contents'])
@@ -257,7 +241,22 @@ class Gear(object):
 			validation.make("hello", author, encryptor, callback)
 		)
 
+	def validate_load(self, author, docname):
+		def callback(result):
+			if result:
+				self.send_full(docname, [author], [self.owner(docname)])
+			else:
+				print "Rejecting hello from sender: %r" % encryptor
+		self.validate(
+			validation.make("load", author, docname, callback)
+		)
+
 	# Utilities and conveninence functions.
+	def owns(self, docname):
+		# Returns bool for whether document owner is a client.
+		owner = self.owner(docname)
+		return owner in self.clients
+
 	def sign(self, iface, obj):
 		return self.clients[iface].sign(iface, obj)
 
@@ -370,8 +369,17 @@ def filter_op_can_write(queue, request):
 			return request.reject()
 	return request
 
+def filter_invite_accept_to_own(queue, request):
+	# Auto-accept invites to documents you own
+	if isinstance(request, validation.InvitationRequest):
+		if queue.gear.owns(request.docname):
+			return request.approve()
+	return request
+
+
 std_gear_filters = [
 	filter_op_is_doc_stored,
 	filter_op_can_write,
 	filter_op_approve_all,
+	filter_invite_accept_to_own,
 ]
