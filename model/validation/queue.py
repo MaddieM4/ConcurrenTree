@@ -69,6 +69,10 @@ class ValidationQueue(object):
 		>>> my_queue = ValidationQueue(filters = [myFilter])
 		>>> my_queue.filter(mock_invitation())
 		True
+
+		This is the preferred way to handle requests from things like
+		the Gear class and such, since it allows flexibility to auto-
+		approve requests based on arbitrary criteria and algorithms.
 		'''
 		for i in self.filters:
 			obj = i(self, obj)
