@@ -25,10 +25,11 @@ class ValidationQueue(object):
 	8
 	'''
 
-	def __init__(self, source=[]):
+	def __init__(self, source=[], filters=[]):
 		# Accepts any iterable as optional argument for initial data.
 		self.source = source.__iter__()
 		self.queue = Queue()
+		self.filters = list([])
 
 	def __iter__(self):
 		return self.gen()
@@ -51,3 +52,11 @@ class ValidationQueue(object):
 	def add(self, obj):
 		# Add an object to the internal queue.
 		self.queue.put(obj)
+
+	def filter(self, obj):
+		for i in self.filters:
+			obj = i(obj)
+			if obj==None:
+				break
+		if obj!=None:
+			self.add(obj)
