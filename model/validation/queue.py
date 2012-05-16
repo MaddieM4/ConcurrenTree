@@ -29,7 +29,7 @@ class ValidationQueue(object):
 		# Accepts any iterable as optional argument for initial data.
 		self.source = source.__iter__()
 		self.queue = Queue()
-		self.filters = list([])
+		self.filters = list(filters)
 
 	def __iter__(self):
 		return self.gen()
@@ -54,8 +54,24 @@ class ValidationQueue(object):
 		self.queue.put(obj)
 
 	def filter(self, obj):
+		'''
+		Runs a request through all the filters owned by the queue.
+		Each filter is a callback filter(queue, obj)-> None | Request.
+
+		Filters should return the Request if they want to pass it on to
+		other filters, and otherwise, call the appropriate methods of
+		the Queue and Request, and return None. For example:
+
+		>>> def myFilter(queue, obj):
+		...    return obj.approve() # Thus, returning None
+		...
+		>>> from invitation import mock_invitation
+		>>> my_queue = ValidationQueue(filters = [myFilter])
+		>>> my_queue.filter(mock_invitation())
+		True
+		'''
 		for i in self.filters:
-			obj = i(obj)
+			obj = i(self, obj)
 			if obj==None:
 				break
 		if obj!=None:

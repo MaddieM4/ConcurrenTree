@@ -15,7 +15,7 @@ class Invitation(request.ValidationRequest):
 
 	def __str__(self):
 		'''
-		>>> i = Invitation("x", "y", lambda z:z)
+		>>> i = mock_invitation()
 		>>> str(i)
 		"A user invited you to join a document and load a copy from them. author: 'x', docname: 'y'"
 		'''
@@ -23,3 +23,15 @@ class Invitation(request.ValidationRequest):
 			self.author,
 			self.docname,
 		)
+
+def mock_invitation():
+	'''
+	>>> i = mock_invitation()
+	>>> i.approve()
+	True
+	>>> i.reject()
+	False
+	'''
+	def printer(z):
+		print z
+	return Invitation("x", "y", printer)
