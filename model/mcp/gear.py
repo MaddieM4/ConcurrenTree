@@ -1,8 +1,10 @@
 from ConcurrenTree.util import crypto
 from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import document, operation
-from ConcurrenTree.model.validation import invitation, queue
 import message
+
+from ConcurrenTree.model.validation import invitation, queue
+from ConcurrenTree.model.validation.operation import OperationRequest
 
 from sys import stderr
 import jack
@@ -16,7 +18,7 @@ class Gear(object):
 		self.mkclient = mkclient
 		self.clients = {}
 		self.structures = {}
-		self.validation_queue = queue.ValidationQueue()
+		self.validation_queue = queue.ValidationQueue(filters = std_gear_filters)
 
 		self.storage.listen(self.on_storage_event)
 
@@ -202,7 +204,7 @@ class Gear(object):
 			if not self.can_write(sender, docname) and not validsig:
 				return self.error(sender, message="You don't have write permissions.")
 			op = operation.Operation(content['instructions'])
-			self.storage.op(docname, op)
+			self.validate_op(sender, docname, op)
 		elif t == "invite":
 			docname = content['docname']
 			self.validate_invitation(sender, docname)
@@ -239,7 +241,7 @@ class Gear(object):
 	# Validation stuff.
 
 	def validate(self, request):
-		self.validation_queue.add(request)
+		self.validation_queue.filter(request)
 
 	def validate_pop(self):
 		# Get the next item out of the queue
@@ -254,6 +256,16 @@ class Gear(object):
 				print "Ignoring invitation to document %r" % docname
 		self.validate(
 			invitation.Invitation(author, docname, callback)
+		)
+
+	def validate_op(self, author, docname, op):
+		def callback(result):
+			if result:
+				self.storage.op(docname, op)
+			else:
+				print "Rejecting operation for docname: %r" % docname
+		self.validate(
+			OperationRequest(author, docname, op, callback)
 		)
 
 	# Utilities and conveninence functions.
@@ -347,3 +359,12 @@ class Gear(object):
 	def host_table(self):
 		# Cached host information
 		return self.document("?host").wrapper()
+
+# FILTERS
+
+def approve_all_ops(queue, request):
+	if isinstance(request, OperationRequest):
+		return request.approve()
+	return request
+
+std_gear_filters = [approve_all_ops]
