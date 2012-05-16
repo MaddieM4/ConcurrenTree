@@ -3,7 +3,8 @@ from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import document, operation
 import message
 
-from ConcurrenTree.model.validation import invitation, queue
+from ConcurrenTree.model.validation           import invitation, queue
+from ConcurrenTree.model.validation.hello     import HelloRequest
 from ConcurrenTree.model.validation.operation import OperationRequest
 
 from sys import stderr
@@ -176,7 +177,7 @@ class Gear(object):
 			print content
 		t = content['type']
 		if t == "hello":
-			self.resolve_set(content['interface'], content['key'])
+			self.validate_hello(content['interface'], content['key'])
 		elif t == "dm":
 			print "Direct message from", sender
 			print repr(content['contents'])
@@ -266,6 +267,16 @@ class Gear(object):
 				print "Rejecting operation for docname: %r" % docname
 		self.validate(
 			OperationRequest(author, docname, op, callback)
+		)
+
+	def validate_hello(self, author, encryptor):
+		def callback(result):
+			if result:
+				self.resolve_set(author, encryptor)
+			else:
+				print "Rejecting hello from sender: %r" % encryptor
+		self.validate(
+			HelloRequest(author, encryptor, callback)
 		)
 
 	# Utilities and conveninence functions.
@@ -362,9 +373,9 @@ class Gear(object):
 
 # FILTERS
 
-def approve_all_ops(queue, request):
+def filter_approve_all_ops(queue, request):
 	if isinstance(request, OperationRequest):
 		return request.approve()
 	return request
 
-std_gear_filters = [approve_all_ops]
+std_gear_filters = [filter_approve_all_ops]

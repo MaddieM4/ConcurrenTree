@@ -26,6 +26,10 @@ w<{'content': {}, 'routing': {}}>
 
 >>> gbrg.resolve_set(bob, ["rotate", 3])
 >>> gbrg.hello(bob)
+>>> hello_invite = gbob.validate_pop()
+>>> print str(hello_invite)
+A remote interface is telling you its encryptor proto. author: [u'udp4', [u'127.0.0.1', 3940], u'bridget'], encryptor: [u'rotate', 7]
+>>> hello_invite.approve()
 
 >>> gbrg.dm(bob, "Hello, Bob!")
 Direct message from [u'udp4', [u'127.0.0.1', 3940], u'bridget']
