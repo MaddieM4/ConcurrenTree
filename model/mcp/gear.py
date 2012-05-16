@@ -182,22 +182,6 @@ class Gear(object):
 			print repr(content['contents'])
 		elif t == "op":
 			docname = content['docname']
-
-			# Permissions
-			validsig = False
-			if content['structure'] == True:
-				# check for any valid signature
-				sigs = content['sigs']
-				sigless = dict(content)
-				del sigless['sigs']
-				for iface in sigs:
-					if self.sig_verify(iface, sigless, sigs[iface]):
-						validsig=True
-						self.structure[docname][iface] = content
-
-			# Check for sender's write permission
-			if not self.can_write(sender, docname) and not validsig:
-				return self.error(sender, message="You don't have write permissions.")
 			op = operation.Operation(content['instructions'])
 			self.validate_op(sender, docname, op)
 		elif t == "invite":
@@ -367,18 +351,27 @@ class Gear(object):
 
 # FILTERS
 
-def filter_approve_all_ops(queue, request):
+def filter_op_approve_all(queue, request):
 	if isinstance(request, validation.OperationRequest):
 		return request.approve()
 	return request
 
-def filter_is_doc_stored(queue, request):
+def filter_op_is_doc_stored(queue, request):
 	if isinstance(request, validation.OperationRequest):
 		if not request.docname in queue.gear.storage:
+			queue.gear.error(request.author, message="Unsolicited op")
+			return request.reject()
+	return request
+
+def filter_op_can_write(queue, request):
+	if isinstance(request, validation.OperationRequest):
+		if not queue.gear.can_write(request.author, request.docname):
+			queue.gear.error(request.author, message="You don't have write permissions.")
 			return request.reject()
 	return request
 
 std_gear_filters = [
-	filter_approve_all_ops,
-	filter_is_doc_stored,
+	filter_op_is_doc_stored,
+	filter_op_can_write,
+	filter_op_approve_all,
 ]
