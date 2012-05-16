@@ -1,6 +1,6 @@
 import request
 
-class Invitation(request.ValidationRequest):
+class InvitationRequest(request.ValidationRequest):
 	'''
 	Represents another participant inviting you to
 	load a document from them.
@@ -34,4 +34,4 @@ def mock_invitation():
 	'''
 	def printer(z):
 		print z
-	return Invitation("x", "y", printer)
+	return InvitationRequest("x", "y", printer)

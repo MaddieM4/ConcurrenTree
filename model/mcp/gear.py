@@ -3,9 +3,7 @@ from ConcurrenTree.util.hasher import strict
 from ConcurrenTree.model import document, operation
 import message
 
-from ConcurrenTree.model.validation           import invitation, queue
-from ConcurrenTree.model.validation.hello     import HelloRequest
-from ConcurrenTree.model.validation.operation import OperationRequest
+import ConcurrenTree.model.validation as validation
 
 from sys import stderr
 import jack
@@ -19,7 +17,7 @@ class Gear(object):
 		self.mkclient = mkclient
 		self.clients = {}
 		self.structures = {}
-		self.validation_queue = queue.ValidationQueue(filters = std_gear_filters)
+		self.validation_queue = validation.ValidationQueue(filters = std_gear_filters)
 
 		self.storage.listen(self.on_storage_event)
 
@@ -256,7 +254,7 @@ class Gear(object):
 			else:
 				print "Ignoring invitation to document %r" % docname
 		self.validate(
-			invitation.Invitation(author, docname, callback)
+			validation.make("invitation", author, docname, callback)
 		)
 
 	def validate_op(self, author, docname, op):
@@ -266,7 +264,7 @@ class Gear(object):
 			else:
 				print "Rejecting operation for docname: %r" % docname
 		self.validate(
-			OperationRequest(author, docname, op, callback)
+			validation.make("operation", author, docname, op, callback)
 		)
 
 	def validate_hello(self, author, encryptor):
@@ -276,7 +274,7 @@ class Gear(object):
 			else:
 				print "Rejecting hello from sender: %r" % encryptor
 		self.validate(
-			HelloRequest(author, encryptor, callback)
+			validation.make("hello", author, encryptor, callback)
 		)
 
 	# Utilities and conveninence functions.
@@ -374,7 +372,7 @@ class Gear(object):
 # FILTERS
 
 def filter_approve_all_ops(queue, request):
-	if isinstance(request, OperationRequest):
+	if isinstance(request, validation.OperationRequest):
 		return request.approve()
 	return request
 
