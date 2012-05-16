@@ -18,6 +18,7 @@ class Gear(object):
 		self.clients = {}
 		self.structures = {}
 		self.validation_queue = validation.ValidationQueue(filters = std_gear_filters)
+		self.validation_queue.gear = self
 
 		self.storage.listen(self.on_storage_event)
 
@@ -181,11 +182,6 @@ class Gear(object):
 			print repr(content['contents'])
 		elif t == "op":
 			docname = content['docname']
-
-			# Check if we have interest in this op
-			if not docname in self.storage:
-				print "Dropping op for unwanted docname %r" % docname
-				return self.error(sender, message="Unsolicited op")
 
 			# Permissions
 			validsig = False
@@ -376,4 +372,13 @@ def filter_approve_all_ops(queue, request):
 		return request.approve()
 	return request
 
-std_gear_filters = [filter_approve_all_ops]
+def filter_is_doc_stored(queue, request):
+	if isinstance(request, validation.OperationRequest):
+		if not request.docname in queue.gear.storage:
+			return request.reject()
+	return request
+
+std_gear_filters = [
+	filter_approve_all_ops,
+	filter_is_doc_stored,
+]
