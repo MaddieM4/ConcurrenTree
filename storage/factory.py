@@ -1,4 +1,4 @@
-from encryptor import make
+from ejtp.util.crypto import make
 import json
 
 class CryptoFactory(object):

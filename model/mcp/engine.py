@@ -1,10 +1,10 @@
 from gear import Gear
-from client import SimpleClient
+from ejtp.client import Client
 
 class Engine(object):
 	# Produces gears
 
-	def __init__(self, auth=None, router=None, mkclient = SimpleClient):
+	def __init__(self, auth=None, router=None, mkclient = Client):
 		self.auth = auth or default_auth()
 		self.router = router or default_router()
 		self.mkclient = mkclient
@@ -27,9 +27,9 @@ class Engine(object):
 		return Gear(storage, self.router, self.mkclient)
 
 def default_auth():
-	from ConcurrenTree.util.storage.default import DefaultAuth
+	from ConcurrenTree.storage.default import DefaultAuth
 	return DefaultAuth()
 
 def default_router():
-	import router
+	from ejtp import router
 	return router.Router()

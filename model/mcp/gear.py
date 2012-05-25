@@ -1,12 +1,11 @@
 from ejtp.util.hasher import strict
 from ejtp.util import crypto
+from ejtp import frame
 
 from ConcurrenTree.model import document, operation
 import ConcurrenTree.model.validation as validation
-import message
 
 from sys import stderr
-import jack
 import json
 
 class Gear(object):
@@ -25,7 +24,6 @@ class Gear(object):
 	# Functional creators
 
 	def client(self, interface, encryptor=None):
-		self.makejack(interface)
 		iface = strict(interface)
 		if encryptor != None:
 			self.resolve_set(interface, encryptor)
@@ -73,13 +71,6 @@ class Gear(object):
 			doc.opsink = opsink
 		return doc
 
-	def makejack(self, iface):
-		iface = tuple(iface[:2])
-		if not self.router.jack(iface):
-			j = jack.make(self.router, iface)
-			j.run_threaded()
-			return j
-
 	# Basic messages
 
 	def hello(self, target):
@@ -110,7 +101,7 @@ class Gear(object):
 		# Try multiple clients until it sends or fails
 		# Will use self.clients unless variable "senders" is set.
 
-		# Convert dicts to type J messages.
+		# Convert dicts to type J frames.
 		if type(msg) == dict:
 			msg = 'j\x00' + strict(msg)
 
@@ -118,7 +109,7 @@ class Gear(object):
 		clients = senders or self.clients
 
 		# Try until something sends without raising an exception.
-		from ConcurrenTree.util.crashnicely import Guard
+		from ejtp.util.crashnicely import Guard
 		for c in clients:
 			if type(c) not in (str, unicode):
 				c = strict(c)
@@ -128,7 +119,7 @@ class Gear(object):
 		print>>stderr, "All clients failed to contact", iface
 
 	def send_op(self, docname, op, targets=[], senders=[], structure=False):
-		# Send an operation message.
+		# Send an operation frame.
 		# targets defaults to document.routes_to for every sender.
 		# senders defaults to self.clients
 		proto = op.proto()
@@ -316,7 +307,10 @@ class Gear(object):
 	def resolve(self, iface):
 		# Return the cached encryptor proto for an interface.
 		iface = strict(iface)
-		return self.host(iface)['encryptor'].value[0]
+		encryptor = self.host(iface)['encryptor'].value
+		if encryptor == None:
+			raise IndexError("No encryptor information stored for interface %r" % iface)
+		return encryptor[0]
 
 	def resolve_self(self):
 		# Encryptor protos for each of your clients.

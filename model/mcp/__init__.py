@@ -20,11 +20,15 @@ w<{'content': {}, 'routing': {}}>
 >>> bridget = ['udp4', [localip, 3940], "bridget"]
 
 >>> gbrg.client(bridget, ["rotate", 7]) #doctest: +ELLIPSIS
-<ConcurrenTree.model.mcp.client.SimpleClient object at 0x...>
+<ejtp.client.Client object at 0x...>
 >>> gbob.client(bob, ["rotate", 3]) #doctest: +ELLIPSIS
-<ConcurrenTree.model.mcp.client.SimpleClient object at 0x...>
+<ejtp.client.Client object at 0x...>
 
 >>> gbrg.resolve_set(bob, ["rotate", 3])
+>>> gbrg.resolve(bob)
+['rotate', 3]
+>>> gbrg.resolve(bridget)
+['rotate', 7]
 >>> gbrg.hello(bob)
 >>> hello_invite = gbob.validate_pop()
 >>> print str(hello_invite)

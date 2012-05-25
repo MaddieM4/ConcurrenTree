@@ -1,4 +1,4 @@
-from ConcurrenTree.util.storage import BaseStorage
+from ConcurrenTree.storage import BaseStorage
 
 class RAMStorage(BaseStorage):
 	# Minimalist storage class
