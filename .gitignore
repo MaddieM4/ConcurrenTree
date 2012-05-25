@@ -2,3 +2,5 @@
 *.swp
 doc/#*
 doc/*~
+
+build
