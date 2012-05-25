@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-from ConcurrenTree.util.crypto import make
-from ConcurrenTree.util import hasher
+from ejtp.util.crypto import make
+from ejtp.util import hasher
 
 # Create random keys
 key1 = make(['rsa', None])

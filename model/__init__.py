@@ -9,7 +9,7 @@ __all__ = [
 	'validation'
 ]
 
-from ConcurrenTree.util import hasher
+from ejtp.util import hasher
 
 class ModelBase(object):
 	def proto(self):

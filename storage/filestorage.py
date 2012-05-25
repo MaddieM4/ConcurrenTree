@@ -1,8 +1,8 @@
 import os, os.path
 import json
 from ConcurrenTree.model.document import Document
-from ConcurrenTree.util.storage import BaseStorage
-from ConcurrenTree.util import hasher
+from ConcurrenTree.storage import BaseStorage
+from ejtp.util import hasher
 
 STORAGE_DIR = os.path.join('~', '.ConcurrenTree', 'storage')
 

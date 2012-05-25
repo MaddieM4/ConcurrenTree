@@ -1,5 +1,5 @@
 from ConcurrenTree.model.address import Address
-from ConcurrenTree.util.hasher import strict
+from ejtp.util.hasher import strict
 import json
 
 class Wrapper(object):

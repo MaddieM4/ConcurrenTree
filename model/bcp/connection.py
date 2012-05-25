@@ -1,7 +1,7 @@
 import json
 import traceback
 
-from ConcurrenTree.util.hasher import strict
+from ejtp.util.hasher import strict
 
 from errors import errors
 from ext import core, extension

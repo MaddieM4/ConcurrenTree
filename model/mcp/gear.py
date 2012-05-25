@@ -1,9 +1,9 @@
-from ConcurrenTree.util import crypto
-from ConcurrenTree.util.hasher import strict
-from ConcurrenTree.model import document, operation
-import message
+from ejtp.util.hasher import strict
+from ejtp.util import crypto
 
+from ConcurrenTree.model import document, operation
 import ConcurrenTree.model.validation as validation
+import message
 
 from sys import stderr
 import jack

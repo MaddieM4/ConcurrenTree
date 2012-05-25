@@ -1,4 +1,4 @@
-import ConcurrenTree.util.hasher as hasher
+import ejtp.util.hasher as hasher
 
 from ConcurrenTree.model import ModelBase, node
 from address import Address

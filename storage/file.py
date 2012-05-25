@@ -1,5 +1,5 @@
 import os.path
-from ConcurrenTree.util.hasher import make as sum
+from ejtp.util.hasher import make
 
 class KeyFileOpener(object):
 	def __init__(self, dir):
@@ -26,4 +26,4 @@ class KeyFileOpener(object):
 		os.remove(self.filename(username))
 
 	def filename(self, username):
-		return os.path.join(self.dir, sum(username))
+		return os.path.join(self.dir, make(username))

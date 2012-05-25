@@ -1,6 +1,6 @@
 import node
 import single
-from ConcurrenTree.util import hasher
+from ejtp.util import hasher
 
 class MapNode(node.Node):
 	def __init__(self, limit={}, source={}):

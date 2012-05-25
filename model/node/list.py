@@ -1,5 +1,5 @@
 import node
-from ConcurrenTree.util.hasher import strict
+from ejtp.util.hasher import strict
 
 class ListNode(node.Node):
 

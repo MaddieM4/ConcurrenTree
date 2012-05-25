@@ -1,5 +1,6 @@
+from ejtp.util import hasher
+
 from ConcurrenTree.model import ModelBase, event
-from ConcurrenTree.util import hasher
 from ConcurrenTree.model.address import Address
 
 class Node(ModelBase):
