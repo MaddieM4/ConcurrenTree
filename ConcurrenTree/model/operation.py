@@ -2,7 +2,6 @@ import ejtp.util.hasher as hasher
 
 from ConcurrenTree.model import ModelBase, node
 from address import Address
-from validator import Validator
 import instruction
 
 from copy import deepcopy
@@ -12,7 +11,7 @@ import json
 class Operation(ModelBase):
 	''' A collection of instructions '''
 
-	def __init__(self, instructions = [], protostring = None, validator={}):
+	def __init__(self, instructions = [], protostring = None): 
 		# If protostring is present, uses that existing serialized instruction set. 
 		# If not, use instructions.
 		if type(instructions) == Operation:
@@ -24,8 +23,6 @@ class Operation(ModelBase):
 				self.instructions = instruction.set(instructions)
 			except:
 				raise ParseError()
-		self.validator = Validator()
-		self.validator.update(validator)
 
 	def apply(self, tree):
 		if not isinstance(tree, node.Node):
@@ -33,11 +30,8 @@ class Operation(ModelBase):
 
 		backup = deepcopy(tree)
 		try:
-			self.validator.pre(self, tree)
 			for i in self.instructions:
-				self.validator.instr(self, tree, i)
 				i.apply(tree)
-			self.validator.post(self, tree)
 		except Exception as e:
 			tree = backup
 			traceback.print_exc()
