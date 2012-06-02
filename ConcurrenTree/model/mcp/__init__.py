@@ -1,3 +1,9 @@
+__all__ = [
+	'engine',
+	'gear',
+	'vertex',
+]
+
 __doc__ = '''
 
 A demo of how to use the MCP system, as well as a unit test.
