@@ -1,7 +1,6 @@
 __all__ = [
 	'engine',
 	'gear',
-	'vertex',
 ]
 
 __doc__ = '''
@@ -40,13 +39,6 @@ w<{'content': {}, 'routing': {}}>
 >>> print str(hello_invite)
 A remote interface is telling you its encryptor proto. author: [u'udp4', [u'127.0.0.1', 3940], u'bridget'], encryptor: [u'rotate', 7]
 >>> hello_invite.approve()
-
->>> gbrg.dm(bob, "Hello, Bob!")
-Direct message from [u'udp4', [u'127.0.0.1', 3940], u'bridget']
-u'Hello, Bob!'
->>> gbob.dm(bridget, "Hey there, Bridget :)")
-Direct message from [u'udp4', [u'127.0.0.1', 3939], u'bob']
-u'Hey there, Bridget :)'
 
 ### Track 1 Ops
 

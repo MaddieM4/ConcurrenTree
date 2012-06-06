@@ -74,26 +74,17 @@ class Gear(object):
 	# Basic messages
 
 	def hello(self, target):
-		# Send your encryption credentials to an interface
+		# Send your EJTP encryption credentials to an interface
 		for c in self.clients:
 			self.clients[c].hello(target)
 
-	def dm(self, target, message):
-		# Send a direct message to an interface
-		self.send(target, {"type":"dm", "contents":message})
-
-	def invite(self, target, docname):
-		# Invite an interface to try to load a docname
-		self.send(target, {"type":"invite", "docname":docname})
-
-	def load(self, target, docname, accepts=[]):
-		# Requests a full structural op for a document.
-		# accepts is a list of interfaces the structure would be accepted from
-		# The owner is always inferred whether present or not
-		self.send(target, {"type":"load", "docname":docname, "accepts":accepts})
-
-	def error(self, target, code=500, message=""):
-		self.send(target, {"type":"error", "code":code, "contents":message})
+	def error(self, target, code=500, message="" data={}):
+		self.send(target, {
+			"type":"mcp-error",
+			"code":code,
+			"msg":message,
+			"data":data
+		})
 
 	# Sender functions
 
@@ -101,11 +92,7 @@ class Gear(object):
 		# Try multiple clients until it sends or fails
 		# Will use self.clients unless variable "senders" is set.
 
-		# Convert dicts to type J frames.
-		if type(msg) == dict:
-			msg = 'j\x00' + strict(msg)
-
-		# Create a list of interfaces to try.
+		# Create a list of interfaces to try to send from.
 		clients = senders or self.clients
 
 		# Try until something sends without raising an exception.
@@ -114,7 +101,7 @@ class Gear(object):
 			if type(c) not in (str, unicode):
 				c = strict(c)
 			with Guard():
-				return self.clients[c].write(iface, msg)
+				return self.clients[c].write_json(iface, msg)
 			print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
@@ -124,7 +111,6 @@ class Gear(object):
 		# senders defaults to self.clients
 		proto = op.proto()
 		proto['docname'] = docname
-		proto['version'] = 0
 		proto['structure'] = structure
 
 		if not senders:
@@ -168,19 +154,10 @@ class Gear(object):
 		t = content['type']
 		if t == "hello":
 			self.validate_hello(content['interface'], content['key'])
-		elif t == "dm":
-			print "Direct message from", sender
-			print repr(content['contents'])
 		elif t == "op":
 			docname = content['docname']
 			op = operation.Operation(content['instructions'])
 			self.validate_op(sender, docname, op)
-		elif t == "invite":
-			docname = content['docname']
-			self.validate_invitation(sender, docname)
-		elif t == "load":
-			docname, accepts = content['docname'], content['accepts']
-			self.validate_load(sender, docname)
 		elif t == "error":
 			print "Error from:", sender, ", code", content["code"]
 			print repr(content['contents'])
@@ -200,17 +177,6 @@ class Gear(object):
 	def validate_pop(self):
 		# Get the next item out of the queue
 		return self.validation_queue.pop()
-
-	def validate_invitation(self, author, docname):
-		def callback(result):
-			if result:
-				self.document(docname)
-				self.load(author, docname)
-			else:
-				print "Ignoring invitation to document %r" % docname
-		self.validate(
-			validation.make("invitation", author, docname, callback)
-		)
 
 	def validate_op(self, author, docname, op):
 		def callback(result):
