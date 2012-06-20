@@ -1,6 +1,6 @@
+from ejtp import frame, address as ejtpaddress, client as ejtpclient
 from ejtp.util.hasher import strict
 from ejtp.util import crypto
-from ejtp import frame
 
 from ConcurrenTree.model import document, operation
 import ConcurrenTree.model.validation as validation
@@ -10,14 +10,14 @@ import json
 
 class Gear(object):
 	# Tracks clients in router, and documents.
-	def __init__(self, storage, router, mkclient):
+	def __init__(self, storage, router):
 		self.storage = storage
 		self.router = router
-		self.mkclient = mkclient
 		self.clients = {}
 		self.structures = {}
 		self.validation_queue = validation.ValidationQueue(filters = std_gear_filters)
 		self.validation_queue.gear = self
+		self.client_cache = ClientCache(self)
 
 		self.storage.listen(self.on_storage_event)
 
@@ -28,7 +28,7 @@ class Gear(object):
 		if encryptor != None:
 			self.resolve_set(interface, encryptor)
 		if not iface in self.clients:
-			self.clients[iface] = self.mkclient(self.router, interface, self.resolve)
+			self.clients[iface] = ejtpclient.Client(self.router, interface, self.client_cache)
 		return self.setclientcallback(iface)
 
 	def document(self, docname):
@@ -76,9 +76,18 @@ class Gear(object):
 	def hello(self, target):
 		# Send your EJTP encryption credentials to an interface
 		for c in self.clients:
-			self.clients[c].hello(target)
+			client = self.clients[c]
+			client.write_json(
+				target,
+				{
+					'type':'hello',
+					'interface':client.interface,
+					'key':self.resolve(client.interface),
+				},
+				False,
+			)
 
-	def error(self, target, code=500, message="" data={}):
+	def error(self, target, code=500, message="", data={}):
 		self.send(target, {
 			"type":"mcp-error",
 			"code":code,
@@ -231,7 +240,6 @@ class Gear(object):
 		# Adds person as a participant and sends them the full contents of the document.
 		doc = self.document(docname)
 		doc.add_participant(iface)
-		self.invite(iface, docname)
 
 	def owner(self, docname):
 		# Returns the owner string in a docname
@@ -272,7 +280,7 @@ class Gear(object):
 
 	def resolve(self, iface):
 		# Return the cached encryptor proto for an interface.
-		iface = strict(iface)
+		iface = ejtpaddress.str_address(iface)
 		encryptor = self.host(iface)['encryptor'].value
 		if encryptor == None:
 			raise IndexError("No encryptor information stored for interface %r" % iface)
@@ -307,6 +315,16 @@ class Gear(object):
 	def host_table(self):
 		# Cached host information
 		return self.document("?host").wrapper()
+
+class ClientCache(object):
+	def __init__(self, gear):
+		self.gear = gear
+
+	def __getitem__(self, k):
+		return self.gear.resolve(k)
+
+	def __setitem__(self, k, i):
+		self.gear.resolve_set(k, i)
 
 # FILTERS
 

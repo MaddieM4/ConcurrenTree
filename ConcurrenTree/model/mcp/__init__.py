@@ -34,6 +34,10 @@ w<{'content': {}, 'routing': {}}>
 ['rotate', 3]
 >>> gbrg.resolve(bridget)
 ['rotate', 7]
+>>> gbrg.client(bridget, ["rotate", 7]).encryptor_cache == gbrg.client_cache
+True
+>>> type(gbrg.client(bridget, ["rotate", 7]).encryptor_cache)
+<class 'ConcurrenTree.model.mcp.gear.ClientCache'>
 >>> gbrg.hello(bob)
 >>> hello_invite = gbob.validate_pop()
 >>> print str(hello_invite)
