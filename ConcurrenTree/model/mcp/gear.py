@@ -110,7 +110,8 @@ class Gear(object):
 			if type(c) not in (str, unicode):
 				c = strict(c)
 			with Guard():
-				return self.clients[c].write_json(iface, msg)
+				self.clients[c].write_json(iface, msg)
+				return
 			print>>stderr, c,"->",iface,"failed"
 		print>>stderr, "All clients failed to contact", iface
 
@@ -126,13 +127,6 @@ class Gear(object):
 			senders = [json.loads(x) for x in self.clients]
 		senders = [x for x in senders if self.can_write(x, docname)]
 
-		if structure:
-			# Sign it
-			sigs = {}
-			for s in senders:
-				sigs[s] = self.sign(proto, s)
-			proto['sigs'] = sigs
-
 		if targets:
 			for i in targets:
 				self.send(i, proto, senders)
@@ -147,7 +141,7 @@ class Gear(object):
 	def send_full(self, docname, targets=[], senders=[]):
 		# Send a full copy of a document.
 		doc = self.document(docname)
-		self.send_op(docname, doc.root.childop(), targets, senders, structure=True)
+		self.send_op(docname, doc.root.childop(), targets, senders)
 
 	# Callbacks for incoming data
 
@@ -212,7 +206,7 @@ class Gear(object):
 			if result:
 				self.send_full(docname, [author], [self.owner(docname)])
 			else:
-				print "Rejecting hello from sender: %r" % encryptor
+				print "Rejecting load request from sender: %r" % encryptor
 		self.validate(
 			validation.make("load", author, docname, callback)
 		)
@@ -224,14 +218,16 @@ class Gear(object):
 		return owner in self.clients
 
 	def sign(self, iface, obj):
-		return self.clients[iface].sign(iface, obj)
+		return ""
+		#return self.clients[iface].sign(iface, obj)
 
 	def sig_verify(self, iface, obj, sig):
-		for c in self.clients:
-			try:
-				return self.clients[c].sig_verify(iface, obj, sig)
-			except KeyError:
-				return False
+		return True
+		#for c in self.clients:
+		#	try:
+		#		return self.clients[c].sig_verify(iface, obj, sig)
+		#	except KeyError:
+		#		return False
 
 	def hash(self, obj):
 		return crypto.make(['sha1']).enc(strict(obj))
