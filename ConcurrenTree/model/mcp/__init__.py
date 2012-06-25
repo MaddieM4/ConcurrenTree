@@ -1,6 +1,7 @@
 __all__ = [
 	'engine',
 	'gear',
+	'host_table',
 ]
 
 __doc__ = '''
