@@ -5,6 +5,8 @@ from ejtp.util import crypto
 from ConcurrenTree.model import document, operation
 import ConcurrenTree.model.validation as validation
 
+from host_table import HostTable
+
 from sys import stderr
 import json
 
@@ -18,6 +20,7 @@ class Gear(object):
 		self.validation_queue = validation.ValidationQueue(filters = std_gear_filters)
 		self.validation_queue.gear = self
 		self.client_cache = ClientCache(self)
+		self.hosts = HostTable(self.document('?host'))
 
 		self.storage.listen(self.on_storage_event)
 
@@ -26,7 +29,7 @@ class Gear(object):
 	def client(self, interface, encryptor=None):
 		iface = strict(interface)
 		if encryptor != None:
-			self.resolve_set(interface, encryptor)
+			self.hosts.crypto_set(interface, encryptor)
 		if not iface in self.clients:
 			self.clients[iface] = ejtpclient.Client(self.router, interface, self.client_cache)
 		return self.setclientcallback(iface)
@@ -82,7 +85,7 @@ class Gear(object):
 				{
 					'type':'hello',
 					'interface':client.interface,
-					'key':self.resolve(client.interface),
+					'key':self.hosts.crypto_get(client.interface),
 				},
 				False,
 			)
@@ -194,7 +197,7 @@ class Gear(object):
 	def validate_hello(self, author, encryptor):
 		def callback(result):
 			if result:
-				self.resolve_set(author, encryptor)
+				self.hosts.crypto_set(author, encryptor)
 			else:
 				print "Rejecting hello from sender: %r" % encryptor
 		self.validate(
@@ -274,53 +277,15 @@ class Gear(object):
 		doc = self.document(docname)
 		return doc.can_write(iface)
 
-	def resolve(self, iface):
-		# Return the cached encryptor proto for an interface.
-		iface = ejtpaddress.str_address(iface)
-		encryptor = self.host(iface)['encryptor'].value
-		if encryptor == None:
-			raise IndexError("No encryptor information stored for interface %r" % iface)
-		return encryptor[0]
-
-	def resolve_self(self):
-		# Encryptor protos for each of your clients.
-		result = {}
-		for iface in self.clients:
-			if iface in self.host_table['content']:
-				result[iface] = self.resolve(iface)
-			else:
-				result[iface] = None
-		return result
-
-	def resolve_set(self, iface, key, sigs = []):
-		# Set the encryptor proto for an interface in the cache table.
-		iface = strict(iface)
-		value = [key, sigs]
-		self.host(iface)['encryptor'] = value
-
-	def host(self, iface):
-		default = {
-			"owner": None,
-			"encryptor": None
-		}
-		if not iface in self.host_table['content']:
-			self.host_table['content'][iface] = default
-		return self.host_table['content'][iface]
-
-	@property
-	def host_table(self):
-		# Cached host information
-		return self.document("?host").wrapper()
-
 class ClientCache(object):
 	def __init__(self, gear):
 		self.gear = gear
 
 	def __getitem__(self, k):
-		return self.gear.resolve(k)
+		return self.gear.hosts.crypto_get(k)
 
 	def __setitem__(self, k, i):
-		self.gear.resolve_set(k, i)
+		self.gear.hosts.crypto_set(k, i)
 
 # FILTERS
 

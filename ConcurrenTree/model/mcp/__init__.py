@@ -17,9 +17,9 @@ are running in the same process and the same MCP router.
 >>> e = engine.Engine()
 >>> gbob = e.make('bob','')
 >>> gbrg = e.make('bridget','')
->>> gbob.host_table
+>>> gbob.hosts.wrapper
 w<{'content': {}, 'routing': {}}>
->>> gbrg.host_table
+>>> gbrg.hosts.wrapper
 w<{'content': {}, 'routing': {}}>
 
 >>> localip = '127.0.0.1'
@@ -31,10 +31,10 @@ w<{'content': {}, 'routing': {}}>
 >>> gbob.client(bob, ["rotate", 3]) #doctest: +ELLIPSIS
 <ejtp.client.Client object at 0x...>
 
->>> gbrg.resolve_set(bob, ["rotate", 3])
->>> gbrg.resolve(bob)
+>>> gbrg.hosts.crypto_set(bob, ["rotate", 3])
+>>> gbrg.hosts.crypto_get(bob)
 ['rotate', 3]
->>> gbrg.resolve(bridget)
+>>> gbrg.hosts.crypto_get(bridget)
 ['rotate', 7]
 >>> gbrg.client(bridget, ["rotate", 7]).encryptor_cache == gbrg.client_cache
 True
@@ -47,7 +47,7 @@ True
 <ConcurrenTree.model.validation.hello.HelloRequest object at ...>
 >>> hello_request.approve()
 
->>> gbob.resolve(bridget)
+>>> gbob.hosts.crypto_get(bridget)
 ['rotate', 7]
 
 ### Track 1 Ops
