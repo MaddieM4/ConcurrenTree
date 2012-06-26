@@ -49,7 +49,7 @@ class Gear(object):
 
 			# Add owner with full permissions
 			try:
-				owner = json.loads(self.owner(docname))
+				owner = json.loads(document.owner(docname))
 				self.add_participant(docname, owner)
 			except ValueError:
 				pass # No author could be decoded
@@ -170,16 +170,6 @@ class Gear(object):
 			validation.make("hello", author, encryptor, callback)
 		)
 
-	def validate_load(self, author, docname):
-		def callback(result):
-			if result:
-				self.send_full(docname, [author], [self.owner(docname)])
-			else:
-				print "Rejecting load request from sender: %r" % encryptor
-		self.validate(
-			validation.make("load", author, docname, callback)
-		)
-
 	# Utilities and conveninence functions.
 	@property
 	def interface(self):
@@ -187,17 +177,13 @@ class Gear(object):
 
 	def owns(self, docname):
 		# Returns bool for whether document owner is a client.
-		owner = self.owner(docname)
+		owner = document.owner(docname)
 		return owner == ejtpaddress.str_address(self.interface)
 
 	def add_participant(self, docname, iface):
-		# Adds person as a participant and sends them the full contents of the document.
+		# Adds person as a participant, does not send them data though.
 		doc = self.document(docname)
 		doc.add_participant(iface)
-
-	def owner(self, docname):
-		# Returns the owner string in a docname
-		return docname.partition("\x00")[0]
 
 	def mkname(self, iface, name):
 		return strict(iface)+"\x00"+name
@@ -257,17 +243,8 @@ def filter_op_can_write(queue, request):
 			return request.reject()
 	return request
 
-def filter_invite_accept_to_own(queue, request):
-	# Auto-accept invites to documents you own
-	if isinstance(request, validation.InvitationRequest):
-		if queue.gear.owns(request.docname):
-			return request.approve()
-	return request
-
-
 std_gear_filters = [
 	filter_op_is_doc_stored,
 	filter_op_can_write,
 	filter_op_approve_all,
-	filter_invite_accept_to_own,
 ]

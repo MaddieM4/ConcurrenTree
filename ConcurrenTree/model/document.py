@@ -7,8 +7,9 @@ from ConcurrenTree.model.operation import Operation, FromNode
 class Document(ModelBase):
 	''' Stores a node and tracks operations. '''
 
-	def __init__(self, root={}, applied = []):
+	def __init__(self, root={}, applied = [], docname=""):
 		self.root = make(root)
+		self.docname = docname
 
 		self.own_opsink = True
 		self.private = dict({
@@ -111,6 +112,10 @@ class Document(ModelBase):
 			}
 		})
 
+	@property
+	def owner(self):
+		return owner(self.docname)
+
 	# Advanced properties and metadata functions
 
 	@property
@@ -174,3 +179,15 @@ class Document(ModelBase):
 			if iface in parts:
 				parts.remove(iface)
 			return parts
+
+def mkname(owner, title):
+	return "%s\x00%s" % (owner, title)
+
+def lsname(docname):
+	return docname.partition("\x00")
+
+def owner(docname):
+	return lsname(docname)[0]
+
+def title(docname):
+	return lsname(docname)[1]
