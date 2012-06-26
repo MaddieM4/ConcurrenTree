@@ -14,21 +14,22 @@ are running in the same process and the same MCP router.
 
 >>> from sys import stderr
 >>> from ConcurrenTree.model.mcp import engine
->>> e = engine.Engine()
->>> gbob = e.make('bob','')
->>> gbrg = e.make('bridget','')
->>> gbob.hosts.wrapper
-w<{'content': {}, 'routing': {}}>
->>> gbrg.hosts.wrapper
-w<{'content': {}, 'routing': {}}>
 
 >>> localip = '127.0.0.1'
 >>> bob = ['udp4', [localip, 3939], "bob"]
 >>> bridget = ['udp4', [localip, 3940], "bridget"]
 
->>> gbrg.client(bridget, ["rotate", 7]) #doctest: +ELLIPSIS
+>>> e = engine.Engine()
+>>> gbob = e.make('bob','', bob, ["rotate", 3])
+>>> gbrg = e.make('bridget','', bridget, ["rotate", 7])
+>>> gbob.hosts.wrapper
+w<{'content': {'["udp4",["127.0.0.1",3939],"bob"]': {'encryptor': [['rotate', 3], []]}}, 'routing': {}}>
+>>> gbrg.hosts.wrapper
+w<{'content': {'["udp4",["127.0.0.1",3940],"bridget"]': {'encryptor': [['rotate', 7], []]}}, 'routing': {}}>
+
+>>> gbrg.client #doctest: +ELLIPSIS
 <ejtp.client.Client object at 0x...>
->>> gbob.client(bob, ["rotate", 3]) #doctest: +ELLIPSIS
+>>> gbob.client #doctest: +ELLIPSIS
 <ejtp.client.Client object at 0x...>
 
 >>> gbrg.hosts.crypto_set(bob, ["rotate", 3])
@@ -36,9 +37,9 @@ w<{'content': {}, 'routing': {}}>
 ['rotate', 3]
 >>> gbrg.hosts.crypto_get(bridget)
 ['rotate', 7]
->>> gbrg.client(bridget, ["rotate", 7]).encryptor_cache == gbrg.client_cache
+>>> gbrg.client.encryptor_cache == gbrg.client_cache
 True
->>> type(gbrg.client(bridget, ["rotate", 7]).encryptor_cache)
+>>> type(gbrg.client.encryptor_cache)
 <class 'ConcurrenTree.model.mcp.gear.ClientCache'>
 >>> gbrg.hello(bob)
 
@@ -68,6 +69,12 @@ w<{u'goofy': 'gorsh'}>
 >>> gbob.can_read(bridget, helloname)
 True
 >>> gbrg.can_read(bridget, helloname)
+True
+>>> gbob.can_write(bridget, helloname)
+True
+>>> gbrg.can_write(bridget, helloname)
+True
+>>> gbrg.can_write(None, helloname)
 True
 >>> hwbrg["Blabarsylt"] = "Swedish jelly"
 >>> hwbrg["Blabarsylt"] = "Made of blueberries"

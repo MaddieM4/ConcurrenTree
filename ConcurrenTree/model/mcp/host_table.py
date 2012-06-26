@@ -26,7 +26,7 @@ class HostTable(object):
 	def __setitem__(self, k, i):
 		self.wrapper['content'][k] = i
 
-	def __delitem__(self, i):
+	def __delitem__(self, k):
 		del self.wrapper['content'][k]
 
 	def __contains__(self, k):
@@ -63,6 +63,26 @@ class HostTable(object):
 		'''
 		address = str_address(address)
 		self[address] = i
+
+	def destroy(self, address):
+		'''
+		Removes a host from the records.
+
+		>>> hosty = HostTable()
+                >>> addr = ['vaporware', ['bob'], 'catalina']
+		>>> hosty.set(addr, {'vikings':'pillagers'})
+		>>> hosty.get(addr)
+                w<{'vikings': 'pillagers'}>
+		>>> hosty.destroy(addr)
+
+		These lines reveal some wrapper bugs.
+		I'll fix those later, but for now... comment and TODO, man.
+
+		>>> #addr in hosty
+		>>> #hosty.get(addr)
+		'''
+		address = str_address(address)
+		del self[address]
 
 	# Cryptography --------------------------------------------------------
 

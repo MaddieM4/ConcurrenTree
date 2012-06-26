@@ -12,27 +12,22 @@ import json
 
 class Gear(object):
 	# Tracks clients in router, and documents.
-	def __init__(self, storage, router):
+	def __init__(self, storage, router, interface, encryptor=None):
 		self.storage = storage
 		self.router = router
-		self.clients = {}
-		self.structures = {}
+		self.client_cache = ClientCache(self)
+		self.client = ejtpclient.Client(self.router, interface, self.client_cache)
+		self.client.rcv_callback = self.rcv_callback
+		self.hosts = HostTable(self.document('?host'))
+		if encryptor != None:
+                        self.hosts.crypto_set(interface, encryptor)
+
 		self.validation_queue = validation.ValidationQueue(filters = std_gear_filters)
 		self.validation_queue.gear = self
-		self.client_cache = ClientCache(self)
-		self.hosts = HostTable(self.document('?host'))
 
 		self.storage.listen(self.on_storage_event)
 
 	# Functional creators
-
-	def client(self, interface, encryptor=None):
-		iface = strict(interface)
-		if encryptor != None:
-			self.hosts.crypto_set(interface, encryptor)
-		if not iface in self.clients:
-			self.clients[iface] = ejtpclient.Client(self.router, interface, self.client_cache)
-		return self.setclientcallback(iface)
 
 	def document(self, docname):
 		if docname in self.storage:
@@ -44,10 +39,6 @@ class Gear(object):
 			return self.setdocsink(docname)
 
 	# Assistants to the functional creators
-
-	def setclientcallback(self, interface):
-		self.clients[interface].rcv_callback = self.rcv_callback
-		return self.clients[interface]
 
 	def setdocsink(self, docname):
 		# Set document operation sink callback and add owner with full permissions
@@ -78,17 +69,15 @@ class Gear(object):
 
 	def hello(self, target):
 		# Send your EJTP encryption credentials to an interface
-		for c in self.clients:
-			client = self.clients[c]
-			client.write_json(
-				target,
-				{
-					'type':'hello',
-					'interface':client.interface,
-					'key':self.hosts.crypto_get(client.interface),
-				},
-				False,
-			)
+		self.client.write_json(
+			target,
+			{
+				'type':'hello',
+				'interface':self.interface,
+				'key':self.hosts.crypto_get(self.interface),
+			},
+			False,
+		)
 
 	def error(self, target, code=500, message="", data={}):
 		self.send(target, {
@@ -100,51 +89,28 @@ class Gear(object):
 
 	# Sender functions
 
-	def send(self, iface, msg, senders=None):
-		# Try multiple clients until it sends or fails
-		# Will use self.clients unless variable "senders" is set.
-
-		# Create a list of interfaces to try to send from.
-		clients = senders or self.clients
-
-		# Try until something sends without raising an exception.
+	def send(self, iface, msg):
 		from ejtp.util.crashnicely import Guard
-		for c in clients:
-			if type(c) not in (str, unicode):
-				c = strict(c)
-			with Guard():
-				self.clients[c].write_json(iface, msg)
-				return
-			print>>stderr, c,"->",iface,"failed"
-		print>>stderr, "All clients failed to contact", iface
+		with Guard():
+			self.client.write_json(iface, msg)
+			return
+		print>>stderr, self.interface,"->",iface,"failed"
 
-	def send_op(self, docname, op, targets=[], senders=[], structure=False):
+	def send_op(self, docname, op, targets=[]):
 		# Send an operation frame.
 		# targets defaults to document.routes_to for every sender.
-		# senders defaults to self.clients
 		proto = op.proto()
 		proto['docname'] = docname
-		proto['structure'] = structure
 
-		if not senders:
-			senders = [json.loads(x) for x in self.clients]
-		senders = [x for x in senders if self.can_write(x, docname)]
+		targets = targets or self.document(docname).routes_to(self.interface)
 
-		if targets:
-			for i in targets:
-				self.send(i, proto, senders)
-		else:
-			for c in senders:
-				client = self.clients[strict(c)]
-				if not targets:
-					targets = self.document(docname).routes_to(c)
-				for t in targets:
-					self.send(t, proto, [c])
+		for i in targets:
+			self.send(i, proto)
 
-	def send_full(self, docname, targets=[], senders=[]):
+	def send_full(self, docname, targets=[]):
 		# Send a full copy of a document.
 		doc = self.document(docname)
-		self.send_op(docname, doc.root.childop(), targets, senders)
+		self.send_op(docname, doc.root.childop(), targets)
 
 	# Callbacks for incoming data
 
@@ -215,25 +181,14 @@ class Gear(object):
 		)
 
 	# Utilities and conveninence functions.
+	@property
+	def interface(self):
+		return self.client.interface
+
 	def owns(self, docname):
 		# Returns bool for whether document owner is a client.
 		owner = self.owner(docname)
-		return owner in self.clients
-
-	def sign(self, iface, obj):
-		return ""
-		#return self.clients[iface].sign(iface, obj)
-
-	def sig_verify(self, iface, obj, sig):
-		return True
-		#for c in self.clients:
-		#	try:
-		#		return self.clients[c].sig_verify(iface, obj, sig)
-		#	except KeyError:
-		#		return False
-
-	def hash(self, obj):
-		return crypto.make(['sha1']).enc(strict(obj))
+		return owner == ejtpaddress.str_address(self.interface)
 
 	def add_participant(self, docname, iface):
 		# Adds person as a participant and sends them the full contents of the document.
@@ -249,30 +204,24 @@ class Gear(object):
 
 	def can_read(self, iface, docname):
 		# Returns whether an interface can read a document.
-		# If iface == None, tests all client interfaces.
-		if self.owner(docname) == strict(iface) or docname[0] == "?":
+		# If iface == None, assumes self.interface
+		if self.owns(docname) or docname[0] == "?":
 			return True
 
 		if iface == None:
-			for c in self.clients:
-				if self.can_read(json.loads(c), docname):
-					return True
-			return False
+			iface = self.interface
 
 		doc = self.document(docname)
 		return doc.can_read(iface)
 
 	def can_write(self, iface, docname):
 		# Returns whether an interface can write a document.
-		# If iface == None, tests all client interfaces.
-		if self.owner(docname) == strict(iface) or docname[0] == "?":
+		# If iface == None, assumes self.interface
+		if self.owns(docname) or docname[0] == "?":
 			return True
 
 		if iface == None:
-			for c in self.clients:
-				if self.can_write(json.loads(c), docname):
-					return True
-			return False
+			iface = self.interface
 
 		doc = self.document(docname)
 		return doc.can_write(iface)
