@@ -44,7 +44,7 @@ True
 <class 'ConcurrenTree.model.mcp.gear.ClientCache'>
 >>> gbrg.writer.hello(bob)
 
->>> hello_request = gbob.validate_pop()
+>>> hello_request = gbob.gv.pop()
 >>> hello_request #doctest: +ELLIPSIS
 <ConcurrenTree.model.validation.hello.HelloRequest object at ...>
 >>> hello_request.approve()
