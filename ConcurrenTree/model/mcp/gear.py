@@ -1,11 +1,10 @@
 from ejtp import frame, address as ejtpaddress, client as ejtpclient
-from ejtp.util.hasher import strict
-from ejtp.util import crypto
 
 from ConcurrenTree.model import document, operation
 import ConcurrenTree.model.validation as validation
 
-from host_table import HostTable
+import host_table
+import message as mcp_message
 
 from sys import stderr
 import json
@@ -15,10 +14,13 @@ class Gear(object):
 	def __init__(self, storage, router, interface, encryptor=None):
 		self.storage = storage
 		self.router = router
+
+		# Components
+		self.writer = mcp_message.Writer(self)
 		self.client_cache = ClientCache(self)
-		self.client = ejtpclient.Client(self.router, interface, self.client_cache)
-		self.client.rcv_callback = self.rcv_callback
-		self.hosts = HostTable(self.document('?host'))
+		self.client = setup_client(self, interface)
+		
+		self.hosts = host_table.HostTable(self.document('?host'))
 		if encryptor != None:
                         self.hosts.crypto_set(interface, encryptor)
 
@@ -65,28 +67,6 @@ class Gear(object):
 			doc.opsink = opsink
 		return doc
 
-	# Basic messages
-
-	def hello(self, target):
-		# Send your EJTP encryption credentials to an interface
-		self.client.write_json(
-			target,
-			{
-				'type':'hello',
-				'interface':self.interface,
-				'key':self.hosts.crypto_get(self.interface),
-			},
-			False,
-		)
-
-	def error(self, target, code=500, message="", data={}):
-		self.send(target, {
-			"type":"mcp-error",
-			"code":code,
-			"msg":message,
-			"data":data
-		})
-
 	# Sender functions
 
 	def send(self, iface, msg):
@@ -100,6 +80,7 @@ class Gear(object):
 		# Send an operation frame.
 		# targets defaults to document.routes_to for every sender.
 		proto = op.proto()
+		proto['type'] = 'mcp-op'
 		proto['docname'] = docname
 
 		targets = targets or self.document(docname).routes_to(self.interface)
@@ -124,15 +105,15 @@ class Gear(object):
 			print "COULD NOT PARSE JSON:"
 			print content
 		t = content['type']
-		if t == "hello":
+		if t == "mcp-hello":
 			self.validate_hello(content['interface'], content['key'])
-		elif t == "op":
+		elif t == "mcp-op":
 			docname = content['docname']
 			op = operation.Operation(content['instructions'])
 			self.validate_op(sender, docname, op)
-		elif t == "error":
+		elif t == "mcp-error":
 			print "Error from:", sender, ", code", content["code"]
-			print repr(content['contents'])
+			print repr(content['msg'])
 		else:
 			print "Unknown msg type %r" % t
 
@@ -185,9 +166,6 @@ class Gear(object):
 		doc = self.document(docname)
 		doc.add_participant(iface)
 
-	def mkname(self, iface, name):
-		return strict(iface)+"\x00"+name
-
 	def can_read(self, iface, docname):
 		# Returns whether an interface can read a document.
 		# If iface == None, assumes self.interface
@@ -232,14 +210,14 @@ def filter_op_approve_all(queue, request):
 def filter_op_is_doc_stored(queue, request):
 	if isinstance(request, validation.OperationRequest):
 		if not request.docname in queue.gear.storage:
-			queue.gear.error(request.author, message="Unsolicited op")
+			queue.gear.writer.error(request.author, message="Unsolicited op")
 			return request.reject()
 	return request
 
 def filter_op_can_write(queue, request):
 	if isinstance(request, validation.OperationRequest):
 		if not queue.gear.can_write(request.author, request.docname):
-			queue.gear.error(request.author, message="You don't have write permissions.")
+			queue.gear.writer.error(request.author, message="You don't have write permissions.")
 			return request.reject()
 	return request
 
@@ -248,3 +226,10 @@ std_gear_filters = [
 	filter_op_can_write,
 	filter_op_approve_all,
 ]
+
+# EJTP client setup
+
+def setup_client(gear, interface):
+	client = ejtpclient.Client(gear.router, interface, gear.client_cache)
+	client.rcv_callback = gear.rcv_callback
+	return client

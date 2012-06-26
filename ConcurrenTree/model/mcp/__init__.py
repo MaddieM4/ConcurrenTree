@@ -14,6 +14,7 @@ are running in the same process and the same MCP router.
 
 >>> from sys import stderr
 >>> from ConcurrenTree.model.mcp import engine
+>>> from ConcurrenTree.model.document import mkname
 
 >>> localip = '127.0.0.1'
 >>> bob = ['udp4', [localip, 3939], "bob"]
@@ -41,7 +42,7 @@ w<{'content': {'["udp4",["127.0.0.1",3940],"bridget"]': {'encryptor': [['rotate'
 True
 >>> type(gbrg.client.encryptor_cache)
 <class 'ConcurrenTree.model.mcp.gear.ClientCache'>
->>> gbrg.hello(bob)
+>>> gbrg.writer.hello(bob)
 
 >>> hello_request = gbob.validate_pop()
 >>> hello_request #doctest: +ELLIPSIS
@@ -53,12 +54,14 @@ True
 
 ### Track 1 Ops
 
->>> helloname = gbob.mkname(bob, "hello")
+>>> helloname = mkname(bob, "hello")
 >>> hellobob  = gbob.document(helloname)
 >>> hellobrg  = gbrg.document(helloname)
 >>> hwbob = hellobob.content
 >>> hwbrg = hellobrg.content
 
+>>> gbob.owns(helloname)
+True
 >>> gbob.add_participant(helloname, bridget)
 >>> gbob.send_full(helloname, [bridget])
 

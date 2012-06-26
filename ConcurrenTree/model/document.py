@@ -1,4 +1,5 @@
 from ejtp.util.hasher import strict
+from ejtp.address import *
 
 from ConcurrenTree.model import ModelBase
 from ConcurrenTree.model.node import make
@@ -181,7 +182,14 @@ class Document(ModelBase):
 			return parts
 
 def mkname(owner, title):
-	return "%s\x00%s" % (owner, title)
+	'''
+	Construct a docname.
+	>>> mkname("brick", "bat")
+	'brick\\x00bat'
+	>>> mkname(["brick"], "bat")
+	'["brick"]\\x00bat'
+	'''
+	return "%s\x00%s" % (str_address(owner), title)
 
 def lsname(docname):
 	return docname.partition("\x00")
