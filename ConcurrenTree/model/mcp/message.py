@@ -1,4 +1,7 @@
 from ejtp.util.crashnicely import Guard
+from ConcurrenTree.model import operation
+import random
+import json
 
 class Writer(object):
 	def __init__(self, gear):
@@ -35,6 +38,10 @@ class Writer(object):
 		for i in targets:
 			self.send(i, proto)
 
+	def send(self, target, data, wrap_sender=True):
+		data['ackc'] = random.randint(0, 2**8)
+		self.client.write_json(target, data, wrap_sender)
+
 	# Convenience accessors
 
 	@property
@@ -49,6 +56,25 @@ class Writer(object):
 	def interface(self):
 		return self.gear.interface
 
-	@property
-	def send(self):
-		return self.client.write_json
+class Reader(object):
+	def __init__(self, gear):
+		self.gear = gear
+
+	def read(self, content, sender=None):
+		try:
+			content = json.loads(content)
+		except:
+			print "COULD NOT PARSE JSON:"
+			print content
+		t = content['type']
+		if t == "mcp-hello":
+			self.gear.gv.hello(content['interface'], content['key'])
+		elif t == "mcp-op":
+			docname = content['docname']
+			op = operation.Operation(content['instructions'])
+			self.gear.gv.op(sender, docname, op)
+		elif t == "mcp-error":
+			print "Error from:", sender, ", code", content["code"]
+			print repr(content['msg'])
+		else:
+			print "Unknown msg type %r" % t

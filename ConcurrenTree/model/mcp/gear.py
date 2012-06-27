@@ -1,6 +1,6 @@
 from ejtp import frame, address as ejtpaddress, client as ejtpclient
 
-from ConcurrenTree.model import document, operation
+from ConcurrenTree.model import document
 
 import host_table
 import message as mcp_message
@@ -17,6 +17,7 @@ class Gear(object):
 
 		# Components
 		self.writer = mcp_message.Writer(self)
+		self.reader = mcp_message.Reader(self)
 		self.client_cache = ClientCache(self)
 		self.client = setup_client(self, interface)
 		self.gv = gear_validator.GearValidator(self)
@@ -73,26 +74,7 @@ class Gear(object):
 	# Callbacks for incoming data
 
 	def rcv_callback(self, msg, client):
-		self.rcv_json(msg.ciphercontent, msg.addr)
-
-	def rcv_json(self, content, sender = None):
-		try:
-			content = json.loads(content)
-		except:
-			print "COULD NOT PARSE JSON:"
-			print content
-		t = content['type']
-		if t == "mcp-hello":
-			self.gv.hello(content['interface'], content['key'])
-		elif t == "mcp-op":
-			docname = content['docname']
-			op = operation.Operation(content['instructions'])
-			self.gv.op(sender, docname, op)
-		elif t == "mcp-error":
-			print "Error from:", sender, ", code", content["code"]
-			print repr(content['msg'])
-		else:
-			print "Unknown msg type %r" % t
+		self.reader.read(msg.ciphercontent, msg.addr)
 
 	def on_storage_event(self, typestr, docname, data):
 		# Callback for storage events
