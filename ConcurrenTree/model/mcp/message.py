@@ -1,5 +1,6 @@
 from ejtp.util.crashnicely import Guard
 from ConcurrenTree.model import operation
+from sys import stderr
 import random
 import json
 
@@ -38,8 +39,14 @@ class Writer(object):
 		for i in targets:
 			self.send(i, proto)
 
+	def ack(self, target, code):
+		self.send(target, {
+			"type":"mcp-ack",
+			"ackr":code,
+		})
+
 	def send(self, target, data, wrap_sender=True):
-		data['ackc'] = random.randint(0, 2**8)
+		data['ackc'] = str(random.randint(0, 2**32))
 		self.client.write_json(target, data, wrap_sender)
 
 	# Convenience accessors
@@ -67,6 +74,7 @@ class Reader(object):
 			print "COULD NOT PARSE JSON:"
 			print content
 		t = content['type']
+		if self.acknowledge(content, sender): return
 		if t == "mcp-hello":
 			self.gear.gv.hello(content['interface'], content['key'])
 		elif t == "mcp-op":
@@ -78,3 +86,15 @@ class Reader(object):
 			print repr(content['msg'])
 		else:
 			print "Unknown msg type %r" % t
+
+	def acknowledge(self, content, sender):
+		if 'ackc' in content and content['type'] != 'mcp-ack':
+			ackc = content['ackc']
+			print>>stderr, "Recieving message with ack:", ackc
+			self.gear.writer.ack(sender, ackc)
+			return False
+		elif 'ackr' in content and content['type'] == 'mcp-ack':
+			print>>stderr, "Recieving ack for:", content['ackr']
+			return True
+		else:
+			print>>stderr, "Malformed frame:\n%s" % json.dumps(content, indent=2)
