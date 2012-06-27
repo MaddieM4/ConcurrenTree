@@ -27,7 +27,7 @@ class Gear(object):
 
 		self.storage.listen(self.on_storage_event)
 
-	# Functional creators
+	# On-the-fly document creation and retrieval (Get-or-create semantics)
 
 	def document(self, docname):
 		if docname in self.storage:
@@ -37,8 +37,6 @@ class Gear(object):
 			# Create blank document
 			self.storage[docname] = document.Document({})
 			return self.setdocsink(docname)
-
-	# Assistants to the functional creators
 
 	def setdocsink(self, docname):
 		# Set document operation sink callback and add owner with full permissions
@@ -67,29 +65,10 @@ class Gear(object):
 
 	# Sender functions
 
-	def send(self, iface, msg):
-		from ejtp.util.crashnicely import Guard
-		with Guard():
-			self.client.write_json(iface, msg)
-			return
-		print>>stderr, self.interface,"->",iface,"failed"
-
-	def send_op(self, docname, op, targets=[]):
-		# Send an operation frame.
-		# targets defaults to document.routes_to for every sender.
-		proto = op.proto()
-		proto['type'] = 'mcp-op'
-		proto['docname'] = docname
-
-		targets = targets or self.document(docname).routes_to(self.interface)
-
-		for i in targets:
-			self.send(i, proto)
-
 	def send_full(self, docname, targets=[]):
 		# Send a full copy of a document.
 		doc = self.document(docname)
-		self.send_op(docname, doc.root.childop(), targets)
+		self.writer.op(docname, doc.root.childop(), targets)
 
 	# Callbacks for incoming data
 
@@ -118,7 +97,7 @@ class Gear(object):
 	def on_storage_event(self, typestr, docname, data):
 		# Callback for storage events
 		if typestr == "op":
-			self.send_op(docname, data)
+			self.writer.op(docname, data)
 
 	# Utilities and conveninence functions.
 

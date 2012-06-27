@@ -1,3 +1,4 @@
+from ejtp.util.crashnicely import Guard
 
 class Writer(object):
 	def __init__(self, gear):
@@ -21,6 +22,18 @@ class Writer(object):
 			"msg":message,
 			"data":data
 		})
+
+	def op(self, docname, op, targets=[]):
+		# Send an operation frame.
+		# targets defaults to document.routes_to for every sender.
+		proto = op.proto()
+		proto['type'] = 'mcp-op'
+		proto['docname'] = docname
+
+		targets = targets or self.gear.document(docname).routes_to(self.interface)
+
+		for i in targets:
+			self.send(i, proto)
 
 	# Convenience accessors
 
