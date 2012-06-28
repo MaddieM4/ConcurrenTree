@@ -1,4 +1,5 @@
 from ejtp.util.crashnicely import Guard
+from ejtp.util.hasher import strict
 from ConcurrenTree.model import operation
 from sys import stderr
 import random
@@ -23,6 +24,12 @@ class MessageProcessor(object):
 class Writer(MessageProcessor):
 	def __init__(self, gear):
 		self.gear = gear
+
+	def send(self, target, data, wrap_sender=True):
+		data['ackc'] = str(random.randint(0, 2**32))
+		self.client.write_json(target, data, wrap_sender)
+
+	# Message creators
 
 	def hello(self, target):
 		# Send your EJTP encryption credentials to an interface
@@ -68,15 +75,24 @@ class Writer(MessageProcessor):
 			"hashes":hashes,
 		})
 
+	def pull_snapshot(self, target, docname):
+		self.send(target, {
+			"type":"mcp-pull-snapshot",
+			"docname":docname,
+		})
+
+	def snapshot(self, target, docname, snapshot):
+		self.send(target, {
+			"type":"mcp-snapshot",
+			"docname":docname,
+			"content":snapshot
+		})
+
 	def ack(self, target, codes):
 		self.send(target, {
 			"type":"mcp-ack",
 			"ackr":codes,
 		})
-
-	def send(self, target, data, wrap_sender=True):
-		data['ackc'] = str(random.randint(0, 2**32))
-		self.client.write_json(target, data, wrap_sender)
 
 class Reader(MessageProcessor):
 	def __init__(self, gear):
@@ -131,6 +147,15 @@ class Reader(MessageProcessor):
 		sorted_keys.sort()
 		for key in sorted_keys:
 			print "%s: %r" % (key, hashes[key])
+
+	def mcp_pull_snapshot(self, content, sender):
+		docname = content['docname']
+		doc = self.gear.document(docname)
+		self.gear.writer.snapshot(sender, docname, doc.flatten())
+
+	def mcp_snapshot(self, content, sender):
+		docname = content['docname']
+		print strict(content['content'])
 
 	def mcp_error(self, content, sender):
 		print "Error from:", sender, ", code", content["code"]

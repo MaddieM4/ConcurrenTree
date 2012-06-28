@@ -10,6 +10,9 @@ A demo of how to use the MCP system, as well as a unit test.
 Note that this is a sorta silly demo since both gears/clients
 are running in the same process and the same MCP router.
 
+TODO: Modularize this vertical integration test so I can spread
+it out across multiple files. Probably with mocking functions.
+
 ### Setting up communication
 
 >>> from sys import stderr
@@ -99,6 +102,9 @@ bc41162db8b81392569a5bedf52c7414212df665: u'^0**/0.^,0])\\\\_Z^0**0])^\\\\0^_0-0
 c5467b8ced86280298b6df359835e23bf9742ca7: u'\\\\1,2^/^[1-.1]),2^,.Z/+0,[],.\\\\^*-)1).)/*1'
 d251f86d43c808ee5cbe8231ca8545419649d7c0: u']^\\\\,\\\\2.0[0^^+Z*]+0*21_1]Z2+-/2Z.^000))+.'
 ed61a0b09322e3b5e0361a015c275f7e46057d52: u',Z[/.1^^.^/]^\\\\0/2221*_0\\\\Z[).^[,/_\\\\\\\\_-,[]'
+
+>>> gbob.writer.pull_snapshot(bridget, helloname)
+{"content":{"Blabarsylt":"Made of blueberries","goofy":"gorsh"},"permissions":{"graph":{"edges":{},"vertices":{}},"read":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true},"write":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true}},"routing":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":{},"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":{}}}
 
 ### RSA
 
