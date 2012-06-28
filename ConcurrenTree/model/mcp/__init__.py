@@ -18,8 +18,6 @@ localip = '127.0.0.1'
 bob = ['udp4', [localip, 3939], "bob"]
 bridget = ['udp4', [localip, 3940], "bridget"]
 
-demo_cache = {}
-
 def demo_clients():
     '''
     Create a pair of clients, bob and bridget, for testing.
@@ -35,16 +33,11 @@ def demo_clients():
     >>> gbob.client #doctest: +ELLIPSIS
     <ejtp.client.Client object at 0x...>
     '''
-    if "gbob" in demo_cache and "gbrg" in demo_cache:
-		return demo_cache['gbob'], demo_cache['gbrg']
-
     from ConcurrenTree.model.mcp import engine
 
     e = engine.Engine()
-    gbob = e.make('bob','', bob, ["rotate", 3])
-    gbrg = e.make('bridget','', bridget, ["rotate", 7])
-    demo_cache['gbob'] = gbob
-    demo_cache['gbrg'] = gbrg
+    gbob = e.make('bob','', bob, encryptor=["rotate", 3], make_jack=False)
+    gbrg = e.make('bridget','', bridget, encryptor=["rotate", 7], make_jack=False)
     return (gbob, gbrg)
 
 def demo_clients_enc():

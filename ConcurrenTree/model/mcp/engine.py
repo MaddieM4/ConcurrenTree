@@ -7,10 +7,10 @@ class Engine(object):
 		self.auth = auth or default_auth()
 		self.router = router or default_router()
 
-	def make(self, username, password, interface, encryptor=None):
+	def make(self, username, password, interface, **kwargs):
 		# Fail if it does not exist yet
 		self.auth.load(username, password)
-		return self.gear(self.auth[username], interface, encryptor)
+		return self.gear(self.auth[username], interface, **kwargs)
 
 	def new(self, username, password):
 		# Succeed as long as user doesn't already exist with different password
@@ -21,8 +21,8 @@ class Engine(object):
 		# Test login pair
 		return self.auth.verify(username, password)
 
-	def gear(self, storage, interface, encryptor=None):
-		return Gear(storage, self.router, interface, encryptor)
+	def gear(self, storage, interface, **kwargs):
+		return Gear(storage, self.router, interface, **kwargs)
 
 def default_auth():
 	from ConcurrenTree.storage.default import DefaultAuth

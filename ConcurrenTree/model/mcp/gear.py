@@ -11,7 +11,7 @@ import json
 
 class Gear(object):
 	# Tracks clients in router, and documents.
-	def __init__(self, storage, router, interface, encryptor=None):
+	def __init__(self, storage, router, interface, encryptor=None, make_jack=True):
 		self.storage = storage
 		self.router = router
 
@@ -19,7 +19,7 @@ class Gear(object):
 		self.writer = mcp_message.Writer(self)
 		self.reader = mcp_message.Reader(self)
 		self.client_cache = ClientCache(self)
-		self.client = setup_client(self, interface)
+		self.client = setup_client(self, interface, make_jack)
 		self.gv = gear_validator.GearValidator(self)
 		
 		self.hosts = host_table.HostTable(self.document('?host'))
@@ -133,7 +133,7 @@ class ClientCache(object):
 
 # EJTP client setup
 
-def setup_client(gear, interface):
-	client = ejtpclient.Client(gear.router, interface, gear.client_cache)
+def setup_client(gear, interface, make_jack):
+	client = ejtpclient.Client(gear.router, interface, gear.client_cache, make_jack = make_jack)
 	client.rcv_callback = gear.rcv_callback
 	return client
