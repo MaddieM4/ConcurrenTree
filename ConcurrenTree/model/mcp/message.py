@@ -39,10 +39,10 @@ class Writer(object):
 		for i in targets:
 			self.send(i, proto)
 
-	def ack(self, target, code):
+	def ack(self, target, codes):
 		self.send(target, {
 			"type":"mcp-ack",
-			"ackr":code,
+			"ackr":codes,
 		})
 
 	def send(self, target, data, wrap_sender=True):
@@ -67,6 +67,16 @@ class Reader(object):
 	def __init__(self, gear):
 		self.gear = gear
 
+	def acknowledge(self, content, sender):
+		if 'ackc' in content and content['type'] != 'mcp-ack':
+			ackc = content['ackc']
+			self.gear.writer.ack(sender, [ackc])
+			return False
+		elif 'ackr' in content and content['type'] == 'mcp-ack':
+			return True
+		else:
+			print>>stderr, "Malformed frame:\n%s" % json.dumps(content, indent=2)
+
 	def read(self, content, sender=None):
 		try:
 			content = json.loads(content)
@@ -75,26 +85,28 @@ class Reader(object):
 			print content
 		t = content['type']
 		if self.acknowledge(content, sender): return
-		if t == "mcp-hello":
-			self.gear.gv.hello(content['interface'], content['key'])
-		elif t == "mcp-op":
-			docname = content['docname']
-			op = operation.Operation(content['instructions'])
-			self.gear.gv.op(sender, docname, op)
-		elif t == "mcp-error":
-			print "Error from:", sender, ", code", content["code"]
-			print repr(content['msg'])
+		fname = t.replace('-','_')
+		if hasattr(self, fname):
+			return getattr(self, fname)(content, sender)
 		else:
 			print "Unknown msg type %r" % t
 
-	def acknowledge(self, content, sender):
-		if 'ackc' in content and content['type'] != 'mcp-ack':
-			ackc = content['ackc']
-			print>>stderr, "Recieving message with ack:", ackc
-			self.gear.writer.ack(sender, ackc)
-			return False
-		elif 'ackr' in content and content['type'] == 'mcp-ack':
-			print>>stderr, "Recieving ack for:", content['ackr']
-			return True
-		else:
-			print>>stderr, "Malformed frame:\n%s" % json.dumps(content, indent=2)
+	# Message handlers
+
+	def mcp_hello(self, content, sender):
+		self.gear.gv.hello(content['interface'], content['key'])
+
+	def mcp_op(self, content, sender):
+		docname = content['docname']
+		op = operation.Operation(content['instructions'])
+		self.gear.gv.op(sender, docname, op)
+
+	def mcp_pull_index(self, content, sender):
+		docname = content['docname']
+
+	def mcp_index(self, content, sender):
+		docname = content['docname']
+
+	def mcp_error(self, content, sender):
+		print "Error from:", sender, ", code", content["code"]
+		print repr(content['msg'])
