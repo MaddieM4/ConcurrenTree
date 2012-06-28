@@ -1,6 +1,5 @@
 __all__ = [
 	'address',
-	'bcp',
 	'mcp',
 	'instruction',
 	'operation',

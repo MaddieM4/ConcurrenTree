@@ -9,7 +9,6 @@ setup(
 	packages = [
 		'ConcurrenTree',
 		'ConcurrenTree.model',
-		'ConcurrenTree.model.bcp',
 		'ConcurrenTree.model.context',
 		'ConcurrenTree.model.mcp',
 		'ConcurrenTree.model.node',
