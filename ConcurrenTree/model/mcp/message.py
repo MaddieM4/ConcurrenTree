@@ -50,6 +50,17 @@ class Writer(MessageProcessor):
 			"data":data
 		})
 
+	def pull_op(self, target, docname, op_hash):
+		# Pull one op (shorthand alias to pull_ops, basically)
+		self.pull_ops(target, docname, [op_hash])
+
+	def pull_ops(self, target, docname, hashes):
+		self.send(target, {
+			"type":"mcp-pull-ops",
+			"docname": docname,
+			"hashes":hashes,
+		})
+
 	def op(self, docname, op, targets=[]):
 		# Send an operation frame.
 		# targets defaults to document.routes_to for every sender.
@@ -157,6 +168,29 @@ class Reader(MessageProcessor):
 		docname = content['docname']
 		print strict(content['content'])
 
+	def mcp_pull_ops(self, content, sender):
+		docname = content['docname']
+		hashes = content['hashes']
+		doc = self.gear.document(docname)
+		known_ops = doc.private['ops']['known']
+
+		for h in hashes:
+			if h in known_ops:
+				op_proto = known_ops[h]
+				op = operation.Operation(instructions = op_proto['instructions'])
+				self.gear.writer.op(docname, op, [sender])
+			else:
+				self.gear.writer.error(sender,
+					code     = 321,
+					message  = "Resource not found",
+					data     = {
+						'res_type': 'op',
+						'id':h,
+					}
+				)
+
 	def mcp_error(self, content, sender):
 		print "Error from:", sender, ", code", content["code"]
 		print repr(content['msg'])
+		if 'data' in content and content['data']:
+			print strict(content['data'])

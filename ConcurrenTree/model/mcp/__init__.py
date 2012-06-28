@@ -106,6 +106,20 @@ ed61a0b09322e3b5e0361a015c275f7e46057d52: u',Z[/.1^^.^/]^\\\\0/2221*_0\\\\Z[).^[
 >>> gbob.writer.pull_snapshot(bridget, helloname)
 {"content":{"Blabarsylt":"Made of blueberries","goofy":"gorsh"},"permissions":{"graph":{"edges":{},"vertices":{}},"read":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true},"write":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true}},"routing":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":{},"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":{}}}
 
+>>> ophashes = [
+...    '079eeae801303fd811fe3f443c66528a6add7e42', # Real op
+...    'X79eeae801303fd811fe3f443c66528a6add7e42', # Real op
+... ]
+>>> gbob.writer.pull_op(bridget, helloname, ophashes[0]) # Real op
+>>> gbob.writer.pull_op(bridget, helloname, ophashes[1]) # Fake op
+Error from: [u'udp4', [u'127.0.0.1', 3940], u'bridget'] , code 321
+u'Resource not found'
+{"id":"X79eeae801303fd811fe3f443c66528a6add7e42","res_type":"op"}
+>>> gbob.writer.pull_ops(bridget, helloname, ophashes) # Both
+Error from: [u'udp4', [u'127.0.0.1', 3940], u'bridget'] , code 321
+u'Resource not found'
+{"id":"X79eeae801303fd811fe3f443c66528a6add7e42","res_type":"op"}
+
 ### RSA
 
 # Will do later
