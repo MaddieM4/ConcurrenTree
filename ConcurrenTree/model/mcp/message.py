@@ -4,7 +4,23 @@ from sys import stderr
 import random
 import json
 
-class Writer(object):
+class MessageProcessor(object):
+
+	# Convenience accessors
+
+	@property
+	def client(self):
+		return self.gear.client
+
+	@property
+	def hosts(self):
+		return self.gear.hosts
+
+	@property
+	def interface(self):
+		return self.gear.interface
+
+class Writer(MessageProcessor):
 	def __init__(self, gear):
 		self.gear = gear
 
@@ -39,6 +55,19 @@ class Writer(object):
 		for i in targets:
 			self.send(i, proto)
 
+	def pull_index(self, target, docname):
+		self.send(target, {
+			"type":"mcp-pull-index",
+			"docname":docname,
+		})
+
+	def index(self, target, docname, hashes):
+		self.send(target, {
+			"type":"mcp-index",
+			"docname":docname,
+			"hashes":hashes,
+		})
+
 	def ack(self, target, codes):
 		self.send(target, {
 			"type":"mcp-ack",
@@ -49,21 +78,7 @@ class Writer(object):
 		data['ackc'] = str(random.randint(0, 2**32))
 		self.client.write_json(target, data, wrap_sender)
 
-	# Convenience accessors
-
-	@property
-	def client(self):
-		return self.gear.client
-
-	@property
-	def hosts(self):
-		return self.gear.hosts
-
-	@property
-	def interface(self):
-		return self.gear.interface
-
-class Reader(object):
+class Reader(MessageProcessor):
 	def __init__(self, gear):
 		self.gear = gear
 
@@ -103,9 +118,19 @@ class Reader(object):
 
 	def mcp_pull_index(self, content, sender):
 		docname = content['docname']
+		doc = self.gear.document(docname)
+		result = {}
+		for x in doc.applied:
+			result[x] = self.client.sign(x)
+		self.gear.writer.index(sender, docname, result)
 
 	def mcp_index(self, content, sender):
 		docname = content['docname']
+		hashes = content['hashes']
+		sorted_keys = hashes.keys()
+		sorted_keys.sort()
+		for key in sorted_keys:
+			print "%s: %r" % (key, hashes[key])
 
 	def mcp_error(self, content, sender):
 		print "Error from:", sender, ", code", content["code"]
