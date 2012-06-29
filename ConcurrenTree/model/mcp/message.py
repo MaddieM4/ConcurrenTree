@@ -1,7 +1,7 @@
 from ejtp.util.crashnicely import Guard
 from ejtp.util.hasher import strict
 from ConcurrenTree.model import operation
-from ConcurrenTree.model.mcp.demo import bob, bridget, demo_data
+from demo import bob, bridget, demo_data
 from sys import stderr
 import random
 import json

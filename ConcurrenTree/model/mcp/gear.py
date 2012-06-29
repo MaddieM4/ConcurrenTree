@@ -5,6 +5,7 @@ from ConcurrenTree.model import document
 import host_table
 import message as mcp_message
 import gear_validator
+import demo
 
 from sys import stderr
 import json
@@ -67,7 +68,21 @@ class Gear(object):
 	# Sender functions
 
 	def send_full(self, docname, targets=[]):
-		# Send a full copy of a document.
+		'''
+		Send a full copy of a document.
+
+		>>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo.demo_participants()
+		>>> gbob.can_read(demo.bridget, helloname)
+		True
+		>>> gbrg.can_read(demo.bridget, helloname)
+		True
+		>>> gbob.can_write(demo.bridget, helloname)
+		True
+		>>> gbrg.can_write(demo.bridget, helloname)
+		True
+		>>> gbrg.can_write(None, helloname)
+		True
+		'''
 		doc = self.document(docname)
 		self.writer.op(docname, doc.root.childop(), targets)
 
@@ -93,7 +108,16 @@ class Gear(object):
 		return owner == ejtpaddress.str_address(self.interface)
 
 	def add_participant(self, docname, iface):
-		# Adds person as a participant, does not send them data though.
+		'''
+		Adds person as a participant, does not send them data though.
+
+		>>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo.demo_documents()
+		>>> hellobob.routes_to(demo.bob)
+		[]
+		>>> gbob.add_participant(helloname, demo.bridget)
+		>>> hellobob.routes_to(demo.bob) == [demo.bridget]
+		True
+		'''
 		doc = self.document(docname)
 		doc.add_participant(iface)
 

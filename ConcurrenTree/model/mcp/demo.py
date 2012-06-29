@@ -92,21 +92,6 @@ def demo_documents():
 def demo_participants():
     '''
     Add Bridget as a participant of the document.
-
-    >>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo_participants()
-    >>> gbob.can_read(bridget, helloname)
-    True
-    >>> gbrg.can_read(bridget, helloname)
-    True
-    >>> gbob.can_write(bridget, helloname)
-    True
-    >>> gbrg.can_write(bridget, helloname)
-    True
-    >>> gbrg.can_write(None, helloname)
-    True
-
-    >>> hellobob.routes_to(bob)
-    [[u'udp4', [u'127.0.0.1', 3940], u'bridget']]
     '''
     gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo_documents()
     gbob.add_participant(helloname, bridget)
