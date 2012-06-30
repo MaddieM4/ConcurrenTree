@@ -1,11 +1,12 @@
 __all__ = [
 	'address',
-	'mcp',
-	'instruction',
-	'operation',
-	'node',
 	'document',
-	'validation'
+	'instruction',
+	'mcp',
+	'node',
+	'operation',
+	'user',
+	'validation',
 ]
 
 from ejtp.util import hasher

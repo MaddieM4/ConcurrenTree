@@ -8,25 +8,14 @@ class Engine(object):
 		self.router = router or default_router()
 
 	def make(self, username, password, interface, **kwargs):
-		# Fail if it does not exist yet
-		self.auth.load(username, password)
 		return self.gear(self.auth[username], interface, **kwargs)
-
-	def new(self, username, password):
-		# Succeed as long as user doesn't already exist with different password
-		self.auth.new(username, password)
-		return self.gear(self.auth[username])
-
-	def validate(self, username, password):
-		# Test login pair
-		return self.auth.verify(username, password)
 
 	def gear(self, storage, interface, **kwargs):
 		return Gear(storage, self.router, interface, **kwargs)
 
 def default_auth():
-	from ConcurrenTree.storage.default import DefaultAuth
-	return DefaultAuth()
+	from ConcurrenTree.model.auth import Auth
+	return Auth()
 
 def default_router():
 	from ejtp import router
