@@ -1,7 +1,7 @@
 # Probably not the most complete test functions, but better than nothing.
 
 def tstring():
-	from ConcurrenTree.model import node
+	from ConcurrenTree import node
 	grey = node.make("grey")
 	gc = grey.context()
 	gc.live.insert(4, " cat.") # "grey cat."
@@ -12,7 +12,7 @@ def tstring():
 	return gc.value == "Grey cat!" or gc.value
 
 def tlist():
-	from ConcurrenTree.model import node
+	from ConcurrenTree import node
 	hello = node.make(["Hello"])
 	hc = hello.context()
 	hc.live.insert(1, ['world']) # ["Hello", "world"]

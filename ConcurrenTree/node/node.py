@@ -1,7 +1,7 @@
 from ejtp.util import hasher
 
-from ConcurrenTree.model import ModelBase, event
-from ConcurrenTree.model.address import Address
+from ConcurrenTree import ModelBase, event
+from ConcurrenTree.address import Address
 
 class Node(ModelBase):
 	''' Base class for all node types. '''
@@ -105,20 +105,20 @@ class Node(ModelBase):
 	# High level imports
 
 	def context(self, *args):
-		from ConcurrenTree.model import context
+		from ConcurrenTree import context
 		return context.make(self, *args)
 
 	def wrapper(self, *args):
-		from ConcurrenTree.model import wrapper
+		from ConcurrenTree import wrapper
 		return wrapper.make(self, *args)
 
 	def op(self, pos, addr = []):
-		from ConcurrenTree.model import operation
+		from ConcurrenTree import operation
 		addr = Address(addr)
 		return addr + operation.FromNode(self, pos)
 
 	def childop(self):
-		from ConcurrenTree.model import operation
+		from ConcurrenTree import operation
 		return operation.FromChildren(self)
 
 class UnsupportedInstructionError(Exception): pass

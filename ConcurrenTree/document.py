@@ -1,9 +1,9 @@
 from ejtp.util.hasher import strict
 from ejtp.address import *
 
-from ConcurrenTree.model import ModelBase
-from ConcurrenTree.model.node import make
-from ConcurrenTree.model.operation import Operation, FromNode
+from ConcurrenTree import ModelBase
+from ConcurrenTree.node import make
+from ConcurrenTree.operation import Operation, FromNode
 
 class Document(ModelBase):
 	''' Stores a node and tracks operations. '''

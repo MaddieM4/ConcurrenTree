@@ -1,4 +1,4 @@
-from ConcurrenTree.model import node
+from ConcurrenTree import node
 import string, map, list, number, single, trinary
 
 def make(node_obj, *args):

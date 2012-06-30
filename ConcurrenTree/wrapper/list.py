@@ -4,7 +4,7 @@ class ListWrapper(Wrapper):
 	def __getitem__(self, i):
 		if type(i) == slice:
 			return [self[x] for x in range(*i.indices(len(self)))]
-		from ConcurrenTree.model.wrapper import make
+		from ConcurrenTree.wrapper import make
 		addr, n = self.context.get(i)
 		return make(n, self.childsink(addr))
 

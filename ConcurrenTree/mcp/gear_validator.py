@@ -1,4 +1,4 @@
-import ConcurrenTree.model.validation as validation
+import ConcurrenTree.validation as validation
 
 class GearValidator(object):
 	def __init__(self, gear):

@@ -1,6 +1,6 @@
 from ejtp import frame, address as ejtpaddress, client as ejtpclient
 
-from ConcurrenTree.model import document
+from ConcurrenTree import document
 
 import host_table
 import message as mcp_message

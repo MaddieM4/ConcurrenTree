@@ -8,12 +8,10 @@ setup(
 	long_description=open('README.md').read(),
 	packages = [
 		'ConcurrenTree',
-		'ConcurrenTree.model',
-		'ConcurrenTree.model.context',
-		'ConcurrenTree.model.mcp',
-		'ConcurrenTree.model.node',
-		'ConcurrenTree.model.validation',
-		'ConcurrenTree.model.wrapper',
-		'ConcurrenTree.storage',
+		'ConcurrenTree.context',
+		'ConcurrenTree.mcp',
+		'ConcurrenTree.node',
+		'ConcurrenTree.validation',
+		'ConcurrenTree.wrapper',
 	],
 )

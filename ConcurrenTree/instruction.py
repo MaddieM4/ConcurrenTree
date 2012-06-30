@@ -1,4 +1,4 @@
-from ConcurrenTree.model import ModelBase, node
+from ConcurrenTree import ModelBase, node
 from address import Address
 
 def validpos(tree, pos):

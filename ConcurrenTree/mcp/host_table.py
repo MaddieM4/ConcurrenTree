@@ -7,13 +7,13 @@ class HostTable(object):
 
 		>>> hosty = HostTable()
 		>>> hosty.document #doctest: +ELLIPSIS
-		<ConcurrenTree.model.document.Document object at ...>
+		<ConcurrenTree.document.Document object at ...>
 		>>> hosty.wrapper
 		w<{'content': {}, 'routing': {}}>
 
 		'''
 		if document == None:
-			from ConcurrenTree.model.document import Document
+			from ConcurrenTree.document import Document
 			document = Document()
 		self.document = document
 		self.wrapper = self.document.wrapper()

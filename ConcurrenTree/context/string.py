@@ -1,4 +1,4 @@
-from ConcurrenTree.model import operation, instruction, address, node
+from ConcurrenTree import operation, instruction, address, node
 import context
 
 class StringContext(context.Context):

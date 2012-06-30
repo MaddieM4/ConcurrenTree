@@ -14,7 +14,7 @@ class Engine(object):
 		return Gear(storage, self.router, interface, **kwargs)
 
 def default_auth():
-	from ConcurrenTree.model.auth import Auth
+	from ConcurrenTree.auth import Auth
 	return Auth()
 
 def default_router():

@@ -27,7 +27,7 @@ def demo_clients():
     >>> gbob.client #doctest: +ELLIPSIS
     <ejtp.client.Client object at 0x...>
     '''
-    from ConcurrenTree.model.mcp import engine
+    from ConcurrenTree.mcp import engine
 
     e = engine.Engine()
     gbob = e.make('bob','', bob, encryptor=["rotate", 3], make_jack=False)
@@ -46,7 +46,7 @@ def demo_clients_enc():
     >>> gbrg.client.encryptor_cache == gbrg.client_cache
     True
     >>> type(gbrg.client.encryptor_cache)
-    <class 'ConcurrenTree.model.mcp.gear.ClientCache'>
+    <class 'ConcurrenTree.mcp.gear.ClientCache'>
     '''
     gbob, gbrg = demo_clients()
     gbrg.hosts.crypto_set(bob, ["rotate", 3])
@@ -58,7 +58,7 @@ def demo_clients_hello():
 
     >>> gbob, gbrg, hello_request = demo_clients_hello()
     >>> hello_request #doctest: +ELLIPSIS
-    <ConcurrenTree.model.validation.hello.HelloRequest object at ...>
+    <ConcurrenTree.validation.hello.HelloRequest object at ...>
 
     >>> gbob.hosts.crypto_get(bridget)
     ['rotate', 7]
@@ -80,7 +80,7 @@ def demo_documents():
     >>> gbob.owns(helloname)
     True
     '''
-    from ConcurrenTree.model.document import mkname
+    from ConcurrenTree.document import mkname
     gbob, gbrg, _ = demo_clients_hello()
     helloname = mkname(bob, "hello")
     hellobob  = gbob.document(helloname)

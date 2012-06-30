@@ -1,6 +1,6 @@
 from ejtp.util.crashnicely import Guard
 from ejtp.util.hasher import strict
-from ConcurrenTree.model import operation
+from ConcurrenTree import operation
 from demo import bob, bridget, demo_data
 from sys import stderr
 import random

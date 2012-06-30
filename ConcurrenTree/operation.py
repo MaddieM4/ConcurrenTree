@@ -1,6 +1,6 @@
 import ejtp.util.hasher as hasher
 
-from ConcurrenTree.model import ModelBase, node
+from ConcurrenTree import ModelBase, node
 from address import Address
 import instruction
 

@@ -2,7 +2,7 @@ from wrapper import Wrapper
 
 class SingleWrapper(Wrapper):
 	def get(self):
-		from ConcurrenTree.model.wrapper import make
+		from ConcurrenTree.wrapper import make
 		addr, n = self.context.get()
 		if addr == None:
 			return None

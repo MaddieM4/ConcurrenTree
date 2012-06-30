@@ -1,4 +1,4 @@
-from ConcurrenTree.model.address import Address
+from ConcurrenTree.address import Address
 from ejtp.util.hasher import strict
 import json
 
@@ -23,7 +23,7 @@ class Wrapper(object):
 
 	def childnode(self, node, address):
 		# Create a child wrapper based on a childsink
-		from ConcurrenTree.model.wrapper import make
+		from ConcurrenTree.wrapper import make
 		return make(node, self.childsink(address))
 
 	def pretty(self):

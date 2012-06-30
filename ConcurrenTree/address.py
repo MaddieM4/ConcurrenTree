@@ -1,4 +1,4 @@
-from ConcurrenTree.model import ModelBase
+from ConcurrenTree import ModelBase
 import re
 import json
 

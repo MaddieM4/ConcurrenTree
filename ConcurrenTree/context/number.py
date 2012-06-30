@@ -1,4 +1,4 @@
-from ConcurrenTree.model import instruction, operation
+from ConcurrenTree import instruction, operation
 import context
 
 class NumberContext(context.Context):
