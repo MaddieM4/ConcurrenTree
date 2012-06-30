@@ -8,7 +8,7 @@ class Engine(object):
 		self.router = router or default_router()
 
 	def make(self, username, password, interface, **kwargs):
-		return self.gear(self.auth[username], interface, **kwargs)
+		return self.gear(self.auth.make(username, password), interface, **kwargs)
 
 	def gear(self, storage, interface, **kwargs):
 		return Gear(storage, self.router, interface, **kwargs)
