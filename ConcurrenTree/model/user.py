@@ -52,6 +52,7 @@ class UserStorage(object):
             json_data = json.loads(self[docname])
             doc.load(json_data)
         self.doc_set(docname, doc)
+        self.doc_save(docname)
         return doc
 
     def doc_set(self, docname, value):
