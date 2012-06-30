@@ -7,8 +7,12 @@ class Node(ModelBase):
 	''' Base class for all node types. '''
 
 	def __init__(self):
-		self.evgrid = event.EventGrid(['insert','delete',
-			'childinsert', 'childdelete'])
+		self.evgrid = event.EventGrid([
+			'insert',
+			'delete',
+			'childinsert',
+			'childdelete',
+			])
 
 	# Stuff to be filled in by subclass:
 
@@ -53,8 +57,8 @@ class Node(ModelBase):
 
 	def put(self, pos, n):
 		self._put(pos, n)
-		n.register('insert', lambda grid, label: self.evgrid.happen('childinsert'))
-		n.register('delete', lambda grid, label: self.evgrid.happen('childdelete'))
+		n.register('insert', lambda grid, label, data: self.evgrid.happen('childinsert'))
+		n.register('delete', lambda grid, label, data: self.evgrid.happen('childdelete'))
 		self.evgrid.happen('insert')
 
 	def delete(self, pos):
