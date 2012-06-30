@@ -36,21 +36,43 @@ class UserStorage(object):
             ear(typestr, docname, data)
 
     def op(self, docname, op):
-        doc = self.doc(docname)
+        doc = self.doc_get(docname)
         if not doc.is_applied(op):
             doc.apply(op)
             self.event("op", docname, op)
 
-    def doc(self, docname):
+    # Document cache manipulation
+
+    def doc_get(self, docname):
+        # Retrieve a document from cache, creating from CPS if necessary.
         if docname in self.cache:
             return self.cache[docname]
-        json_data = json.loads(self[docname])
         doc = Document({})
-        doc.load(json_data)
-        self.cache[docname] = doc
+        if docname in self:
+            json_data = json.loads(self[docname])
+            doc.load(json_data)
+        self.doc_set(docname, doc)
         return doc
 
-    # Dict access
+    def doc_set(self, docname, value):
+        # Set a doc in the cache
+        self.cache[docname] = value
+
+    def doc_del(self, docname):
+        # Remove a document from the cache.
+        del self.cache[docname]
+
+    def doc_reload(self, docname):
+        # Convenience function for del & get
+        self.doc_del(docname)
+        self.doc_get(docname)
+
+    def doc_save(self, docname):
+        # Save the current document state to CPS
+        doc = self.doc_get(docname)
+        self[docname] = doc.serialize()
+
+    # Dict access to strings
 
     def __getitem__(self, k):
         '''

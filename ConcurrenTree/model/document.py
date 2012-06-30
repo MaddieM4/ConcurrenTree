@@ -58,6 +58,9 @@ class Document(ModelBase):
 		''' Fully serializes document. Not a terribly fast function. '''
 		return [self.root.childop().proto(), self.private]
 
+	def serialize(self):
+ 		return strict(self.proto())
+
 	def pretty(self):
 		# Pretty-prints the JSON content
 		print self.wrapper().pretty()

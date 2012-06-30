@@ -32,17 +32,12 @@ class Gear(object):
 	# On-the-fly document creation and retrieval (Get-or-create semantics)
 
 	def document(self, docname):
-		if docname in self.storage:
-			# Return existing document
-			return self.setdocsink(docname)
-		else:
-			# Create blank document
-			self.storage[docname] = document.Document({})
-			return self.setdocsink(docname)
+		doc = self.storage.doc_get(docname)
+		return self.setdocsink(docname)
 
 	def setdocsink(self, docname):
 		# Set document operation sink callback and add owner with full permissions
-		doc = self.storage[docname]
+		doc = self.storage.doc_get(docname)
 		if doc.own_opsink:
 			# Prevent crazy recursion
 			doc.own_opsink = False
