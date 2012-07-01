@@ -69,7 +69,7 @@ class Writer(MessageProcessor):
 		'''
 		if callback:
 			def wrapped_callback(grid, label, data):
-				if data['docname'] == docname and data['op'].hash == op_hash:
+				if data['docname'] == docname and data['op'].hash == op_hash and data['sender'] == target:
 					grid.detach()
 					callback(grid, label, data)
 			self.gear.evgrid.register('recv_op', wrapped_callback)
@@ -143,7 +143,7 @@ class Writer(MessageProcessor):
 		'''
 		if callback:
 			def wrapped_callback(grid, label, data):
-				if data['docname'] == docname:
+				if data['docname'] == docname and data['sender'] == target:
 					grid.detach()
 					callback(grid, label, data)
 			self.gear.evgrid.register('recv_index', wrapped_callback)
@@ -159,14 +159,30 @@ class Writer(MessageProcessor):
 			"hashes":hashes,
 		})
 
-	def pull_snapshot(self, target, docname):
+	def pull_snapshot(self, target, docname, callback=None):
 		'''
 		Retrieve a flattened copy of the document from a remote.
 
 		>>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo_data()
+		>>> def callback(grid, label, data):
+		...    content = data['content']
+		...    keys = content.keys()
+		...    keys.sort()
+		...    for k in keys:
+		...        print k, ":", strict(content[k])
 		>>> gbob.writer.pull_snapshot(bridget, helloname)
-		{"content":{"Blabarsylt":"Made of blueberries","goofy":"gorsh"},"permissions":{"graph":{"edges":{},"vertices":{}},"read":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true},"write":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true}},"routing":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":{},"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":{}}}
+		>>> gbob.writer.pull_snapshot(bridget, helloname, callback)
+		content : {"Blabarsylt":"Made of blueberries","goofy":"gorsh"}
+		permissions : {"graph":{"edges":{},"vertices":{}},"read":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true},"write":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true}}
+		routing : {"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":{},"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":{}}
+        
 		'''
+		if callback:
+			def wrapped_callback(grid, label, data):
+				if data['docname'] == docname and data['sender'] == target:
+					grid.detach()
+					callback(grid, label, data)
+			self.gear.evgrid.register('recv_snapshot', wrapped_callback)
 		self.send(target, {
 			"type":"mcp-pull-snapshot",
 			"docname":docname,
@@ -225,6 +241,7 @@ class Reader(MessageProcessor):
 		self.gear.evgrid.happen('recv_op', {
 			'docname':docname,
 			'op':op,
+			'sender':sender,
 			'vrequest':vrequest,
 		})
 
@@ -237,6 +254,7 @@ class Reader(MessageProcessor):
 		self.gear.writer.index(sender, docname, result)
 
 	def mcp_index(self, content, sender):
+		content['sender'] = sender
 		self.gear.evgrid.happen('recv_index', content)
 
 	def mcp_pull_snapshot(self, content, sender):
@@ -245,8 +263,8 @@ class Reader(MessageProcessor):
 		self.gear.writer.snapshot(sender, docname, doc.flatten())
 
 	def mcp_snapshot(self, content, sender):
-		docname = content['docname']
-		print strict(content['content'])
+		content['sender'] = sender
+		self.gear.evgrid.happen('recv_snapshot', content)
 
 	def mcp_pull_ops(self, content, sender):
 		docname = content['docname']
