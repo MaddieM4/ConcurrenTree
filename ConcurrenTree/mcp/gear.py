@@ -1,6 +1,6 @@
 from ejtp import frame, address as ejtpaddress, client as ejtpclient
 
-from ConcurrenTree import document
+from ConcurrenTree import document, event
 
 import host_table
 import message as mcp_message
@@ -17,6 +17,15 @@ class Gear(object):
 		self.router = router
 
 		# Components
+		self.evgrid = event.EventGrid([
+			'recv_index',
+			'recv_op',
+			'recv_snapshot',
+		])
+		def evgrid_trace(grid, label, data):
+			print>>stderr, "Gear event: ", label
+			print>>stderr, data
+		self.evgrid.register('recv_index', evgrid_trace)
 		self.writer = mcp_message.Writer(self)
 		self.reader = mcp_message.Reader(self)
 		self.client_cache = ClientCache(self)

@@ -51,8 +51,28 @@ class Writer(MessageProcessor):
 			"data":data
 		})
 
-	def pull_op(self, target, docname, op_hash):
-		# Pull one op (shorthand alias to pull_ops, basically)
+	def pull_op(self, target, docname, op_hash, callback=None):
+		'''
+		Pull one op (shorthand alias to pull_ops, basically)
+
+		>>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo_data()
+		>>> ophash = '079eeae801303fd811fe3f443c66528a6add7e42' # Real op
+		>>> def callback(grid, label, data):
+		...	 print "YES, THIS IS CALLBACK"
+		...	 print data['op'].hash
+		...	 print data['op'].hash == ophash
+		>>> gbob.writer.pull_op(bridget, helloname, ophash, callback)
+		YES, THIS IS CALLBACK
+		079eeae801303fd811fe3f443c66528a6add7e42
+		True
+		>>> gbob.writer.pull_op(bridget, helloname, ophash) # Make sure callback is cleared
+		'''
+		if callback:
+			def wrapped_callback(grid, label, data):
+				if data['docname'] == docname and data['op'].hash == op_hash:
+					grid.detach()
+					callback(grid, label, data)
+			self.gear.evgrid.register('recv_op', wrapped_callback)
 		self.pull_ops(target, docname, [op_hash])
 
 	def pull_ops(self, target, docname, hashes):
@@ -187,7 +207,12 @@ class Reader(MessageProcessor):
 	def mcp_op(self, content, sender):
 		docname = content['docname']
 		op = operation.Operation(content['instructions'])
-		self.gear.gv.op(sender, docname, op)
+		vrequest = self.gear.gv.op(sender, docname, op)
+		self.gear.evgrid.happen('recv_op', {
+			'docname':docname,
+			'op':op,
+			'vrequest':vrequest,
+		})
 
 	def mcp_pull_index(self, content, sender):
 		docname = content['docname']

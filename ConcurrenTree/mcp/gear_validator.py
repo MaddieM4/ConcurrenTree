@@ -8,6 +8,7 @@ class GearValidator(object):
 
 	def validate(self, request):
 		self.queue.filter(request)
+		return request
 
 	def pop(self):
 		# Get the next item out of the queue
@@ -19,7 +20,7 @@ class GearValidator(object):
 				self.gear.storage.op(docname, op)
 			else:
 				print "Rejecting operation for docname: %r" % docname
-		self.validate(
+		return self.validate(
 			validation.make("operation", author, docname, op, callback)
 		)
 
@@ -29,7 +30,7 @@ class GearValidator(object):
 				self.gear.hosts.crypto_set(author, encryptor)
 			else:
 				print "Rejecting hello from sender: %r" % encryptor
-		self.validate(
+		return self.validate(
 			validation.make("hello", author, encryptor, callback)
 		)
 
