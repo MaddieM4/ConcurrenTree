@@ -114,12 +114,19 @@ class Writer(MessageProcessor):
 		for i in targets:
 			self.send(i, proto)
 
-	def pull_index(self, target, docname):
+	def pull_index(self, target, docname, callback=None):
 		'''
 		Retrieve a remote source's personal index for a document.
 
 		>>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo_data()
+		>>> def callback(grid, label, data):
+		...    hashes = data['hashes']
+		...    sorted_keys = hashes.keys()
+		...    sorted_keys.sort()
+		...    for key in sorted_keys:
+		...        print "%s: %r" % (key, hashes[key])
 		>>> gbob.writer.pull_index(bridget, helloname)
+		>>> gbob.writer.pull_index(bridget, helloname, callback)
 		079eeae801303fd811fe3f443c66528a6add7e42: u'\\\\_2^[Z\\\\2Z2*/Z)*_-]+Z*\\\\2./ZZ^*.))1_Z++*)['
 		34004f4763524e87cfe4f5b5f915266f80bbbfe7: u'+0_].)]^Z[_1_++)Z/.,-_2*[[^00/0\\\\,*-*.)-+'
 		44d0cb0c7e9b77eb053294915fdb031abd98adc5: u'\\\\[../)[_,+2)/\\\\Z)Z)^0/**.Z0_[/[*^[*_]./]\\\\'
@@ -131,8 +138,15 @@ class Writer(MessageProcessor):
 		c5467b8ced86280298b6df359835e23bf9742ca7: u'\\\\1,2^/^[1-.1]),2^,.Z/+0,[],.\\\\^*-)1).)/*1'
 		d251f86d43c808ee5cbe8231ca8545419649d7c0: u']^\\\\,\\\\2.0[0^^+Z*]+0*21_1]Z2+-/2Z.^000))+.'
 		ed61a0b09322e3b5e0361a015c275f7e46057d52: u',Z[/.1^^.^/]^\\\\0/2221*_0\\\\Z[).^[,/_\\\\\\\\_-,[]'
+		>>> gbob.writer.pull_index(bridget, helloname)
 	 
 		'''
+		if callback:
+			def wrapped_callback(grid, label, data):
+				if data['docname'] == docname:
+					grid.detach()
+					callback(grid, label, data)
+			self.gear.evgrid.register('recv_index', wrapped_callback)
 		self.send(target, {
 			"type":"mcp-pull-index",
 			"docname":docname,
@@ -223,12 +237,7 @@ class Reader(MessageProcessor):
 		self.gear.writer.index(sender, docname, result)
 
 	def mcp_index(self, content, sender):
-		docname = content['docname']
-		hashes = content['hashes']
-		sorted_keys = hashes.keys()
-		sorted_keys.sort()
-		for key in sorted_keys:
-			print "%s: %r" % (key, hashes[key])
+		self.gear.evgrid.happen('recv_index', content)
 
 	def mcp_pull_snapshot(self, content, sender):
 		docname = content['docname']

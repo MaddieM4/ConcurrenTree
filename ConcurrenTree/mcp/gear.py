@@ -25,7 +25,7 @@ class Gear(object):
 		def evgrid_trace(grid, label, data):
 			print>>stderr, "Gear event: ", label
 			print>>stderr, data
-		self.evgrid.register('recv_index', evgrid_trace)
+		self.evgrid.register('recv_snapshot', evgrid_trace)
 		self.writer = mcp_message.Writer(self)
 		self.reader = mcp_message.Reader(self)
 		self.client_cache = ClientCache(self)
