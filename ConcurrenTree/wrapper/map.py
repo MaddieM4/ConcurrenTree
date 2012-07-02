@@ -14,10 +14,29 @@ class MapWrapper(Wrapper):
 		self.opsink(self.context.set(i, v))
 
 	def __delitem__(self, i):
+		'''
+		Delete an element of a map.
+
+		>>> from ConcurrenTree import document
+		>>> w = document.Document({}).wrapper()
+		>>> "sample" in w
+		False
+		>>> w['sample'] = "value"
+		>>> "sample" in w
+		True
+		>>> w['sample'] = {}
+		>>> "sample" in w
+		True
+		>>> del w['sample']
+		>>> w['sample']
+		w<None>
+		>>> "sample" in w
+		False
+		'''
 		self.opsink(self.context.set(i, None))
 
 	def __contains__(self, i):
-		return i in self.node
+		return i in self.node and self[i].value != None
 
 	def __iter__(self):
 		return self.node.__iter__()

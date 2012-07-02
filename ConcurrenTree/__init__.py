@@ -7,6 +7,7 @@ __all__ = [
 	'operation',
 	'user',
 	'validation',
+	'wrapper',
 ]
 
 from ejtp.util import hasher
