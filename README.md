@@ -1,3 +1,29 @@
+## Announcements
+
+### Version 0.5 is out! Commence the cheering!
+
+ConcurrenTree v0.5.0 is hitting stable, and I gotta admit, it has me stoked.
+It's been a long time since any sort of official release, too long probably.
+The protocol is fairly stable, the codebase has been broken down to a much
+more manageable size, and there is much better/more realistic version planning
+going on in the issue tracker. At the time of this writing, there are 110 unit
+tests that are processed with the automated doctest walker every time it is
+run, to prevent regressions from creeping into the code. And while there's
+always a long way to go, this is the most solid step forward in awhile here,
+and the light at the end of the tunnel is in sight.
+
+Unfortunately, very little of the documentation is up to date, except for the
+in-code doctest examples, which are always up to date. Be ye warned to take
+anything in the wiki or the doc folder with a brick of salt, as these are
+retained for historical purposes more than practical ones, and treating them
+like gospel will lead you down confusing paths of nonsense. However, if you are
+interested in the anthropology of the long development path this library took,
+these are exactly what you're looking for.
+
+From here on out, all documentation will include the library version described
+in that documentation, so you can tell when things are out of date, and by how
+much. If you don't see a version attached to something, assume it's ancient.
+
 ## SIMPLE VERSION:
 
 [JSON](http://json.org/) is a format that lets you take programming-type
