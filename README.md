@@ -24,7 +24,9 @@ From here on out, all documentation will include the library version described
 in that documentation, so you can tell when things are out of date, and by how
 much. If you don't see a version attached to something, assume it's ancient.
 
-## SIMPLE VERSION:
+## What is ConcurrenTree?
+
+### SIMPLE VERSION:
 
 [JSON](http://json.org/) is a format that lets you take programming-type
 objects, like a list or a dictionary, and encode them as text. You can encode
@@ -49,7 +51,7 @@ version of Google Wave, or a software repository that supports live typing for
 code collaboration in real time. It's even possible to have a P2P image editor
 made out of nothing but a web page!
 
-## TECHNICAL VERSION:
+### TECHNICAL VERSION:
 
 ConcurrenTree is a concurrency solution that does the heavy lifting for you.
 It was originally called OT+, but has diverged so much from OT that the name
@@ -93,5 +95,4 @@ Dependencies
 * python 2.6.6+
 * [python-libcps](https://github.com/campadrenalin/python-libcps)
 * [python-libejtp](https://github.com/campadrenalin/EJTP-lib-python)
-* pycrypto (2.3): https://www.dlitz.net/software/pycrypto/
 * Works a lot more efficiently with python-gevent, but doesn't need it.
