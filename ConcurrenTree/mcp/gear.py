@@ -21,6 +21,7 @@ class Gear(object):
 			'recv_index',
 			'recv_op',
 			'recv_snapshot',
+			'recv_error',
 		])
 		self.writer = mcp_message.Writer(self)
 		self.reader = mcp_message.Reader(self)

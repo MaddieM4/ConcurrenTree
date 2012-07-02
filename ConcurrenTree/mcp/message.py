@@ -51,6 +51,35 @@ class Writer(MessageProcessor):
 			"data":data
 		})
 
+	def op_callback(self, target, docname, op_hash, callback):
+		'''
+		Set up a conditional, self-detaching callback for an expected op msg.
+		'''
+		if callback:
+			def wrapped_callback(grid, label, data):
+				if match(data, {
+						'type':'mcp-error',
+						'code':321,
+						'sender':target,
+						'data':{
+							'res_type':'op',
+							'id':op_hash
+						}
+					}):
+					grid.detach()
+					grid.detach('recv_op')
+					return
+				elif match(data, {
+   						'type':'mcp-op',
+						'docname':docname,
+						'sender':target,
+					}) and data['op'].hash == op_hash:
+					grid.detach()
+					grid.detach('recv_error')
+					callback(grid, label, data)
+			self.gear.evgrid.register('recv_error', wrapped_callback)
+			self.gear.evgrid.register('recv_op', wrapped_callback)
+
 	def pull_op(self, target, docname, op_hash, callback=None):
 		'''
 		Pull one op (shorthand alias to pull_ops, basically)
@@ -67,17 +96,15 @@ class Writer(MessageProcessor):
 		True
 		>>> gbob.writer.pull_op(bridget, helloname, ophash) # Make sure callback is cleared
 		'''
-		if callback:
-			def wrapped_callback(grid, label, data):
-				if data['docname'] == docname and data['op'].hash == op_hash and data['sender'] == target:
-					grid.detach()
-					callback(grid, label, data)
-			self.gear.evgrid.register('recv_op', wrapped_callback)
+		self.op_callback(target, docname, op_hash, callback)
 		self.pull_ops(target, docname, [op_hash])
 
-	def pull_ops(self, target, docname, hashes):
+	def pull_ops(self, target, docname, hashes, callback=None):
 		'''
 		Retrieve one or more operations by instruction hash.
+
+		The callback will be called for every op response where the hash
+		is present, so it's 
 
 		>>> gbob, gbrg, helloname, hellobob, hellobrg, hwbob, hwbrg = demo_data()
 		>>> ophashes = [
@@ -95,7 +122,19 @@ class Writer(MessageProcessor):
 		Error from: [u'udp4', [u'127.0.0.1', 3940], u'bridget'] , code 321
 		u'Resource not found'
 		{"id":"X79eeae801303fd811fe3f443c66528a6add7e42","res_type":"op"}
+
+		>>> def callback(grid, label, data):
+		...    print "hash:", data['op'].hash
+		>>> gbob.writer.pull_ops(bridget, helloname, ophashes, callback) # Both 
+		hash: 079eeae801303fd811fe3f443c66528a6add7e42
+		Error from: [u'udp4', [u'127.0.0.1', 3940], u'bridget'] , code 321
+		u'Resource not found'
+		{"id":"X79eeae801303fd811fe3f443c66528a6add7e42","res_type":"op"}
+		>>> gbob.evgrid['recv_op'] # Ensure that the error clears out the callback
+		[]
 		'''
+		for op_hash in hashes:
+			self.op_callback(target, docname, op_hash, callback)
 		self.send(target, {
 			"type":"mcp-pull-ops",
 			"docname": docname,
@@ -175,7 +214,7 @@ class Writer(MessageProcessor):
 		content : {"Blabarsylt":"Made of blueberries","goofy":"gorsh"}
 		permissions : {"graph":{"edges":{},"vertices":{}},"read":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true},"write":{"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":true,"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":true}}
 		routing : {"[\\"udp4\\",[\\"127.0.0.1\\",3939],\\"bob\\"]":{},"[\\"udp4\\",[\\"127.0.0.1\\",3940],\\"bridget\\"]":{}}
-        
+		
 		'''
 		if callback:
 			def wrapped_callback(grid, label, data):
@@ -239,6 +278,7 @@ class Reader(MessageProcessor):
 		op = operation.Operation(content['instructions'])
 		vrequest = self.gear.gv.op(sender, docname, op)
 		self.gear.evgrid.happen('recv_op', {
+			'type':'mcp-op',
 			'docname':docname,
 			'op':op,
 			'sender':sender,
@@ -292,3 +332,26 @@ class Reader(MessageProcessor):
 		print repr(content['msg'])
 		if 'data' in content and content['data']:
 			print strict(content['data'])
+		content['sender'] = sender
+		self.gear.evgrid.happen('recv_error', content)
+
+def match(d1, d2):
+	'''
+	Tests if dict d1 matches the template of properties given by d2.
+
+	>>> match({}, {'horse':'feathers'})
+	False
+	>>> match({'horse':'saddles'}, {'horse':'feathers'})
+	False
+	>>> match({'horse':'feathers'}, {})
+	True
+	>>> match({'horse':'feathers'}, {'horse':'feathers'})
+	True
+	'''
+	for key in d2:
+		if (not key in d1) or d1[key] != d2[key]:
+			d1val = None
+			if key in d1:
+				d1val = d1[key]
+			return False
+	return True
