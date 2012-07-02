@@ -1,12 +1,27 @@
 ## SIMPLE VERSION:
 
-[JSON](http://json.org/) is a format that lets you take programming-type objects, like a list or a dictionary, and encode them as text. You can encode pretty much anything as JSON.
+[JSON](http://json.org/) is a format that lets you take programming-type
+objects, like a list or a dictionary, and encode them as text. You can encode
+pretty much anything as JSON.
 
-MCP is the open standard protocol I'm working on, which allows you to connect to a worldwide network and share document updates. These documents can hold any JSON object, have a permissions system built in, and it's set up so you can't download an out-of-date copy of the document or have "write collisions" (where two people try to write at the same time, so nobody knows what it actually should be).
+MCP is the open standard protocol I'm working on, which allows you to connect
+to a worldwide network and share document updates. These documents can hold any
+JSON object, have a permissions system built in, and it's set up so you can't
+download an out-of-date copy of the document or have "write collisions" (where
+two people try to write at the same time, so nobody knows what it actually
+should be).
 
-Orchard is a proof-of-concept MCP node with a friendly web interface. It encrypts all your data when storing it to disk, and part of MCP is that all data going through it is encrypted anyways. There are no central servers, and it's designed so that the network works just as well with just you and your friend, as it does years down the road with thousands of people on it.
+Orchard is a proof-of-concept MCP node with a friendly web interface. It
+encrypts all your data when storing it to disk, and part of MCP is that all
+data going through it is encrypted anyways. There are no central servers, and
+it's designed so that the network works just as well with just you and your
+friend, as it does years down the road with thousands of people on it.
 
-The point of it is not so much MCP, though. That's the underlying protocol. The important thing is what you can build *on top* of MCP, like a distributed version of Google Wave, or a software repository that supports live typing for code collaboration in real time. It's even possible to have a P2P image editor made out of nothing but a web page!
+The point of it is not so much MCP, though. That's the underlying protocol.
+The important thing is what you can build *on top* of MCP, like a distributed
+version of Google Wave, or a software repository that supports live typing for
+code collaboration in real time. It's even possible to have a P2P image editor
+made out of nothing but a web page!
 
 ## TECHNICAL VERSION:
 
@@ -46,84 +61,11 @@ to the larger project implementing CTree to do stuff. CTree is not so much its
 own thing, as it is something that's embedded in other projects as a simple
 backend that handles all your network concurrency.
 
-Demo
-====
-
-With the most recent library code, you can get started now and see how much
-stuff the library just automagically handles for you. You'll need to install
-the files by running "install.sh" as root. Then start up two python terminals, and
-call them Bridget and Bob. The code is divided into multiple parts, each of
-which is sectioned out by who should be calling that part of the code. It is,
-however, fully chronological, and should be called in the order it's given.
-
-	### Starting up communication
-
-	# Both
-
-	from ConcurrenTree.model.mcp import engine
-	e = engine.Engine()
-	g = e.make('hello','goodbye')
-	g.host_table
-	localip = '127.0.0.1'
-	bob = ['udp4', [localip, 3939], "bob"]
-	bridget = ['udp4', [localip, 3940], "bridget"]
-
-	# "Bob"
-	g.client(bob, ["rotate", 3])
-
-	# "Bridget"
-	g.client(bridget, ["rotate", -7])
-	g.resolve_set(bob, ["rotate", 3])
-	g.hello(bob)
-	g.dm(bob, "Hello, Bob!")
-
-	# Bob again
-	g.dm(bridget, "Hey there, Bridget :)")
-
-	### Track 1 Ops
-
-	# Both
-	helloname = g.mkname(bob, "hello")
-	hello = g.document(helloname)
-	hw = hello.content
-
-	# Bob
-	g.add_participant(helloname, bridget)
-	hw["goofy"] = "gorsh"
-
-	# Bridget
-	hw
-	hello.permissions
-	hw["Blabarsylt"] = "Swedish jelly"
-	hw["Blabarsylt"] = "Made of blueberries"
-
-	# Bob
-	hello.pretty()
-	hello.routes_to(bob)
-
-	### RSA
-
-	# Bob
-
-	from ConcurrenTree.util import crypto
-	key = crypto.make(['rsa', None]).proto()
-	g.resolve_set(bob, key)
-	g.hello(bridget)
-
-	# Bridget
-
-	g.dm(bob, "Your RSA works, Bob.")
-	from ConcurrenTree.util import crypto
-	key = crypto.make(['rsa', None]).proto()
-	g.resolve_set(bridget, key)
-	g.hello(bob)
-
-	# Bob
-
-	g.dm(bridget, "As does yours. Hooray for bidirectionally encrypted communication!")
 
 Dependencies
 ============
 * python 2.6.6+
-* Works with python-gevent, but doesn't need it.
+* [python-libcps](https://github.com/campadrenalin/python-libcps)
+* [python-libejtp](https://github.com/campadrenalin/EJTP-lib-python)
 * pycrypto (2.3): https://www.dlitz.net/software/pycrypto/
+* Works a lot more efficiently with python-gevent, but doesn't need it.
