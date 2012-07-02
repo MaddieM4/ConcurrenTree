@@ -69,17 +69,13 @@ class HostTable(object):
 		Removes a host from the records.
 
 		>>> hosty = HostTable()
-                >>> addr = ['vaporware', ['bob'], 'catalina']
+		>>> addr = ['vaporware', ['bob'], 'catalina']
 		>>> hosty.set(addr, {'vikings':'pillagers'})
 		>>> hosty.get(addr)
-                w<{'vikings': 'pillagers'}>
+		w<{'vikings': 'pillagers'}>
 		>>> hosty.destroy(addr)
-
-		These lines reveal some wrapper bugs.
-		I'll fix those later, but for now... comment and TODO, man.
-
-		>>> #addr in hosty
-		>>> #hosty.get(addr)
+		>>> addr in hosty
+		False
 		'''
 		address = str_address(address)
 		del self[address]
